@@ -82,36 +82,7 @@
       </div>
     </SettingSection>
 
-    
-    <SettingSection title="装饰" :default-open="false">
-      <SettingRow label="图标">
-        <select class="select select-xs select-bordered w-full max-w-[140px]" :value="decor.icon ?? ''" @change="updateDecor({ icon: ($event.target as HTMLSelectElement).value })">
-          <option value="">无</option>
-          <option value="★">★ 星标</option>
-          <option value="📖">📖 书</option>
-          <option value="🔥">🔥 热门</option>
-          <option value="♥">♥ 收藏</option>
-          <option value="✓">✓ 完成</option>
-        </select>
-      </SettingRow>
-      <SettingRow label="图标大小" :value="(decor.iconSize ?? 28) + 'px'">
-        <input type="range" min="16" max="64" step="2" :value="decor.iconSize ?? 28" class="range range-xs range-primary flex-1" @input="updateDecor({ iconSize: Number(($event.target as HTMLInputElement).value) })" />
-      </SettingRow>
-      <SettingRow label="底部按钮">
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" class="checkbox checkbox-xs checkbox-primary" :checked="decor.ctaEnabled" @change="updateDecor({ ctaEnabled: ($event.target as HTMLInputElement).checked })" />
-          <span class="text-xs text-base-content/60">显示 CTA</span>
-        </label>
-      </SettingRow>
-      <SettingRow label="按钮文字">
-        <input type="text" placeholder="点击查看" class="input input-xs input-bordered w-full max-w-[140px]" :value="decor.ctaText ?? ''" @input="updateDecor({ ctaText: ($event.target as HTMLInputElement).value })" />
-      </SettingRow>
-      <SettingRow label="按钮颜色">
-        <input type="color" :value="decor.ctaColor ?? '#3b82f6'" class="w-7 h-7 rounded cursor-pointer border border-base-300" @input="updateDecor({ ctaColor: ($event.target as HTMLInputElement).value })" />
-      </SettingRow>
-    </SettingSection>
 
-    
     <SettingSection title="标题样式">
       <HeadingStylePanel />
     </SettingSection>
@@ -128,7 +99,7 @@ import HeadingStylePanel from '@/components/editor/HeadingStylePanel.vue'
 import SettingSection from '@/components/settings/SettingSection.vue'
 import SettingRow from '@/components/settings/SettingRow.vue'
 import { THEMES } from '@/card'
-import type { GradientConfig, CardDecorConfig } from '@/card'
+import type { GradientConfig } from '@/card'
 
 const HIGHLIGHT_STYLE_OPTIONS = [
   { value: 'underline', label: '下划线', short: 'U̲' },
@@ -157,12 +128,9 @@ interface Props {
   isExporting: boolean
   progress: number
   bodyTextColor: string | null
-  decor?: CardDecorConfig
 }
 
 const props = defineProps<Props>()
-
-const decor = computed(() => props.decor ?? {})
 
 const emit = defineEmits<{
   (e: 'update:appTheme', value: 'light' | 'dark'): void
@@ -176,7 +144,6 @@ const emit = defineEmits<{
   (e: 'update:gradientConfig', value: GradientConfig): void
   (e: 'update:previewScale', value: number): void
   (e: 'update:bodyTextColor', value: string | null): void
-  (e: 'update:decor', value: CardDecorConfig): void
   (e: 'export-png'): void
   (e: 'export-jpg'): void
   (e: 'export-pdf'): void
@@ -186,8 +153,4 @@ const themeId = computed({
   get: () => props.cardTheme,
   set: (v: string) => emit('update:cardTheme', v),
 })
-
-function updateDecor(patch: Partial<CardDecorConfig>): void {
-  emit('update:decor', { ...(props.decor ?? {}), ...patch } as CardDecorConfig)
-}
 </script>

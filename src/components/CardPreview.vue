@@ -104,8 +104,6 @@ interface Props {
   highlightColor?: string | null
   
   bodyTextColor?: string | null
-  
-  decor?: import('@/card').CardDecorConfig | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -127,7 +125,6 @@ const props = withDefaults(defineProps<Props>(), {
   gradientConfig: () => ({ enabled: false, color1: '#6c5ce7', color2: '#a29bfe', angle: 135 }),
   headingOverrides: null,
   bodyTextColor: null,
-  decor: null,
 })
 
 
@@ -249,7 +246,6 @@ async function doRender(): Promise<void> {
         headingOverrides: props.headingOverrides,
         highlightColor: props.highlightColor,
         bodyTextColor: props.bodyTextColor,
-        decor: props.decor,
       }, signal)
       canvases.value = result.canvases
       cachedLayoutPages = result.pages
@@ -272,7 +268,6 @@ async function doRender(): Promise<void> {
           headingOverrides: props.headingOverrides,
           highlightColor: props.highlightColor,
           bodyTextColor: props.bodyTextColor,
-        decor: props.decor,
         }, signal)
         canvases.value = result.canvases
         cachedLayoutPages = result.pages
@@ -298,7 +293,6 @@ async function doRender(): Promise<void> {
               headingOverrides: props.headingOverrides,
               highlightColor: props.highlightColor,
               bodyTextColor: props.bodyTextColor,
-        decor: props.decor,
             }),
           )
           
@@ -335,7 +329,6 @@ async function doRender(): Promise<void> {
         headingOverrides: props.headingOverrides,
         highlightColor: props.highlightColor,
         bodyTextColor: props.bodyTextColor,
-        decor: props.decor,
       })
       canvases.value = result.canvases
       cachedLayoutPages = result.pages
@@ -360,7 +353,6 @@ watch(
     props.headingOverrides,
     props.highlightColor,
     props.bodyTextColor,
-    props.decor,
   ] as const,
   scheduleRender,
   { immediate: true },

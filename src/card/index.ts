@@ -42,7 +42,6 @@ export type {
   HeadingTypography,
   CoverHeadingConfig,
   HeadingStyleOverrides,
-  CardDecorConfig,
 } from './types'
 
 export { BODY_FONT_MODES, DEFAULT_BODY_FONT_MODE, getBodyFontFamily } from './types'

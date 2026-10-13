@@ -3,7 +3,6 @@
 
 import type {
   CardPage,
-  CardDecorConfig,
   GradientConfig,
   HighlightStyle,
   FooterRightMode,
@@ -43,8 +42,6 @@ export interface EngineOptions {
   highlightColor?: string | null
   
   bodyTextColor?: string | null
-  
-  decor?: CardDecorConfig | null
 }
 
 
@@ -80,7 +77,6 @@ export function renderAllPages(
       headingOverrides: opts.headingOverrides,
       highlightColor: opts.highlightColor ?? null,
       bodyTextColor: opts.bodyTextColor ?? null,
-      decor: opts.decor,
     }),
   )
 
@@ -127,7 +123,6 @@ export async function renderAllPagesAsync(
         headingOverrides: opts.headingOverrides,
         highlightColor: opts.highlightColor ?? null,
         bodyTextColor: opts.bodyTextColor ?? null,
-        decor: opts.decor,
       }),
     )
 

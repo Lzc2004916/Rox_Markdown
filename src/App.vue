@@ -111,7 +111,6 @@
             :preview-scale="previewScale"
             :heading-overrides="headingOverrides"
             :body-text-color="bodyTextColor"
-            :decor="cardDecor"
           />
         </div>
       </div>
@@ -158,8 +157,6 @@
           :progress="progress"
           :body-text-color="bodyTextColor"
           @update:body-text-color="bodyTextColor = $event"
-          :decor="cardDecor"
-          @update:decor="cardDecor = $event"
           @export-png="handleBatchExportPNG"
           @export-jpg="handleBatchExportJPG"
           @export-pdf="handleExportPDF"
@@ -414,15 +411,6 @@ const bodyTextColor = ref<string | null>(settings.bodyTextColor.value ?? null)
 
 watch(bodyTextColor, (v) => { settings.bodyTextColor.value = v })
 
-
-import type { CardDecorConfig } from '@/card'
-const cardDecor = ref<CardDecorConfig>({
-  icon: '',
-  iconSize: 28,
-  ctaEnabled: false,
-  ctaText: '',
-  ctaColor: '#3b82f6',
-})
 
 
 

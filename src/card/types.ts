@@ -453,24 +453,8 @@ export interface RenderOptions {
   headingOverrides?: HeadingStyleOverrides | null
   
   highlightColor?: string | null
-  
+
   bodyTextColor?: string | null
-  
-  decor?: CardDecorConfig | null
-}
-
-
-export interface CardDecorConfig {
-  
-  icon?: string
-  
-  iconSize?: number
-  
-  ctaEnabled?: boolean
-  
-  ctaText?: string
-  
-  ctaColor?: string
 }
 
 

@@ -1615,49 +1615,6 @@ function drawFooter(
 
 
 
-function drawCornerIcon(ctx: CanvasRenderingContext2D, icon: string, size: number): void {
-  if (!icon) return
-  ctx.save()
-  ctx.font = `${size}px serif`
-  ctx.textAlign = 'right'
-  ctx.textBaseline = 'top'
-  ctx.fillStyle = 'rgba(0,0,0,0.55)'
-  ctx.fillText(icon, PAGE_WIDTH - 40, 36)
-  ctx.restore()
-}
-
-function drawBottomCTA(ctx: CanvasRenderingContext2D, text: string, color: string): void {
-  if (!text) return
-  const btnW = 200
-  const btnH = 52
-  const x = (PAGE_WIDTH - btnW) / 2
-  const y = PAGE_HEIGHT - 100
-  const r = 26
-
-  ctx.save()
-  
-  ctx.beginPath()
-  ctx.moveTo(x + r, y)
-  ctx.lineTo(x + btnW - r, y)
-  ctx.quadraticCurveTo(x + btnW, y, x + btnW, y + r)
-  ctx.lineTo(x + btnW, y + btnH - r)
-  ctx.quadraticCurveTo(x + btnW, y + btnH, x + btnW - r, y + btnH)
-  ctx.lineTo(x + r, y + btnH)
-  ctx.quadraticCurveTo(x, y + btnH, x, y + btnH - r)
-  ctx.lineTo(x, y + r)
-  ctx.quadraticCurveTo(x, y, x + r, y)
-  ctx.closePath()
-  ctx.fillStyle = color
-  ctx.fill()
-  
-  ctx.fillStyle = '#ffffff'
-  ctx.font = '600 18px sans-serif'
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.fillText(text, PAGE_WIDTH / 2, y + btnH / 2 + 1)
-  ctx.restore()
-}
-
 export function renderCard(opts: RenderOptions): HTMLCanvasElement {
   const {
     page,
@@ -1893,12 +1850,5 @@ export function renderCard(opts: RenderOptions): HTMLCanvasElement {
   }
 
   
-  if (opts.decor) {
-    if (opts.decor.icon) drawCornerIcon(ctx, opts.decor.icon, opts.decor.iconSize ?? 28)
-    if (opts.decor.ctaEnabled && opts.decor.ctaText) {
-      drawBottomCTA(ctx, opts.decor.ctaText, opts.decor.ctaColor ?? theme.palette.accent)
-    }
-  }
-
   return canvas
 }
