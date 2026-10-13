@@ -354,8 +354,7 @@ const bodyFontMode = ref<BodyFontMode>('wenkai')
 
 
 const editorTheme = computed<string>(() => {
-  const theme = getTheme(cardTheme.value)
-  return theme.category === 'dark' ? 'one-dark' : 'light'
+  return appTheme.value === 'dark' ? 'one-dark' : 'light'
 })
 
 

@@ -164,6 +164,13 @@
     );
     background-size: 16px 16px;
   }
+  html[data-theme='dark'] .bg-dot-pattern {
+    background-image: radial-gradient(
+      circle,
+      oklch(1 0 0 / 0.08) 1px,
+      transparent 1px
+    );
+  }
 
   /* ── Hide native scrollbar (use with custom scrollbar) ──────────── */
   .scrollbar-none {
@@ -192,6 +199,12 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   background-color: oklch(0.65 0.02 260 / 0.48);
+}
+html[data-theme='dark'] ::-webkit-scrollbar-thumb {
+  background-color: oklch(0.75 0.02 260 / 0.35);
+}
+html[data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
+  background-color: oklch(0.75 0.02 260 / 0.55);
 }
 ::-webkit-scrollbar-corner {
   background: transparent;
