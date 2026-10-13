@@ -405,7 +405,7 @@ const gradientConfig = ref<GradientConfig>({
   color2: '#a29bfe',
   angle: 135,
 })
-const previewScale = ref<number>(0.70)
+const previewScale = ref<number>(0.65)
 const previewContainerRef = ref<HTMLDivElement | null>(null)
 
 
@@ -661,7 +661,7 @@ function applySettings(s: AppSettings): void {
   footerEnabled.value = s.footerEnabled
   split.value = s.split
   rightSplit.value = s.rightSplit ?? 22
-  previewScale.value = s.previewScale ?? 0.70
+  previewScale.value = s.previewScale ?? 0.65
   if (s.gradientConfig) {
     gradientConfig.value = { ...s.gradientConfig }
   }
