@@ -1,0 +1,964 @@
+<template>
+  <ThemeProvider :theme-id="cardTheme" :highlight-color="highlightColor">
+  <div class="h-screen flex flex-col overflow-hidden bg-base-200">
+    
+    <div class="navbar bg-base-100 border-b border-base-300/60 z-20 shrink-0 min-h-0 py-0 h-11">
+      <div class="navbar-start">
+        <span class="text-primary font-bold text-lg ml-2 tracking-tight">Markdown Card</span>
+      </div>
+
+      <div class="navbar-center"></div>
+
+      <div class="navbar-end">
+        
+        <div v-if="isDesktopPlatform" class="flex items-center h-full win-controls" role="group" :aria-label="isMaximized ? '还原' : '最大化'">
+          <button
+            class="win-btn"
+            aria-label="最小化"
+            title="最小化"
+            @click="handleMinimize"
+          >
+            <svg class="w-3.5 h-3.5" viewBox="0 0 12 12" aria-hidden="true"><rect x="1" y="5.5" width="10" height="1" fill="currentColor"/></svg>
+          </button>
+          <button
+            class="win-btn"
+            :aria-label="isMaximized ? '还原' : '最大化'"
+            :title="isMaximized ? '还原' : '最大化'"
+            @click="handleToggleMaximize"
+          >
+            <svg v-if="!isMaximized" class="w-3.5 h-3.5" viewBox="0 0 12 12" aria-hidden="true"><rect x="1.5" y="1.5" width="9" height="9" rx="1" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
+            <svg v-else class="w-3.5 h-3.5" viewBox="0 0 12 12" aria-hidden="true"><rect x="3" y="0.5" width="8" height="8" rx="1" fill="none" stroke="currentColor" stroke-width="1.2"/><rect x="0.5" y="3" width="8" height="8" rx="1" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
+          </button>
+          <button
+            class="win-btn win-btn-close"
+            aria-label="关闭"
+            title="关闭"
+            @click="handleCloseRequest"
+          >
+            <svg class="w-3.5 h-3.5" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    
+    <DocumentTabs />
+
+    
+    <template v-if="isDesktopPlatform">
+    <div class="flex-1 flex overflow-hidden">
+      
+      <div
+        class="flex flex-col overflow-hidden border-r border-base-300 min-w-[200px]"
+        :style="{ flexBasis: split + '%' }"
+      >
+        <EditorToolbar
+          @insert="onToolbarInsert"
+          @command="onToolbarCommand"
+          :can-undo="canUndo"
+          :can-redo="canRedo"
+        />
+        <div class="flex-1 min-h-0">
+          <MarkdownEditor
+            ref="editorRef"
+            :modelValue="source"
+            @update:modelValue="onSourceUpdate"
+            :theme="editorTheme"
+            @ready="onEditorReady"
+          />
+        </div>
+        
+        <div class="h-7 shrink-0 flex items-center gap-3 px-3 text-xs text-base-content/60 bg-base-200/80 border-t border-base-300/60 select-none tabular-nums">
+          <span>字数: {{ wordCount }}</span>
+          <span>行数: {{ lineCount }}</span>
+          <template v-if="activeTags.length > 0">
+            <span v-for="tag in activeTags" :key="tag" class="badge badge-xs badge-ghost">{{ tag }}</span>
+          </template>
+        </div>
+      </div>
+
+      
+      <div
+        class="w-1 cursor-col-resize select-none shrink-0 z-10 transition-colors duration-200 drag-bar"
+        :class="dragging ? 'bg-primary' : 'bg-base-300'"
+        @mousedown="onDragStart"
+      ></div>
+
+      
+      <div
+        class="flex flex-col min-w-[200px] min-h-0 overflow-hidden"
+        :style="{ flexBasis: (100 - split - rightSplit) + '%' }"
+      >
+        <div class="h-9 shrink-0 bg-base-200/70 px-4 border-b border-base-300/60 text-xs font-medium flex items-center justify-between">
+          <span class="opacity-50">滚轮横滑翻页 · Ctrl+滚轮缩放</span>
+          <span class="opacity-40 tabular-nums">{{ Math.round(previewScale * 100) }}%</span>
+        </div>
+        <div
+          ref="previewContainerRef"
+          class="flex-1 min-h-0 overflow-auto bg-base-200/60 bg-dot-pattern"
+          @wheel="onPreviewWheel"
+        >
+          <CardPreview
+            ref="cardPreviewRef"
+            v-model:current-page="currentPage"
+            :source="source"
+            :theme-id="cardTheme"
+            :typography="typography"
+            :highlight-style="highlightStyle"
+            :highlight-color="highlightColor"
+            :footer-enabled="footerEnabled"
+            :gradient-config="gradientConfig"
+            :preview-scale="previewScale"
+            :heading-overrides="headingOverrides"
+            :body-text-color="bodyTextColor"
+            :decor="cardDecor"
+          />
+        </div>
+      </div>
+
+      
+      <div
+        class="w-1 cursor-col-resize select-none shrink-0 z-10 transition-colors duration-200 drag-bar"
+        :class="draggingRight ? 'bg-primary' : 'bg-base-300'"
+        @mousedown="onDragStartRight"
+      ></div>
+
+      
+      <div
+        class="min-w-[240px] flex flex-col overflow-hidden bg-base-100"
+        :style="{ flexBasis: rightSplit + '%' }"
+      >
+        <div class="h-9 shrink-0 bg-base-200/70 px-4 border-b border-base-300/60 text-xs font-medium flex items-center">
+          <span class="opacity-60">卡片设置</span>
+        </div>
+        <div class="flex-1 min-h-0 overflow-y-auto">
+        <ControlPanel
+          :app-theme="appTheme"
+          @update:app-theme="(v: 'light' | 'dark') => { appTheme = v; applyAppTheme() }"
+          :card-theme="cardTheme"
+          @update:card-theme="cardTheme = $event"
+          :body-font-mode="bodyFontMode"
+          @update:body-font-mode="(v: string) => bodyFontMode = v as BodyFontMode"
+          :body-font-size="bodyFontSize"
+          @update:body-font-size="bodyFontSize = $event"
+          :body-font-weight="bodyFontWeight"
+          @update:body-font-weight="bodyFontWeight = $event"
+          :highlight-style="highlightStyle"
+          @update:highlight-style="(v: string) => highlightStyle = v as HighlightStyle"
+          :highlight-color="highlightColor"
+          @update:highlight-color="highlightColor = $event"
+          :footer-enabled="footerEnabled"
+          @update:footer-enabled="footerEnabled = $event"
+          :gradient-config="gradientConfig"
+          @update:gradient-config="gradientConfig = $event"
+          :preview-scale="previewScale"
+          @update:preview-scale="previewScale = $event"
+          :font-options="BODY_FONT_OPTIONS"
+          :is-exporting="isExporting"
+          :progress="progress"
+          :body-text-color="bodyTextColor"
+          @update:body-text-color="bodyTextColor = $event"
+          :decor="cardDecor"
+          @update:decor="cardDecor = $event"
+          @export-png="handleBatchExportPNG"
+          @export-jpg="handleBatchExportJPG"
+          @export-pdf="handleExportPDF"
+        />
+        </div>
+      </div>
+    </div>
+    </template>
+
+    
+    <MobileLayout
+      v-else
+      ref="mobileLayoutRef"
+      :source="source"
+      :editor-theme="editorTheme"
+      :can-undo="canUndo"
+      :can-redo="canRedo"
+      :card-theme="cardTheme"
+      :app-theme="appTheme"
+      :typography="typography"
+      :highlight-style="highlightStyle"
+      :highlight-color="highlightColor"
+      :footer-enabled="footerEnabled"
+      :gradient-config="gradientConfig"
+      :preview-scale="previewScale"
+      :heading-overrides="headingOverrides"
+      :active-tags="activeTags"
+      :word-count="wordCount"
+      :line-count="lineCount"
+      :is-exporting="isExporting"
+      :progress="progress"
+      :font-options="BODY_FONT_OPTIONS"
+      :body-font-mode="bodyFontMode"
+      :body-font-size="bodyFontSize"
+      :body-font-weight="bodyFontWeight"
+      :body-text-color="bodyTextColor"
+      @update:source="onSourceUpdate"
+      @toolbar-insert="onToolbarInsert"
+      @toolbar-command="onToolbarCommand"
+      @update:app-theme="(v: 'light' | 'dark') => { appTheme = v; applyAppTheme() }"
+      @update:card-theme="(v: string) => cardTheme = v"
+      @update:body-font-mode="(v: string) => bodyFontMode = v as BodyFontMode"
+      @update:body-font-size="(v: number) => bodyFontSize = v"
+      @update:body-font-weight="(v: number) => bodyFontWeight = v"
+      @update:highlight-style="(v: string) => highlightStyle = v as HighlightStyle"
+      @update:highlight-color="(v: string | null) => highlightColor = v"
+      @update:footer-enabled="(v: boolean) => footerEnabled = v"
+      @update:gradient-config="(v: GradientConfig) => gradientConfig = v"
+      @update:preview-scale="(v: number) => previewScale = v"
+      @update:body-text-color="(v: string | null) => bodyTextColor = v"
+      @export-png="handleBatchExportPNG"
+      @export-jpg="handleBatchExportJPG"
+      @export-pdf="handleExportPDF"
+    />
+
+    
+    <DraftRecoveryModal
+      v-if="showDraftModal"
+      @restore="onDraftRestore"
+      @discard="onDraftDiscard"
+    />
+
+    
+    <SearchDialog
+      ref="searchDialogRef"
+      :visible="showSearchDialog"
+      @update:visible="showSearchDialog = $event"
+      @search="onSearch"
+      @next="onSearchNext"
+      @prev="onSearchPrev"
+      @close="onSearchClose"
+    />
+
+    
+    <dialog
+      ref="closeDialogRef"
+      class="modal"
+      aria-label="确认关闭"
+      @close="onCloseDialogDismiss"
+    >
+      <div class="modal-box w-96 max-w-[90vw]">
+        <h3 id="close-dialog-title" class="font-bold text-base mb-3">确认关闭</h3>
+        <p class="text-sm text-base-content/80 mb-5">确定要关闭窗口吗？未保存的更改将丢失。</p>
+        <div class="modal-action mt-0 gap-2">
+          <button
+            ref="cancelBtnRef"
+            class="btn btn-sm btn-ghost"
+            @click="handleCancelClose"
+          >取消</button>
+          <button
+            ref="confirmBtnRef"
+            class="btn btn-sm btn-error"
+            @click="handleConfirmClose"
+          >确定关闭</button>
+        </div>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button>取消</button>
+      </form>
+    </dialog>
+  </div>
+  </ThemeProvider>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import type { EditorView } from '@codemirror/view'
+import MarkdownEditor from '@/components/editor/MarkdownEditor.vue'
+import EditorToolbar from '@/components/editor/EditorToolbar.vue'
+import type { ToolbarItem } from '@/components/editor/EditorToolbar.vue'
+import CardPreview from '@/components/CardPreview.vue'
+import ThemeProvider from '@/components/ThemeProvider.vue'
+import DocumentTabs from '@/components/DocumentTabs.vue'
+import ControlPanel from '@/components/ControlPanel.vue'
+import { useMarkdown } from '@/composables/useMarkdown'
+import { useExport } from '@/composables/useExport'
+import { useDocumentsStore } from '@/stores/documents'
+import { useDrafts, type AppSettings } from '@/composables/useDrafts'
+import { BODY_FONT_MODES, getTheme, type BodyFontMode } from '@/card'
+import DraftRecoveryModal from '@/components/DraftRecoveryModal.vue'
+import type { GradientConfig } from '@/card'
+import type { TypographySettings, HighlightStyle, SubheadingStyle, HeadingStyleOverrides } from '@/card'
+import { useSettings } from '@/composables/useSettings'
+import { useSearch, type SearchMatch } from '@/composables/useSearch'
+import SearchDialog from '@/components/SearchDialog.vue'
+import { isDesktop } from '@/platforms/detection'
+import MobileLayout from '@/layouts/MobileLayout.vue'
+
+
+
+const isDesktopPlatform = isDesktop()
+
+const appTheme = ref<'light' | 'dark'>(
+  (localStorage.getItem('app-theme') as 'light' | 'dark') || 'light',
+)
+
+function applyAppTheme(): void {
+  document.documentElement.setAttribute('data-theme', appTheme.value)
+}
+
+onMounted(() => {
+  applyAppTheme()
+})
+
+
+
+const store = useDocumentsStore()
+
+
+
+const { hasDrafts, restore, discard, dismissPrompt, saveSettings } = useDrafts()
+const showDraftModal = ref<boolean>(false)
+
+if (hasDrafts()) {
+  showDraftModal.value = true
+} else {
+  store.init()
+}
+
+function onDraftRestore(): void {
+  const settings = restore()
+  applySettings(settings)
+  showDraftModal.value = false
+}
+
+function onDraftDiscard(): void {
+  discard()
+  dismissPrompt()
+  showDraftModal.value = false
+  store.init()
+}
+
+
+
+const source = computed<string>({
+  get: () => store.activeDocument?.content ?? '',
+  set: (value: string) => {
+    if (store.activeId) store.updateContent(store.activeId, value)
+  },
+})
+
+const activeTags = computed<string[]>(() => store.activeDocument?.tags ?? [])
+
+
+const canUndo = computed<boolean>(() => store.activeId ? store.canUndo(store.activeId) : false)
+
+
+const canRedo = computed<boolean>(() => store.activeId ? store.canRedo(store.activeId) : false)
+
+const cardTheme = ref<string>('moss-paper')
+const bodyFontMode = ref<BodyFontMode>('wenkai')
+
+
+const editorTheme = computed<string>(() => {
+  const theme = getTheme(cardTheme.value)
+  return theme.category === 'dark' ? 'one-dark' : 'light'
+})
+
+
+watch(cardTheme, (newThemeId) => {
+  const theme = getTheme(newThemeId)
+  if (theme.editor.bodyFontMode) {
+    bodyFontMode.value = theme.editor.bodyFontMode
+  }
+  highlightStyle.value = theme.editor.highlightStyle
+  
+  settings.clearHeadingColors()
+  settings.headingH1Size.value = null
+  settings.headingH2Size.value = null
+  settings.headingH3Size.value = null
+  settings.headingH4Size.value = null
+  settings.headingH5Size.value = null
+  settings.headingH6Size.value = null
+  if (theme.gradient) {
+    gradientConfig.value = {
+      enabled: gradientConfig.value.enabled,
+      color1: theme.gradient.color1,
+      color2: theme.gradient.color2,
+      angle: theme.gradient.angle ?? 135,
+    }
+  }
+})
+
+const BODY_FONT_OPTIONS = Object.entries(BODY_FONT_MODES).map(([id, def]) => ({
+  id,
+  label: def.label,
+  family: def.family,
+  category: def.category,
+}))
+
+
+
+
+
+const settings = useSettings()
+const bodyFontSize = ref<number>(30)
+const bodyFontWeight = ref<number>(400)
+const highlightStyle = ref<HighlightStyle>('underline' as HighlightStyle)
+const highlightColor = ref<string | null>(null)
+const footerEnabled = ref<boolean>(true)
+const gradientConfig = ref<GradientConfig>({
+  enabled: false,
+  color1: '#6c5ce7',
+  color2: '#a29bfe',
+  angle: 135,
+})
+const previewScale = ref<number>(0.70)
+const previewContainerRef = ref<HTMLDivElement | null>(null)
+
+
+const bodyTextColor = ref<string | null>(settings.bodyTextColor.value ?? null)
+
+
+watch(bodyTextColor, (v) => { settings.bodyTextColor.value = v })
+
+
+import type { CardDecorConfig } from '@/card'
+const cardDecor = ref<CardDecorConfig>({
+  icon: '',
+  iconSize: 28,
+  ctaEnabled: false,
+  ctaText: '',
+  ctaColor: '#3b82f6',
+})
+
+
+
+function onPreviewWheel(e: WheelEvent): void {
+  if (!e.ctrlKey && !e.metaKey) return  
+  e.preventDefault()
+  const step = 0.05
+  const delta = e.deltaY < 0 ? step : -step
+  const newScale = Math.max(0.25, Math.min(2.5, previewScale.value + delta))
+  previewScale.value = Math.round(newScale * 100) / 100
+}
+
+
+
+const split = ref<number>(32)
+const rightSplit = ref<number>(22)
+const dragging = ref<boolean>(false)
+const draggingRight = ref<boolean>(false)
+
+
+
+const isMaximized = ref(false)
+const showCloseDialog = ref(false)
+const closeDialogRef = ref<HTMLDialogElement | null>(null)
+const cancelBtnRef = ref<HTMLButtonElement | null>(null)
+const confirmBtnRef = ref<HTMLButtonElement | null>(null)
+const windowControlCleanups: (() => void)[] = []
+
+function initWindowControls(): void {
+  if (!window.electronAPI) return
+
+  window.electronAPI.getWindowState().then((state: { isMaximized: boolean }) => {
+    isMaximized.value = state.isMaximized
+  })
+
+  windowControlCleanups.push(
+    window.electronAPI.onWindowStateChanged((state: { isMaximized: boolean }) => {
+      isMaximized.value = state.isMaximized
+    }),
+  )
+
+  windowControlCleanups.push(
+    window.electronAPI.onCloseRequest(() => {
+      showCloseDialog.value = true
+    }),
+  )
+
+  
+  windowControlCleanups.push(
+    window.electronAPI.onSearchOpen(() => {
+      showSearchDialog.value = true
+    }),
+  )
+}
+
+watch(showCloseDialog, (visible) => {
+  if (!closeDialogRef.value) return
+  if (visible) {
+    closeDialogRef.value.showModal()
+    requestAnimationFrame(() => confirmBtnRef.value?.focus())
+  } else {
+    closeDialogRef.value.close()
+  }
+})
+
+function handleMinimize(): void {
+  window.electronAPI?.minimizeWindow()
+}
+
+function handleToggleMaximize(): void {
+  window.electronAPI?.toggleMaximize()
+}
+
+function handleCloseRequest(): void {
+  showCloseDialog.value = true
+}
+
+function handleConfirmClose(): void {
+  showCloseDialog.value = false
+  window.electronAPI?.confirmClose()
+}
+
+function handleCancelClose(): void {
+  showCloseDialog.value = false
+}
+
+function onCloseDialogDismiss(): void {
+  showCloseDialog.value = false
+}
+
+onMounted(() => {
+  initWindowControls()
+
+  
+  nextTick(() => {
+    
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        window.dispatchEvent(new CustomEvent('app-render-ready'))
+      })
+    })
+  })
+})
+
+const typography = computed<TypographySettings>(() => {
+  const theme = getTheme(cardTheme.value)
+  return {
+    bodySize: bodyFontSize.value,
+    lineHeight: 1.84,
+    bodyFontMode: bodyFontMode.value,
+    bodyFontWeight: bodyFontWeight.value,
+    subheadingStyle: (theme.editor.subheadingStyle ?? 'large') as SubheadingStyle,
+  }
+})
+
+
+
+const headingOverrides = computed<HeadingStyleOverrides>(() => ({
+  h1Size: settings.headingH1Size.value,
+  h2Size: settings.headingH2Size.value,
+  h3Size: settings.headingH3Size.value,
+  h4Size: settings.headingH4Size.value,
+  h5Size: settings.headingH5Size.value,
+  h6Size: settings.headingH6Size.value,
+  h1Align: settings.headingH1Align.value,
+  h1Color: settings.headingH1Color.value,
+  h2Color: settings.headingH2Color.value,
+  h3Color: settings.headingH3Color.value,
+  h4Color: settings.headingH4Color.value,
+  h5Color: settings.headingH5Color.value,
+  h6Color: settings.headingH6Color.value,
+  h1Stroke: settings.headingH1Stroke.value,
+  h2Stroke: settings.headingH2Stroke.value,
+  h3Stroke: settings.headingH3Stroke.value,
+  h4Stroke: settings.headingH4Stroke.value,
+  h5Stroke: settings.headingH5Stroke.value,
+  h6Stroke: settings.headingH6Stroke.value,
+  h1StrokeWidth: settings.headingH1StrokeWidth.value,
+  h2StrokeWidth: settings.headingH2StrokeWidth.value,
+  h3StrokeWidth: settings.headingH3StrokeWidth.value,
+  h4StrokeWidth: settings.headingH4StrokeWidth.value,
+  h5StrokeWidth: settings.headingH5StrokeWidth.value,
+  h6StrokeWidth: settings.headingH6StrokeWidth.value,
+}))
+
+
+
+const { currentPage } = useMarkdown(source)
+
+
+
+const lineCount = ref(0)
+const wordCount = ref(0)
+let statsDebounceTimer: ReturnType<typeof setTimeout> | null = null
+
+function computeStats(content: string): void {
+  lineCount.value = content.split(/\r?\n/).length
+  const text = content.trim()
+  wordCount.value = text ? text.split(/\s+/).length : 0
+}
+
+
+watch(source, (val) => {
+  if (statsDebounceTimer) clearTimeout(statsDebounceTimer)
+  statsDebounceTimer = setTimeout(() => computeStats(val), 300)
+}, { immediate: true })
+
+
+
+function onDragStart(event: MouseEvent): void {
+  event.preventDefault()
+  dragging.value = true
+  const onMouseMove = (e: MouseEvent): void => {
+    const pct = (e.clientX / window.innerWidth) * 100
+    
+    const maxLeft = Math.min(60, 100 - rightSplit.value - 18)
+    split.value = Math.max(16, Math.min(maxLeft, Math.round(pct)))
+  }
+  const onMouseUp = (): void => {
+    dragging.value = false
+    window.removeEventListener('mousemove', onMouseMove)
+    window.removeEventListener('mouseup', onMouseUp)
+  }
+  window.addEventListener('mousemove', onMouseMove)
+  window.addEventListener('mouseup', onMouseUp)
+}
+
+
+
+function onDragStartRight(event: MouseEvent): void {
+  event.preventDefault()
+  draggingRight.value = true
+  const onMouseMove = (e: MouseEvent): void => {
+    const rightEdgePct = ((window.innerWidth - e.clientX) / window.innerWidth) * 100
+    
+    const maxRight = Math.min(40, 100 - split.value - 18)
+    rightSplit.value = Math.max(16, Math.min(maxRight, Math.round(rightEdgePct)))
+  }
+  const onMouseUp = (): void => {
+    draggingRight.value = false
+    window.removeEventListener('mousemove', onMouseMove)
+    window.removeEventListener('mouseup', onMouseUp)
+  }
+  window.addEventListener('mousemove', onMouseMove)
+  window.addEventListener('mouseup', onMouseUp)
+}
+
+
+
+
+function collectSettings(): AppSettings {
+  return {
+    cardTheme: cardTheme.value,
+    bodyFontMode: bodyFontMode.value,
+    bodyFontSize: bodyFontSize.value,
+    bodyFontWeight: bodyFontWeight.value,
+    highlightStyle: highlightStyle.value,
+    highlightColor: highlightColor.value,
+    footerEnabled: footerEnabled.value,
+    split: split.value,
+    rightSplit: rightSplit.value,
+    previewScale: previewScale.value,
+    gradientConfig: { ...gradientConfig.value },
+    bodyTextColor: bodyTextColor.value,
+  }
+}
+
+
+function applySettings(s: AppSettings): void {
+  cardTheme.value = s.cardTheme
+  bodyFontMode.value = (s.bodyFontMode as BodyFontMode) || 'wenkai'
+  bodyFontSize.value = s.bodyFontSize
+  bodyFontWeight.value = s.bodyFontWeight ?? 400
+  highlightStyle.value = s.highlightStyle as HighlightStyle
+  highlightColor.value = s.highlightColor ?? null
+  footerEnabled.value = s.footerEnabled
+  split.value = s.split
+  rightSplit.value = s.rightSplit ?? 22
+  previewScale.value = s.previewScale ?? 0.70
+  if (s.gradientConfig) {
+    gradientConfig.value = { ...s.gradientConfig }
+  }
+  if (s.bodyTextColor !== undefined) {
+    bodyTextColor.value = s.bodyTextColor ?? null
+  }
+}
+
+
+watch(
+  [
+    cardTheme, bodyFontMode, bodyFontSize, bodyFontWeight,
+    highlightStyle, highlightColor, footerEnabled, split, rightSplit, previewScale, gradientConfig, bodyTextColor,
+  ],
+  () => saveSettings(collectSettings()),
+  { deep: false },
+)
+
+
+
+interface MarkdownEditorAPI {
+  insertAtCursor: (text: string) => void
+  wrapSelectionOrInsert: (prefix: string, suffix: string, placeholder: string) => void
+  focus: () => void
+  undo: () => void
+  redo: () => void
+  setValue: (text: string) => void
+  getEditorView: () => EditorView | null
+  setSearchHighlights: (config: { matches: { from: number; to: number }[]; activeIndex: number } | null) => void
+  clearSearchHighlights: () => void
+  scrollToSearchMatch: (from: number, to: number) => void
+}
+
+const editorRef = ref<MarkdownEditorAPI | null>(null)
+
+
+const mobileLayoutRef = ref<{
+  editorRef: MarkdownEditorAPI | null
+  cardPreviewRef: unknown
+} | null>(null)
+
+
+const activeEditor = computed<MarkdownEditorAPI | null>(() =>
+  isDesktopPlatform ? editorRef.value : (mobileLayoutRef.value?.editorRef ?? null),
+)
+
+
+let isUndoRedoing = false
+
+function onSourceUpdate(value: string, external = false): void {
+  
+  
+  if (store.activeId && !isUndoRedoing && !external) {
+    const doc = store.activeDocument
+    if (doc && doc.content !== value) {
+      store.pushUndo(store.activeId, doc.content)
+    }
+  }
+  source.value = value
+}
+
+function onEditorReady(_view: EditorView): void {}
+
+
+
+function onToolbarInsert(item: ToolbarItem): void {
+  if (item.wrap) {
+    activeEditor.value?.wrapSelectionOrInsert(item.wrap.prefix, item.wrap.suffix, item.wrap.placeholder)
+  } else {
+    activeEditor.value?.insertAtCursor(item.template)
+  }
+  activeEditor.value?.focus()
+}
+
+function onToolbarCommand(action: 'undo' | 'redo'): void {
+  if (!store.activeId) return
+
+  isUndoRedoing = true
+  try {
+    if (action === 'undo') {
+      
+      const restored = store.undo(store.activeId)
+      if (restored !== null) {
+        activeEditor.value?.setValue(restored)
+      } else {
+        
+        activeEditor.value?.undo()
+      }
+    } else if (action === 'redo') {
+      const restored = store.redo(store.activeId)
+      if (restored !== null) {
+        activeEditor.value?.setValue(restored)
+      } else {
+        activeEditor.value?.redo()
+      }
+    }
+  } finally {
+    isUndoRedoing = false
+  }
+  activeEditor.value?.focus()
+}
+
+
+
+interface CardPreviewAPI {
+  getActiveCanvas: () => HTMLCanvasElement | null
+  getAllCanvases: () => HTMLCanvasElement[]
+  getPageCount: () => number
+  forceRender: () => void
+}
+
+const cardPreviewRef = ref<CardPreviewAPI | null>(null)
+
+const { isExporting, progress, exportBatchPNG, exportBatchJPG, exportMultiPDF } =
+  useExport()
+
+async function handleBatchExportPNG(): Promise<void> {
+  const canvases = cardPreviewRef.value?.getAllCanvases()
+  if (!canvases || canvases.length === 0) return
+  try { await exportBatchPNG(canvases) } catch (e) { console.error('Batch PNG export failed:', e) }
+}
+
+async function handleBatchExportJPG(): Promise<void> {
+  const canvases = cardPreviewRef.value?.getAllCanvases()
+  if (!canvases || canvases.length === 0) return
+  try { await exportBatchJPG(canvases) } catch (e) { console.error('Batch JPG export failed:', e) }
+}
+
+async function handleExportPDF(): Promise<void> {
+  const canvases = cardPreviewRef.value?.getAllCanvases()
+  if (!canvases || canvases.length === 0) return
+  try {
+    await exportMultiPDF(canvases, { w: 720, h: 960 })
+  } catch (e) {
+    console.error('PDF export failed:', e)
+  }
+}
+
+
+
+const showSearchDialog = ref(false)
+const searchDialogRef = ref<{ updateResults: (activeIndex: number, total: number) => void; focus: () => void } | null>(null)
+
+const search = useSearch()
+
+
+function syncSearchHighlights(): void {
+  const view = activeEditor.value?.getEditorView?.()
+  if (!view) return
+
+  if (search.matches.value.length === 0) {
+    activeEditor.value?.clearSearchHighlights?.()
+    return
+  }
+
+  activeEditor.value?.setSearchHighlights?.({
+    matches: search.matches.value.map((m: SearchMatch) => ({ from: m.from, to: m.to })),
+    activeIndex: search.activeIndex.value,
+  })
+}
+
+
+function scrollToActiveMatch(): void {
+  const match = search.matches.value[search.activeIndex.value]
+  if (!match) return
+  activeEditor.value?.scrollToSearchMatch?.(match.from, match.to)
+}
+
+function onSearch(
+  query: string,
+  opts: { contentOnly: boolean; caseSensitive: boolean },
+): void {
+  search.search(query, source.value, opts)
+  syncSearchHighlights()
+  scrollToActiveMatch()
+  
+  searchDialogRef.value?.updateResults(
+    search.activeIndex.value,
+    search.total.value,
+  )
+}
+
+function onSearchNext(): void {
+  search.next()
+  syncSearchHighlights()
+  scrollToActiveMatch()
+  searchDialogRef.value?.updateResults(
+    search.activeIndex.value,
+    search.total.value,
+  )
+}
+
+function onSearchPrev(): void {
+  search.prev()
+  syncSearchHighlights()
+  scrollToActiveMatch()
+  searchDialogRef.value?.updateResults(
+    search.activeIndex.value,
+    search.total.value,
+  )
+}
+
+function onSearchClose(): void {
+  showSearchDialog.value = false
+  search.clear()
+  activeEditor.value?.clearSearchHighlights?.()
+}
+
+
+
+function onKeydown(e: KeyboardEvent): void {
+  
+  if ((e.ctrlKey || e.metaKey) && e.key === 't') {
+    e.preventDefault()
+    store.addDocument()
+    return
+  }
+  
+  if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+    e.preventDefault()
+    showSearchDialog.value = true
+    return
+  }
+}
+
+window.addEventListener('keydown', onKeydown)
+
+
+
+onBeforeUnmount(() => {
+  dragging.value = false
+  draggingRight.value = false
+  if (statsDebounceTimer) clearTimeout(statsDebounceTimer)
+  window.removeEventListener('keydown', onKeydown)
+  windowControlCleanups.forEach((fn) => fn())
+})
+</script>
+
+<style scoped>
+
+
+.win-btn {
+  @apply relative inline-flex items-center justify-center border-none bg-transparent cursor-pointer shrink-0;
+  height: 44px;
+  width: 40px;
+  color: oklch(var(--bc) / 0.55);
+  transition: background-color 0.12s ease, color 0.12s ease;
+  -webkit-app-region: no-drag;
+}
+
+.win-btn:hover {
+  background-color: oklch(var(--bc) / 0.08);
+  color: oklch(var(--bc) / 0.85);
+}
+
+.win-btn:active {
+  background-color: oklch(var(--bc) / 0.12);
+}
+
+.win-btn:focus-visible {
+  outline: 2px solid oklch(0.55 0.22 252);
+  outline-offset: -2px;
+}
+
+
+
+.win-btn-close:hover {
+  background-color: #e81123;
+  color: #fff;
+}
+
+.win-btn-close:active {
+  background-color: #bf0f1b;
+  color: #fff;
+}
+
+
+
+.drag-bar {
+  position: relative;
+}
+
+.drag-bar::before,
+.drag-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+}
+
+.drag-bar::before {
+  right: 100%;
+}
+
+.drag-bar::after {
+  left: 100%;
+}
+</style>
