@@ -464,6 +464,18 @@ defineExpose({
   outline: none;
 }
 
+/* 暗色模式下行号列跟编辑器同色，不要留白 */
+html[data-theme='dark'] .markdown-editor :deep(.cm-gutters),
+html[data-theme='dark'] .markdown-editor :deep(.cm-lineNumbers) {
+  background-color: #21252b !important;
+  color: #7d8794 !important;
+  border-right: 1px solid #2c313a;
+}
+html[data-theme='dark'] .markdown-editor :deep(.cm-activeLineGutter) {
+  background-color: #2c313a !important;
+  color: #d7dae0 !important;
+}
+
 
 
 .markdown-editor :deep(.cm-mark) {
