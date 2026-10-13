@@ -6,11 +6,11 @@
       @click="open = !open"
       :aria-expanded="open"
     >
-      <span class="text-[0.6875rem] font-semibold uppercase tracking-wider text-base-content/50">
+      <span class="text-xs font-bold uppercase tracking-wider text-base-content/70">
         {{ title }}
       </span>
       <svg
-        class="w-3.5 h-3.5 text-base-content/40 transition-transform duration-200"
+        class="w-3.5 h-3.5 text-base-content/55 transition-transform duration-200"
         :class="open ? 'rotate-180' : ''"
         viewBox="0 0 12 12" fill="none"
       >
