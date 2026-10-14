@@ -95,7 +95,6 @@ describe('CSS variable atomic reset on theme switch', () => {
         bodySize: 30, lineHeight: 1.8, highlightStyle: 'underline',
         heading: { h1Color: '#ff0000', h2Color: '#00ff00' },
       },
-      category: 'light',
     }
 
     const themeB: ThemeDefinition = {
@@ -131,7 +130,6 @@ describe('CSS variable atomic reset on theme switch', () => {
         bodySize: 30, lineHeight: 1.8, highlightStyle: 'underline',
         heading: { h1Color: '#ff0000' },
       },
-      category: 'light',
     }
 
     const themeB: ThemeDefinition = {
@@ -164,7 +162,6 @@ describe('CSS variable atomic reset on theme switch', () => {
         quoteTreatment: 'code', highlightTreatment: 'swissRule',
         highlightUnderlineAlpha: 0, highlightMarkerAlpha: 0, highlightDashAlpha: 0 },
       editor: { bodySize: 28, lineHeight: 1.65, highlightStyle: 'border' },
-      category: 'professional',
       coverHeading: { h1Scale: 5.5, h1LineHeight: 1.05, centered: true },
     }
 
@@ -199,7 +196,6 @@ describe('CSS variable atomic reset on theme switch', () => {
         bodySize: 30, lineHeight: 1.8, highlightStyle: 'underline',
         heading: { h1Scale: 4.5, h2Scale: 2.0 },
       },
-      category: 'light',
     }
 
     const themeB: ThemeDefinition = {

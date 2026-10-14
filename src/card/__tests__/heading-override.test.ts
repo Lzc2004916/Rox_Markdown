@@ -46,7 +46,6 @@ function makeTheme(overrides?: Partial<ThemeDefinition['editor']> & {
       highlightStyle: 'underline',
       ...overrides,
     },
-    category: 'light',
     coverHeading: overrides?.coverHeading,
   }
 }

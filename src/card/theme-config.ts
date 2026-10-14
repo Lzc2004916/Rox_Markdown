@@ -66,7 +66,7 @@ export interface ThemeConfigJSON {
   surface: Record<string, number | string>
   components: Record<string, number | string>
   editor: Record<string, number | string>
-  category?: string
+  colorTag?: string
   decor?: {
     kind: string
     opacity: number
@@ -295,8 +295,7 @@ export function validateThemeConfig(raw: unknown): ValidationResult {
       subheadingStyle: ((obj.editor as Record<string, unknown>).subheadingStyle as ThemeDefinition['editor']['subheadingStyle']) ?? 'large',
       highlightStyle: ((obj.editor as Record<string, unknown>).highlightStyle as ThemeDefinition['editor']['highlightStyle']) ?? 'underline',
     },
-    category: obj.category as ThemeDefinition['category'],
-    decor: obj.decor as ThemeDefinition['decor'],
+    colorTag: obj.colorTag as ThemeDefinition['colorTag'],
   }
 
   return { valid: true, errors: [], theme }

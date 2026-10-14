@@ -277,7 +277,7 @@ export interface ThemeDefinition {
   components: ThemeComponents
   editor: ThemeEditor
   
-  category?: 'light' | 'dark' | 'artistic' | 'professional'
+  colorTag?: 'red' | 'orange' | 'yellow' | 'brown' | 'green' | 'blue' | 'pink' | 'neutral'
   
   decor?: ThemeDecor
   

@@ -26,7 +26,11 @@
           : 'border-base-content/10 text-base-content/60 hover:border-base-content/25 hover:text-base-content'"
         @click="activeCategory = cat.key"
       >
-        {{ cat.label }}
+        {{ cat.dot ? '' : '' }}<span
+          v-if="cat.dot"
+          class="inline-block w-2 h-2 rounded-full mr-1 align-middle"
+          :style="{ background: cat.dot }"
+        ></span>{{ cat.label }}
       </button>
     </div>
 
@@ -144,51 +148,30 @@ const emit = defineEmits<{
 
 
 
-type CategoryKey = 'all' | 'minimal' | 'chinese' | 'japanese' | 'dark' | 'warm' | 'pro'
-interface CategoryTab { key: CategoryKey; label: string }
+type CategoryKey = 'all' | 'red' | 'orange' | 'yellow' | 'brown' | 'green' | 'blue' | 'pink' | 'neutral'
+interface CategoryTab { key: CategoryKey; label: string; dot?: string }
 
 const activeCategory = ref<CategoryKey>('all')
 const keyword = ref('')
 
 const allCategories: CategoryTab[] = [
   { key: 'all', label: '全部' },
-  { key: 'minimal', label: '简约' },
-  { key: 'chinese', label: '国风' },
-  { key: 'japanese', label: '日系' },
-  { key: 'dark', label: '暗色' },
-  { key: 'warm', label: '暖色复古' },
-  { key: 'pro', label: '现代专业' },
+  { key: 'red', label: '红', dot: '#e74c3c' },
+  { key: 'orange', label: '橙', dot: '#e67e22' },
+  { key: 'yellow', label: '黄', dot: '#f1c40f' },
+  { key: 'brown', label: '棕', dot: '#8b5a2b' },
+  { key: 'green', label: '绿', dot: '#27ae60' },
+  { key: 'blue', label: '蓝紫', dot: '#3b82f6' },
+  { key: 'pink', label: '粉', dot: '#e91e8c' },
+  { key: 'neutral', label: '黑白灰', dot: '#95a5a6' },
 ]
 
-
-const CATEGORY_MAP: Record<string, CategoryKey> = {
-  'minimal-white': 'minimal', 'mist-gray': 'minimal', 'soft-minimal': 'minimal',
-  'dai-blue': 'chinese', 'moon-white': 'chinese',
-  'ink-wash': 'chinese', 'chinese-trad': 'chinese',
-  'sakura': 'japanese', 'sakura-blizzard': 'japanese',
-  'matcha-zen': 'japanese', 'japanese-mag': 'japanese',
-  'deep-obsidian': 'dark', 'dark-mode': 'dark', 'dark-tech': 'dark',
-  'ink-black': 'dark', 'starry': 'dark', 'midnight-ink': 'dark', 'cyber-neon': 'dark',
-  'caramel': 'warm', 'kraft-paper': 'warm', 'vintage-typewriter': 'warm',
-  'creamy-butter': 'warm', 'vintage-mustard': 'warm', 'canyon-sunset': 'warm',
-  'dark-amber': 'warm',
-  'swiss-modern': 'pro', 'business-brief': 'pro', 'bytestyle': 'pro',
-  'alibaba-orange': 'pro', 'instagram': 'pro', 'pop-art': 'pro',
-}
-
-function categorize(id: string): CategoryKey {
-  return CATEGORY_MAP[id] ?? 'all'
-}
-
-const categories = computed<CategoryTab[]>(() => {
-  const available = new Set(props.themes.map((t) => categorize(t.id)))
-  return allCategories.filter((c) => c.key === 'all' || available.has(c.key))
-})
+const categories = computed<CategoryTab[]>(() => allCategories)
 
 const filteredThemes = computed<ThemeDefinition[]>(() => {
   let list = props.themes
   if (activeCategory.value !== 'all') {
-    list = list.filter((t) => categorize(t.id) === activeCategory.value)
+    list = list.filter((t) => t.colorTag === activeCategory.value)
   }
   const kw = keyword.value.trim().toLowerCase()
   if (kw) {
