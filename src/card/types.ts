@@ -542,7 +542,8 @@ export const BODY_FONT_FAMILY =
 
 export type BodyFontMode =
   | 'wenkai' | 'simsun' | 'fangsong' | 'kaiti' | 'notoserif'
-  | 'yahei' | 'simhei' | 'notosans' | 'inter' | 'roboto'
+  | 'yahei' | 'simhei' | 'notosans' | 'inter' | 'roboto' | 'manrope' | 'dmsans'
+  | 'spacegrotesk' | 'playfair'
   | 'jetbrains' | 'fira' | 'consolas'
   | 'youyuan'
   | 'times' | 'garamond'
@@ -559,6 +560,11 @@ export const BODY_FONT_MODES: Record<BodyFontMode, { family: string; label: stri
   notosans:  { family: '"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif',   label: '思源黑体',     category: '黑体无衬线' },
   inter:     { family: 'Inter,"Helvetica Neue",Arial,sans-serif',                     label: 'Inter',        category: '黑体无衬线' },
   roboto:    { family: 'Roboto,"Segoe UI",Arial,sans-serif',                          label: 'Roboto',       category: '黑体无衬线' },
+  manrope:   { family: 'Manrope,Inter,"Helvetica Neue",sans-serif',                    label: 'Manrope',      category: '黑体无衬线' },
+  dmsans:    { family: '"DM Sans",Inter,"Helvetica Neue",sans-serif',                  label: 'DM Sans',      category: '黑体无衬线' },
+
+  spacegrotesk: { family: '"Space Grotesk",Inter,sans-serif',                         label: 'Space Grotesk', category: '现代装饰' },
+  playfair:  { family: '"Playfair Display",Georgia,serif',                             label: 'Playfair',     category: '现代装饰' },
 
   jetbrains: { family: '"JetBrains Mono",Consolas,Menlo,monospace',                    label: 'JetBrains Mono', category: '等宽' },
   fira:      { family: '"Fira Code",Consolas,Menlo,monospace',                        label: 'Fira Code',    category: '等宽' },
