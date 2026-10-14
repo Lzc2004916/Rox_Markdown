@@ -13,7 +13,7 @@
 import { describe, it, expect, beforeAll } from 'vitest'
 import { layoutPages } from '../layout'
 import { parseInlineMarkdown, wrapInlineTokensByWidth } from '../measure'
-import { getTheme } from '../theme-registry'
+import { getTheme } from '../themes'
 import type { BodyFontMode, SubheadingStyle, TypographySettings } from '../types'
 import type { InlineLine, TextBlock } from '../types'
 

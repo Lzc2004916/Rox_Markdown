@@ -84,32 +84,11 @@ export {
 export { hexToRgba, hexToRgb, mixHexColors, gradientAngleToPoints } from './color-utils'
 
 
-export { extractTokens, applyTokensToElement, tokensToJSON, tokensFromJSON, TOKEN_CSS_VAR_MAP } from './design-tokens'
+export { extractTokens, applyTokensToElement } from './design-tokens'
 export type { CardDesignTokens } from './design-tokens'
 
 
 export { THEMES, DEFAULT_THEME_ID, getTheme } from './themes'
-
-
-export {
-  registerTheme,
-  unregisterTheme,
-  getTheme as getThemeFromRegistry,
-  getAllThemes,
-  hasTheme,
-  getThemeCount,
-  onRegistryChange,
-  resetRegistry,
-} from './theme-registry'
-
-
-export {
-  validateThemeConfig,
-  loadThemeFromJSON,
-  loadThemesFromJSON,
-  themeToJSON,
-} from './theme-config'
-export type { ValidationResult, ThemeConfigJSON } from './theme-config'
 
 
 export { renderAllPages, renderAllPagesAsync, canvasToPreviewUrl, canvasToExportUrl } from './engine'

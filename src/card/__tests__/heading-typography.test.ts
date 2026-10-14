@@ -1,4 +1,4 @@
-
+﻿
 
 
 import { describe, it, expect } from 'vitest'
@@ -18,7 +18,7 @@ import {
   SUBHEADING_TEXT_WEIGHT,
 } from '../types'
 import type { ThemeDefinition } from '../types'
-import { getTheme } from '../theme-registry'
+import { getTheme } from '../themes'
 
 
 
@@ -311,3 +311,4 @@ describe('Real theme integration', () => {
     }
   })
 })
+

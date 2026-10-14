@@ -1,4 +1,4 @@
-
+﻿
 
 
 import { describe, it, expect } from 'vitest'
@@ -10,7 +10,7 @@ import {
   HEADING_SIZE_RANGES,
 } from '../types'
 import type { HeadingStyleOverrides, ThemeDefinition } from '../types'
-import { getTheme } from '../theme-registry'
+import { getTheme } from '../themes'
 
 
 
@@ -232,3 +232,4 @@ describe('Real theme + override integration', () => {
     expect(resolveHeadingSize(1, theme.editor.bodySize, theme, overrides)).toBe(42)
   })
 })
+
