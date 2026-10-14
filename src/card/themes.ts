@@ -3256,6 +3256,48 @@ export const THEMES: ThemeDefinition[] = [
     contentInset: { top: 170, bottom: 180 },
     gradient: { enabled: false, color1: '#fff5ee', color2: '#fff0e8' },
   },
+  {
+    id: 'nebula',
+    name: '星云',
+    mood: '紫蓝渐变 macOS 风格',
+    preset: 'Nebula',
+    description: '紫蓝柔和渐变，Mac 风格红绿灯圆点，中间白色内容区',
+    tags: ['渐变', 'macOS', '紫蓝'],
+    mode: 'modern',
+    palette: {
+      page: '#f5f0fa', pageAlt: '#e8e0f5', text: '#1a1a1a', muted: '#888',
+      accent: '#9b7fd4', accentSoft: 'rgba(155,127,212,0.12)',
+      border: 'rgba(155,127,212,0.2)', shadow: 'rgba(155,127,212,0.15)', glow: 'transparent',
+    },
+    surface: {
+      grainAlpha: 0, vignetteAlpha: 0, washStrength: 0,
+      innerFrameAlpha: 0, innerFrameInset: 0, titleAccentMix: 0,
+      footerLineAlpha: 0, footerTextAlpha: 0,
+      previewShadow: '0 16px 40px rgba(155,127,212,0.2)',
+    },
+    components: {
+      quoteFillAlpha: 0.08, quoteStrokeAlpha: 0.15, quoteBarAlpha: 0.6,
+      quoteRadius: 6, quoteTreatment: 'paper',
+      highlightTreatment: 'softUnderline', highlightUnderlineAlpha: 0.6,
+      highlightMarkerAlpha: 0.2, highlightDashAlpha: 0.8,
+    },
+    editor: {
+      bodySize: 29, lineHeight: 1.8, bodyFontMode: 'simsun', bodyFontWeight: 400,
+      subheadingStyle: 'large', highlightStyle: 'underline',
+      heading: {
+        h1Scale: 2.4, h2Scale: 1.5, h3Scale: 1.25,
+        h1LineHeight: 1.25, h2LineHeight: 1.35, h3LineHeight: 1.45,
+        h1FontWeight: 700, h2FontWeight: 600, h3FontWeight: 600,
+        h1MarginTop: 22, h1MarginBottom: 10,
+      },
+      list: { bulletChar: '•', bulletSizeRatio: 0.8, indentPerLevel: 26, itemGap: 7 },
+    },
+    colorTag: 'bluepurple',
+    decor: { kind: 'none', opacity: 0 },
+    outerFrame: { kind: 'none' },
+    contentInset: { top: 100, bottom: 90 },
+    gradient: { enabled: false, color1: '#f5f0fa', color2: '#e8e0f5' },
+  },
 ]
 
 

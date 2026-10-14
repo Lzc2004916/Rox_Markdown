@@ -1509,6 +1509,76 @@ function drawPinkChatroomDecor(ctx: CanvasRenderingContext2D): void {
   ctx.lineTo(55, iy + 35)
   ctx.closePath()
   ctx.fill()
+
+  ctx.restore()
+}
+
+function drawNebulaDecor(ctx: CanvasRenderingContext2D): void {
+  ctx.save()
+
+  // 紫蓝渐变背景
+  const grad = ctx.createLinearGradient(0, 0, PAGE_WIDTH, PAGE_HEIGHT)
+  grad.addColorStop(0, '#d9c8f0')
+  grad.addColorStop(0.5, '#e8e0f5')
+  grad.addColorStop(1, '#c8e8f0')
+  ctx.fillStyle = grad
+  ctx.fillRect(0, 0, PAGE_WIDTH, PAGE_HEIGHT)
+
+  // 中间白色内容区
+  ctx.fillStyle = 'rgba(255,255,255,0.85)'
+  ctx.fillRect(30, 110, PAGE_WIDTH - 60, PAGE_HEIGHT - 220)
+
+  // 左上角弧线装饰
+  ctx.strokeStyle = 'rgba(180,160,220,0.4)'
+  ctx.lineWidth = 1.5
+  for (let i = 0; i < 3; i++) {
+    ctx.beginPath()
+    ctx.arc(60, 50, 30 + i * 18, Math.PI * 0.5, Math.PI * 1.5)
+    ctx.stroke()
+  }
+
+  // 红黄绿三个圆点
+  const dotY = 55
+  const dotR = 7
+  const dotColors = ['#ff5f57', '#febc2e', '#28c840']
+  for (let i = 0; i < 3; i++) {
+    ctx.beginPath()
+    ctx.arc(60 + i * 22, dotY, dotR, 0, Math.PI * 2)
+    ctx.fillStyle = dotColors[i]
+    ctx.fill()
+  }
+
+  // 右上角 NEBULA 文字
+  ctx.fillStyle = '#666'
+  ctx.font = '600 16px sans-serif'
+  ctx.textAlign = 'right'
+  ctx.textBaseline = 'middle'
+  ctx.fillText('NEBULA', PAGE_WIDTH - 40, 55)
+
+  // 顶部分隔线
+  ctx.strokeStyle = 'rgba(180,160,220,0.3)'
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.moveTo(40, 95)
+  ctx.lineTo(PAGE_WIDTH - 40, 95)
+  ctx.stroke()
+
+  // 底部分隔线
+  const footY = PAGE_HEIGHT - 100
+  ctx.beginPath()
+  ctx.moveTo(40, footY)
+  ctx.lineTo(PAGE_WIDTH - 40, footY)
+  ctx.stroke()
+
+  // 底部文字
+  ctx.fillStyle = '#888'
+  ctx.font = '14px sans-serif'
+  ctx.textAlign = 'left'
+  ctx.fillText('Rox Markdown', 40, footY + 30)
+  ctx.textAlign = 'right'
+  ctx.fillText('2026', PAGE_WIDTH - 40, footY + 30)
+
+  ctx.restore()
   // 头像
   ctx.fillStyle = '#87ceeb'
   ctx.fillRect(10, iy - 5, 50, 60)
@@ -1813,6 +1883,10 @@ export function renderCard(opts: RenderOptions): HTMLCanvasElement {
 
   if (theme.id === 'pink-chatroom') {
     drawPinkChatroomDecor(ctx)
+  }
+
+  if (theme.id === 'nebula') {
+    drawNebulaDecor(ctx)
   }
   
   if (theme.id === 'starry') {
