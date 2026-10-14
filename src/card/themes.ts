@@ -3167,7 +3167,7 @@ export const THEMES: ThemeDefinition[] = [
     },
     colorTag: 'brown',
     decor: { kind: 'none', opacity: 0 },
-    outerFrame: { kind: 'thick', color: '#5c3a1a', padding: 22, radius: 12, opacity: 1 },
+    outerFrame: { kind: 'none' },
     gradient: { enabled: false, color1: '#e8d5b8', color2: '#d8c09a' },
   },
 

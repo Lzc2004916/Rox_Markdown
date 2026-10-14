@@ -1388,24 +1388,25 @@ function drawCaramelDecor(ctx: CanvasRenderingContext2D): void {
   // 四角和边缘深棕色水彩晕染
   function washCorner(cx: number, cy: number, r: number, alpha: number): void {
     const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r)
-    g.addColorStop(0, `rgba(139,90,43,${alpha})`)
-    g.addColorStop(0.5, `rgba(160,110,60,${alpha * 0.5})`)
-    g.addColorStop(1, 'rgba(160,110,60,0)')
+    g.addColorStop(0, `rgba(120,70,30,${alpha})`)
+    g.addColorStop(0.4, `rgba(150,95,50,${alpha * 0.6})`)
+    g.addColorStop(0.75, `rgba(170,120,70,${alpha * 0.25})`)
+    g.addColorStop(1, 'rgba(170,120,70,0)')
     ctx.fillStyle = g
     ctx.fillRect(0, 0, PAGE_WIDTH, PAGE_HEIGHT)
   }
 
-  washCorner(0, 0, 500, 0.55)                    // 左上
-  washCorner(PAGE_WIDTH, 0, 450, 0.4)            // 右上
-  washCorner(0, PAGE_HEIGHT, 550, 0.5)          // 左下
-  washCorner(PAGE_WIDTH, PAGE_HEIGHT, 500, 0.5) // 右下
+  washCorner(-50, -50, 600, 0.7)                   // 左上
+  washCorner(PAGE_WIDTH + 50, -30, 550, 0.55)      // 右上
+  washCorner(-30, PAGE_HEIGHT + 30, 650, 0.65)     // 左下
+  washCorner(PAGE_WIDTH + 30, PAGE_HEIGHT + 50, 600, 0.65) // 右下
 
-  // 左侧边缘一条窄的深棕晕染
-  const left = ctx.createLinearGradient(0, 0, 120, 0)
-  left.addColorStop(0, 'rgba(139,90,43,0.35)')
-  left.addColorStop(1, 'rgba(139,90,43,0)')
+  // 左侧边缘一条深棕晕染
+  const left = ctx.createLinearGradient(0, 0, 150, 0)
+  left.addColorStop(0, 'rgba(120,70,30,0.45)')
+  left.addColorStop(1, 'rgba(120,70,30,0)')
   ctx.fillStyle = left
-  ctx.fillRect(0, 0, 120, PAGE_HEIGHT)
+  ctx.fillRect(0, 0, 150, PAGE_HEIGHT)
 
   ctx.restore()
 }
