@@ -20,23 +20,11 @@
               <svg class="w-2.5 h-2.5 opacity-50" viewBox="0 0 10 6"><path d="M0 0l5 6 5-6z" fill="currentColor"/></svg>
             </button>
           </template>
-          <div class="w-52 p-1.5">
-            <button class="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-base-200 text-xs transition-colors group" @click="emit('export-png')">
-              <svg class="w-4 h-4 text-base-content/50 group-hover:text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
-              <span class="flex-1 font-medium">批量导出 PNG</span>
-              <span class="text-[10px] text-base-content/40">透明背景</span>
-            </button>
-            <button class="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-base-200 text-xs transition-colors group" @click="emit('export-jpg')">
-              <svg class="w-4 h-4 text-base-content/50 group-hover:text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-              <span class="flex-1 font-medium">批量导出 JPG</span>
-              <span class="text-[10px] text-base-content/40">白底压缩</span>
-            </button>
+          <div class="w-40 p-1.5">
+            <button class="w-full text-left px-2 py-1.5 rounded hover:bg-base-200 text-xs" @click="emit('export-png')">批量导出 PNG</button>
+            <button class="w-full text-left px-2 py-1.5 rounded hover:bg-base-200 text-xs" @click="emit('export-jpg')">批量导出 JPG</button>
             <div class="my-1 border-t border-base-200"></div>
-            <button class="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-base-200 text-xs transition-colors group" @click="emit('export-pdf')">
-              <svg class="w-4 h-4 text-base-content/50 group-hover:text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-              <span class="flex-1 font-medium">PDF 文档</span>
-              <span class="text-[10px] text-base-content/40">多页合并</span>
-            </button>
+            <button class="w-full text-left px-2 py-1.5 rounded hover:bg-base-200 text-xs" @click="emit('export-pdf')">PDF 文档</button>
           </div>
         </Dropdown>
 
