@@ -12,19 +12,21 @@
           <span>{{ appTheme === 'dark' ? '亮色' : '暗色' }}</span>
         </button>
 
-        <div class="dropdown dropdown-hover">
-          <label tabindex="0" class="btn btn-sm btn-outline h-8 min-h-0 gap-1 px-2.5 text-xs font-medium">
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            导出
-            <svg class="w-2.5 h-2.5 opacity-50" viewBox="0 0 10 6"><path d="M0 0l5 6 5-6z" fill="currentColor"/></svg>
-          </label>
-          <ul tabindex="0" class="dropdown-content menu p-1.5 shadow bg-base-200 rounded-box w-40 z-50 text-sm">
-            <li><a @click="emit('export-png')">批量导出 PNG</a></li>
-            <li><a @click="emit('export-jpg')">批量导出 JPG</a></li>
-            <li class="menu-divider"></li>
-            <li><a @click="emit('export-pdf')">PDF 文档</a></li>
-          </ul>
-        </div>
+        <Dropdown class="w-auto">
+          <template #trigger>
+            <button class="btn btn-sm btn-outline h-8 min-h-0 gap-1 px-2.5 text-xs font-medium">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              导出
+              <svg class="w-2.5 h-2.5 opacity-50" viewBox="0 0 10 6"><path d="M0 0l5 6 5-6z" fill="currentColor"/></svg>
+            </button>
+          </template>
+          <div class="w-40 p-1.5 text-sm">
+            <button class="w-full text-left px-2 py-1.5 rounded hover:bg-base-200 text-xs" @click="emit('export-png')">批量导出 PNG</button>
+            <button class="w-full text-left px-2 py-1.5 rounded hover:bg-base-200 text-xs" @click="emit('export-jpg')">批量导出 JPG</button>
+            <div class="my-1 border-t border-base-200"></div>
+            <button class="w-full text-left px-2 py-1.5 rounded hover:bg-base-200 text-xs" @click="emit('export-pdf')">PDF 文档</button>
+          </div>
+        </Dropdown>
 
         <span v-if="isExporting" class="inline-flex items-center gap-1">
           <LoadingSpinner variant="progress" size="sm" :progress="progress" :show-progress-label="true" inline />
@@ -92,6 +94,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import ThemeSelector from '@/components/ThemeSelector.vue'
+import Dropdown from '@/components/Dropdown.vue'
 import FontPicker from '@/components/FontPicker.vue'
 import GradientPicker from '@/components/GradientPicker.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
