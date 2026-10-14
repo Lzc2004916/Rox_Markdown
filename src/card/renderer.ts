@@ -1555,7 +1555,7 @@ function drawOuterFrame(
     const w = f.width ?? 1.5
     const r = f.radius ?? 36
     traceCardShape(ctx, w / 2, w / 2, PAGE_WIDTH - w, PAGE_HEIGHT - w, cornerMode as never, r)
-    ctx.strokeStyle = f.color
+    ctx.strokeStyle = f.color ?? '#000'
     ctx.lineWidth = w
     ctx.stroke()
   } else if (f.kind === 'thick') {
@@ -1564,7 +1564,7 @@ function drawOuterFrame(
     const r = f.radius ?? 36
     
     traceCardShape(ctx, 0, 0, PAGE_WIDTH, PAGE_HEIGHT, cornerMode as never, r)
-    ctx.fillStyle = f.color
+    ctx.fillStyle = f.color ?? '#000'
     ctx.fill()
     
     traceCardShape(ctx, pad, pad, PAGE_WIDTH - pad * 2, PAGE_HEIGHT - pad * 2, cornerMode as never, Math.max(0, r - pad))
@@ -1574,7 +1574,7 @@ function drawOuterFrame(
     
     const len = f.cornerLength ?? 30
     const pad = 14
-    ctx.strokeStyle = f.color
+    ctx.strokeStyle = f.color ?? '#000'
     ctx.lineWidth = 2
     ctx.lineCap = 'round'
     
