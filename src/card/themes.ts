@@ -3292,7 +3292,7 @@ export const THEMES: ThemeDefinition[] = [
       },
       list: { bulletChar: '•', bulletSizeRatio: 0.8, indentPerLevel: 26, itemGap: 7 },
     },
-    colorTag: 'bluepurple',
+    colorTag: 'blue',
     decor: { kind: 'none', opacity: 0 },
     outerFrame: { kind: 'none' },
     contentInset: { top: 100, bottom: 90 },
