@@ -17,9 +17,13 @@
         <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </button>
-    <div v-show="open" class="px-4 pb-4 pt-1 flex flex-col gap-3">
-      <slot />
-    </div>
+    <Transition name="section-collapse">
+      <div v-show="open" class="overflow-hidden">
+        <div class="px-4 pb-4 pt-1 flex flex-col gap-3">
+          <slot />
+        </div>
+      </div>
+    </Transition>
   </section>
 </template>
 
@@ -29,3 +33,16 @@ import { ref } from 'vue'
 defineProps<{ title: string; defaultOpen?: boolean }>()
 const open = ref(true)
 </script>
+
+<style scoped>
+.section-collapse-enter-active,
+.section-collapse-leave-active {
+  transition: max-height 150ms cubic-bezier(0.4, 0, 0.2, 1), opacity 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  max-height: 1000px;
+}
+.section-collapse-enter-from,
+.section-collapse-leave-to {
+  max-height: 0;
+  opacity: 0;
+}
+</style>
