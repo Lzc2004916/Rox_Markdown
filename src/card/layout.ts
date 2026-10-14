@@ -492,31 +492,6 @@ function splitLongParagraph(raw: string, chunkSize: number): string[] {
   return chunks
 }
 
-function splitParagraphBySentence(text: string): string[] {
-  // 如果文本中包含任何内联格式化标记，拒绝按句子拆分，
-  // 以避免截断 **bold**、*italic*、==highlight== 或 ^underline^ 范围。
-  if (hasInlineMarkdownMarkers(text)) return [text]
-  if (text.includes('\n')) {
-    return text
-      .split('\n')
-      .map((item) => item.trim())
-      .filter(Boolean)
-  }
-  return text
-    .split(/(?<=[。！？!?；;])/)
-    .map((item) => item.trim())
-    .filter(Boolean)
-}
-
-function splitParagraphBlockBySentence(block: ParagraphBlock, sourceText: string) {
-  const sourceRaw = block.kind === 'body' ? sourceText.trim() : block.raw
-  return {
-    parts: splitParagraphBySentence(sourceRaw),
-    separator: sourceRaw.includes('\n') ? '\n' : '',
-    serialize: (raw: string) => serializeParagraphBlock(raw, block.kind, (block as any).headingLevel),
-  }
-}
-
 function splitInlineLines(
   lines: InlineLine[],
   count: number,
@@ -802,7 +777,6 @@ export function layoutPages(opts: LayoutOptions): LayoutResult {
         : (block as TextBlock).kind === 'body'
           ? getParagraphBlock(blockRaw)
           : (block as TextBlock)
-      const currentText = blockRaw
       const leadingGap = getGapBetweenBlocks(previousBlock, paraBlock, metrics, headingOverrides, theme, pageKind === 'cover')
       const { lines, height } = measureParagraphBlock(
         paraBlock,

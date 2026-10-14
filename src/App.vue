@@ -91,7 +91,19 @@
       >
         <div class="h-9 shrink-0 bg-base-200/70 px-4 border-b border-base-300/60 text-xs font-medium flex items-center justify-between">
           <span class="opacity-50">滚轮横滑翻页 · Ctrl+滚轮缩放</span>
-          <span class="opacity-40 tabular-nums">{{ Math.round(previewScale * 100) }}%</span>
+          <span class="flex items-center gap-2">
+            <button
+              class="btn btn-ghost btn-xs btn-circle"
+              title="排版异常时点此重排"
+              @click="onRelayout"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 1.44 4"/>
+                <path d="M21 3v6h-6"/>
+              </svg>
+            </button>
+            <span class="opacity-40 tabular-nums">{{ Math.round(previewScale * 100) }}%</span>
+          </span>
         </div>
         <div
           ref="previewContainerRef"
@@ -100,6 +112,7 @@
         >
           <CardPreview
             ref="cardPreviewRef"
+            :key="relayoutKey"
             v-model:current-page="currentPage"
             :source="source"
             :theme-id="cardTheme"
@@ -276,6 +289,7 @@ import { useExport } from '@/composables/useExport'
 import { useDocumentsStore } from '@/stores/documents'
 import { useDrafts, type AppSettings } from '@/composables/useDrafts'
 import { BODY_FONT_MODES, getTheme, type BodyFontMode } from '@/card'
+import { clearMeasureCaches } from '@/card/measure'
 import DraftRecoveryModal from '@/components/DraftRecoveryModal.vue'
 import type { GradientConfig } from '@/card'
 import type { TypographySettings, HighlightStyle, SubheadingStyle, HeadingStyleOverrides } from '@/card'
@@ -404,6 +418,15 @@ const gradientConfig = ref<GradientConfig>({
 })
 const previewScale = ref<number>(0.65)
 const previewContainerRef = ref<HTMLDivElement | null>(null)
+const relayoutKey = ref<number>(0)
+
+async function onRelayout() {
+  clearMeasureCaches()
+  if (document.fonts?.ready) {
+    try { await document.fonts.ready } catch { /* ignore */ }
+  }
+  relayoutKey.value++
+}
 
 
 const bodyTextColor = ref<string | null>(settings.bodyTextColor.value ?? null)
