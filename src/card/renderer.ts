@@ -1579,15 +1579,6 @@ function drawNebulaDecor(ctx: CanvasRenderingContext2D): void {
   ctx.fillText('2026', PAGE_WIDTH - 40, footY + 30)
 
   ctx.restore()
-  // 头像
-  ctx.fillStyle = '#87ceeb'
-  ctx.fillRect(10, iy - 5, 50, 60)
-  ctx.fillStyle = '#4a2c2a'
-  ctx.font = '10px sans-serif'
-  ctx.textAlign = 'center'
-  ctx.fillText('👤', 35, iy + 25)
-
-  ctx.restore()
 }
 
 function drawStarryDecor(ctx: CanvasRenderingContext2D): void {
