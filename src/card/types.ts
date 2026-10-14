@@ -353,7 +353,14 @@ export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6
 export interface TextBlock {
   kind: 'body' | 'quote' | 'subheading' | 'divider'
   raw: string
-  headingLevel?: HeadingLevel  
+  headingLevel?: HeadingLevel
+  /**
+   * 跨页行切分时由 layout 预切好的行（治本防丢字）。
+   * 仅当块文本是由"行片段"拼出来时挂载：渲染/测量直接使用这些行，
+   * 不再对 raw 二次折行，避免序列化 → 重折行不一致导致行尾字符丢失。
+   * 普通块（整段文本）不挂载，走常规折行。
+   */
+  prefixedLines?: InlineLine[]
 }
 
 export interface CodeBlock {

@@ -16,6 +16,7 @@ import type {
   ListBlock,
   ListStyleConfig,
   HeadingStyleOverrides,
+  InlineLine,
 } from './types'
 import {
   PAGE_WIDTH,
@@ -54,6 +55,7 @@ import {
   wrapInlineTokensByWidth,
   getParagraphVisualHeight,
   getQuoteBoxMetrics,
+  getParagraphMaxLines,
 } from './measure'
 import { drawCodeBlock, measureCodeBlock } from './code-renderer'
 import { drawTableBlock, measureTableBlock } from './table-renderer'
@@ -1085,8 +1087,11 @@ function drawInlineParagraph(
   headingOverrides?: HeadingStyleOverrides | null,
   bodyFontWeight?: number,
   highlightColor?: string | null,
-  
+
   bodyTextColor?: string | null,
+
+  /** 截断模式：只绘制前 maxLines 行（跨页保险丝用，正常调用不传）。 */
+  maxLines?: number,
 ): number {
   if (block.kind === 'divider') {
     const h = getDividerBlockHeight(fontSize)
@@ -1121,15 +1126,22 @@ function drawInlineParagraph(
   const wrapWeight = isSubheading && headingLevel
     ? resolveHeadingFontWeight(headingLevel, theme)
     : (bodyFontWeight ?? theme.editor.bodyFontWeight)
-  const lines = wrapInlineTokensByWidth(
-    parseInlineMarkdown(block.raw),
-    activeFontSize,
-    quoteWidth,
-    fontFamily,
-    wrapWeight,
-  )
-  
-  
+  // 跨页行切分产生的块自带预切行（prefixedLines）：直接使用，
+  // 不对 raw 二次折行 —— 与 layout 测量完全同一批行，杜绝丢字。
+  const prefixed = (block as any).prefixedLines as InlineLine[] | undefined
+  const wrappedLines = prefixed?.length
+    ? prefixed
+    : wrapInlineTokensByWidth(
+        parseInlineMarkdown(block.raw),
+        activeFontSize,
+        quoteWidth,
+        fontFamily,
+        wrapWeight,
+      )
+  // 截断模式（保险丝）：只绘制放得下的前 maxLines 行
+  const lines = maxLines !== undefined ? wrappedLines.slice(0, maxLines) : wrappedLines
+
+
   const textHeight = isSubheading
     ? (headingLevel === 1
         ? Math.max(lines.length * activeLineHeight, Math.round(activeFontSize * 1.2))
@@ -1876,7 +1888,20 @@ export function renderCard(opts: RenderOptions): HTMLCanvasElement {
         bodyFontWeight,
       )
       const blockBottom = paragraphY + height
-      if (blockBottom > metrics.bodyBottomY) return canvas
+      // 保险丝：layout 已保证块能放下，超高只可能来自测量/绘制的微小差异。
+      // 不再整块丢弃（旧逻辑 return canvas 会静默丢掉本块及之后所有内容、
+      // 连页脚都不画），而是截断到剩余空间放得下的行数；后续块必然也放不下，
+      // 画完截断块即结束本页正文绘制，页脚照常。
+      let maxLinesToDraw: number | undefined
+      if (blockBottom > metrics.bodyBottomY) {
+        maxLinesToDraw = getParagraphMaxLines(
+          block, metrics.bodyBottomY - paragraphY,
+          metrics.bodySize, metrics.bodyLineHeight,
+          theme, settings.subheadingStyle,
+          isCover, opts.headingOverrides,
+        )
+        if (maxLinesToDraw <= 0) break
+      }
 
       drawInlineParagraph(
         ctx, block, CONTENT_LEFT, paragraphY,
@@ -1887,8 +1912,10 @@ export function renderCard(opts: RenderOptions): HTMLCanvasElement {
         bodyFontWeight,
         highlightColor,
         bodyTextColor,
+        maxLinesToDraw,
       )
 
+      if (maxLinesToDraw !== undefined) break
 
       paragraphY = blockBottom
       previousBlock = block

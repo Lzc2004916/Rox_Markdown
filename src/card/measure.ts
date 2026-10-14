@@ -64,6 +64,17 @@ const _parseCache = new Map<string, InlineToken[]>()
 const _wrapCache = new Map<string, InlineLine[]>()
 
 
+/**
+ * 清空内联解析 / 折行缓存。
+ * 字体加载完成后必须调用：此前若用 fallback 字体宽度测量过，
+ * 错误的折行结果会永久留在缓存里，导致渲染端（字体已加载）行宽超限被裁。
+ */
+export function clearMeasureCaches(): void {
+  _wrapCache.clear()
+  _parseCache.clear()
+}
+
+
 export function splitTextForWrapping(text: string): string[] {
   return (
     text.match(/[A-Za-z0-9]+(?:[._'’&/+:-][A-Za-z0-9]+)*|[ \t]+|\n|./gu) ?? []
@@ -380,13 +391,18 @@ export function measureParagraphBlock(
     block.kind === 'subheading' && headingLevel
       ? resolveHeadingFontWeight(headingLevel, theme)
       : bodyWeight
-  const lines = wrapInlineTokensByWidth(
-    parseInlineMarkdown(block.raw),
-    activeFontSize,
-    quoteWidth,
-    fontFamily,
-    wrapWeight,
-  )
+  // 跨页行切分产生的块自带预切行（prefixedLines）：直接使用，
+  // 不对 raw 二次折行，从根上消除"序列化 → 重折行"不一致导致的丢字。
+  const prefixed = (block as any).prefixedLines as InlineLine[] | undefined
+  const lines = prefixed?.length
+    ? prefixed
+    : wrapInlineTokensByWidth(
+        parseInlineMarkdown(block.raw),
+        activeFontSize,
+        quoteWidth,
+        fontFamily,
+        wrapWeight,
+      )
   
   
   

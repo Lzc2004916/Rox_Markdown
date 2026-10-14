@@ -521,12 +521,16 @@ function splitInlineLines(
   lines: InlineLine[],
   count: number,
 ): {
+  takenLines: InlineLine[]
+  restLines: InlineLine[]
   takenRaw: (kind: ParagraphBlock['kind'], headingLevel?: number) => string
   restRaw: (kind: ParagraphBlock['kind'], headingLevel?: number) => string
 } {
   const taken = lines.slice(0, count)
   const rest = lines.slice(count)
   return {
+    takenLines: taken,
+    restLines: rest,
     takenRaw: (kind, headingLevel) =>
       serializeParagraphBlock(
         serializeInlineTokens(taken.flatMap((l) => l.tokens)),
@@ -540,6 +544,27 @@ function splitInlineLines(
         headingLevel,
       ),
   }
+}
+
+/**
+ * 由行片段构建文本块（跨页行切分的治本防丢字）。
+ * raw 保留序列化文本（保真/调试/后续再切分用），prefixedLines 挂载预切行：
+ * 渲染端与测量端直接使用这些行，不再对 raw 二次折行——
+ * 从根上避免"序列化 → 重折行"不一致导致行尾字符两页都不出现。
+ */
+function makeLineSplitBlock(
+  lines: InlineLine[],
+  kind: ParagraphBlock['kind'],
+  headingLevel?: number,
+): TextBlock {
+  const raw = serializeParagraphBlock(
+    serializeInlineTokens(lines.flatMap((l) => l.tokens)),
+    kind,
+    headingLevel,
+  )
+  const block = getParagraphBlock(raw) as TextBlock
+  block.prefixedLines = lines
+  return block
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -818,6 +843,8 @@ export function layoutPages(opts: LayoutOptions): LayoutResult {
         let fittedRaw = ''
         let fittedCount = 0
         let fittedHeight = 0
+        let fittedLines: InlineLine[] = []
+        let gapTakenLines: InlineLine[] | null = null
         let gapRestRaw = ''
         for (const sentence of sentenceSplit.parts) {
           const candidateRaw = fittedRaw
@@ -825,7 +852,7 @@ export function layoutPages(opts: LayoutOptions): LayoutResult {
             : sentence
           const candidate = sentenceSplit.serialize(candidateRaw)
           const candidateBlock = getParagraphBlock(candidate)
-          const { height: candidateHeight } = measureParagraphBlock(
+          const { lines: candidateLines, height: candidateHeight } = measureParagraphBlock(
             candidateBlock,
             metrics.bodySize,
             metrics.bodyLineHeight,
@@ -841,6 +868,7 @@ export function layoutPages(opts: LayoutOptions): LayoutResult {
             fittedRaw = candidateRaw
             fittedCount++
             fittedHeight = candidateHeight
+            fittedLines = candidateLines
             continue
           }
           
@@ -865,11 +893,17 @@ export function layoutPages(opts: LayoutOptions): LayoutResult {
               const gapTaken = gapFill.takenRaw(sentenceBlock.kind, (sentenceBlock as any).headingLevel)
               if (gapTaken) {
                 const combinedRaw = `${fittedRaw}${sentenceSplit.separator}${gapTaken}`
-                const combined = sentenceSplit.serialize(combinedRaw)
                 fittedRaw = combinedRaw
                 fittedCount++
+                gapTakenLines = gapFill.takenLines
+                // 整块文本此时含"行片段"，挂载预切行后测高
+                //（高度直接由行数算出，不再二次折行）
+                const combinedBlock = getParagraphBlock(
+                  sentenceSplit.serialize(combinedRaw),
+                ) as TextBlock
+                combinedBlock.prefixedLines = [...fittedLines, ...gapTakenLines]
                 fittedHeight = (measureParagraphBlock(
-                  getParagraphBlock(combined), metrics.bodySize, metrics.bodyLineHeight,
+                  combinedBlock, metrics.bodySize, metrics.bodyLineHeight,
                   metrics.bodyWidth, theme, settings.subheadingStyle,
                   bodyFontFamily, false, headingOverrides,
                   bodyFontWeight,
@@ -883,8 +917,14 @@ export function layoutPages(opts: LayoutOptions): LayoutResult {
 
         if (fittedRaw) {
           const fittedText = sentenceSplit.serialize(fittedRaw)
-          page.blocks.push(getParagraphBlock(fittedText))
-          previousBlock = getParagraphBlock(fittedText)
+          const fittedBlock = getParagraphBlock(fittedText) as TextBlock
+          // 发生过行级 gap 切分时，把预切行挂到块上（句子部分行 + gap 行），
+          // 渲染端直接使用这些行画，不再二次折行丢字。
+          if (gapTakenLines) {
+            fittedBlock.prefixedLines = [...fittedLines, ...gapTakenLines]
+          }
+          page.blocks.push(fittedBlock)
+          previousBlock = fittedBlock
           cursorY = blockTop + fittedHeight
 
           const remainingSentences = sentenceSplit.parts.slice(fittedCount)
@@ -916,18 +956,20 @@ export function layoutPages(opts: LayoutOptions): LayoutResult {
             false, headingOverrides,
           )
           if (fillMaxLines > 0) {
-            const { takenRaw, restRaw } = splitInlineLines(lines, fillMaxLines)
-            const fillTaken = takenRaw(paraBlock.kind, (paraBlock as any).headingLevel)
-            if (fillTaken) {
-              page.blocks.push(getParagraphBlock(fillTaken))
+            const fillSplit = splitInlineLines(lines, fillMaxLines)
+            const fillTakenBlock = makeLineSplitBlock(
+              fillSplit.takenLines, paraBlock.kind, (paraBlock as any).headingLevel,
+            )
+            if (fillTakenBlock.raw) {
+              page.blocks.push(fillTakenBlock)
               cursorY = blockTop + (measureParagraphBlock(
-                getParagraphBlock(fillTaken), metrics.bodySize, metrics.bodyLineHeight,
+                fillTakenBlock, metrics.bodySize, metrics.bodyLineHeight,
                 metrics.bodyWidth, theme, settings.subheadingStyle, bodyFontFamily,
                 false, headingOverrides,
                 bodyFontWeight,
               )).height
-              previousBlock = getParagraphBlock(fillTaken)
-              const fillRest = restRaw(paraBlock.kind, (paraBlock as any).headingLevel)
+              previousBlock = fillTakenBlock
+              const fillRest = fillSplit.restRaw(paraBlock.kind, (paraBlock as any).headingLevel)
               if (fillRest) {
                 pendingCarries.push(fillRest)
                 pendingWasSplits.push(!nextIsCarried)
@@ -953,12 +995,13 @@ export function layoutPages(opts: LayoutOptions): LayoutResult {
         false, headingOverrides,
       )
       if (maxLines <= 0) break
-      const { takenRaw, restRaw } = splitInlineLines(lines, maxLines)
-      const taken = takenRaw(paraBlock.kind, (paraBlock as any).headingLevel)
-      const rest = restRaw(paraBlock.kind, (paraBlock as any).headingLevel)
-      if (taken) {
-        page.blocks.push(getParagraphBlock(taken))
-        const takenBlock = getParagraphBlock(taken)
+      const headSplit = splitInlineLines(lines, maxLines)
+      const rest = headSplit.restRaw(paraBlock.kind, (paraBlock as any).headingLevel)
+      const takenBlock = makeLineSplitBlock(
+        headSplit.takenLines, paraBlock.kind, (paraBlock as any).headingLevel,
+      )
+      if (takenBlock.raw) {
+        page.blocks.push(takenBlock)
         cursorY = blockTop + (measureParagraphBlock(
           takenBlock, metrics.bodySize, metrics.bodyLineHeight,
           metrics.bodyWidth, theme, settings.subheadingStyle, bodyFontFamily,
