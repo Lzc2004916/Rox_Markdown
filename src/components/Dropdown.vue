@@ -8,7 +8,8 @@
       <div
         v-if="open"
         ref="panelRef"
-        class="absolute z-50 mt-1 left-0 w-full rounded-lg shadow-xl bg-base-100 border border-base-300 overflow-hidden"
+        class="fixed z-[9999] w-64 rounded-lg shadow-xl bg-base-100 border border-base-300 overflow-hidden"
+        :style="panelStyle"
       >
         <slot :close="close" />
       </div>
@@ -17,29 +18,52 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 
 const open = ref(false)
 const rootRef = ref<HTMLElement | null>(null)
 const panelRef = ref<HTMLElement | null>(null)
+const panelStyle = ref<{ top: string; left: string }>({ top: '0px', left: '0px' })
 
-function toggle(): void { open.value = !open.value }
+function toggle(): void {
+  if (open.value) {
+    close()
+  } else {
+    open.value = true
+    nextTick(updatePosition)
+  }
+}
 function close(): void { open.value = false }
 
+function updatePosition(): void {
+  if (!rootRef.value) return
+  const rect = rootRef.value.getBoundingClientRect()
+  panelStyle.value = {
+    top: `${rect.bottom + 4}px`,
+    left: `${rect.left}px`,
+  }
+}
+
 function onClickOutside(e: MouseEvent): void {
-  if (rootRef.value && !rootRef.value.contains(e.target as Node)) open.value = false
+  if (rootRef.value && !rootRef.value.contains(e.target as Node) &&
+      panelRef.value && !panelRef.value.contains(e.target as Node)) {
+    open.value = false
+  }
 }
 function onKeydown(e: KeyboardEvent): void {
   if (e.key === 'Escape') open.value = false
 }
+function onScroll(): void { if (open.value) updatePosition() }
 
 onMounted(() => {
   document.addEventListener('mousedown', onClickOutside)
   document.addEventListener('keydown', onKeydown)
+  window.addEventListener('scroll', onScroll, true)
 })
 onBeforeUnmount(() => {
   document.removeEventListener('mousedown', onClickOutside)
   document.removeEventListener('keydown', onKeydown)
+  window.removeEventListener('scroll', onScroll, true)
 })
 </script>
 
