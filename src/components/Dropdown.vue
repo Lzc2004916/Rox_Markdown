@@ -8,7 +8,7 @@
       <div
         v-if="open"
         ref="panelRef"
-        class="fixed z-[9999] w-64 rounded-lg shadow-xl bg-base-100 border border-base-300 overflow-hidden"
+        class="fixed z-[9999] rounded-lg shadow-xl bg-base-100 border border-base-300 overflow-hidden"
         :style="panelStyle"
       >
         <slot :close="close" />
