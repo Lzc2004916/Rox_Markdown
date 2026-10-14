@@ -10,7 +10,7 @@
 <script setup lang="ts">
 import { ref, watch, provide, onMounted } from 'vue'
 import type { ThemeDefinition } from '@/card'
-import { getTheme, getAllThemes, onRegistryChange, resolveHeadingScale, resolveHeadingLineHeight, resolveHeadingMarginTop, resolveHeadingMarginBottom, resolveHeadingFontWeight, resolveHeadingColor, resolveHeadingShadow, resolveHeadingStroke, resolveHeadingStrokeWidth, DEFAULT_COVER_H1_SCALE, getBodyFontFamily, DEFAULT_BODY_FONT_MODE } from '@/card'
+import { getTheme, THEMES, resolveHeadingScale, resolveHeadingLineHeight, resolveHeadingMarginTop, resolveHeadingMarginBottom, resolveHeadingFontWeight, resolveHeadingColor, resolveHeadingShadow, resolveHeadingStroke, resolveHeadingStrokeWidth, DEFAULT_COVER_H1_SCALE, getBodyFontFamily, DEFAULT_BODY_FONT_MODE } from '@/card'
 import { type ThemeContext, THEME_CONTEXT_KEY } from '@/composables/themeContext'
 
 
@@ -39,7 +39,7 @@ const emit = defineEmits<{
 const activeThemeId = ref<string>(props.themeId)
 const activeTheme = ref<ThemeDefinition>(getTheme(props.themeId))
 const isTransitioning = ref(false)
-const availableThemes = ref<ThemeDefinition[]>(getAllThemes())
+const availableThemes = ref<ThemeDefinition[]>(THEMES)
 
 
 
@@ -250,14 +250,6 @@ provide(THEME_CONTEXT_KEY, context)
 onMounted(() => {
   
   applyThemeToDOM(activeTheme.value)
-
-  
-  onRegistryChange(() => {
-    availableThemes.value = getAllThemes()
-    
-    activeTheme.value = getTheme(activeThemeId.value)
-    applyThemeToDOM(activeTheme.value)
-  })
 })
 
 
