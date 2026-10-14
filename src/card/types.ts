@@ -251,7 +251,7 @@ export interface ThemeOuterFrame {
   
   kind: 'none' | 'thin' | 'thick' | 'corner'
   
-  color: string
+  color?: string
   
   width?: number
   
