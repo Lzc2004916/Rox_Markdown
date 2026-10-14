@@ -721,7 +721,7 @@ export const THEMES: ThemeDefinition[] = [
     editor: {
       bodySize: 28,
       lineHeight: 1.62,
-      bodyFontMode: 'dengxian',
+      bodyFontMode: 'yahei',
       bodyFontWeight: 500,
       subheadingStyle: 'large',
       highlightStyle: 'border',
@@ -1752,7 +1752,7 @@ export const THEMES: ThemeDefinition[] = [
     editor: {
       bodySize: 28,
       lineHeight: 1.76,
-      bodyFontMode: 'dengxian',
+      bodyFontMode: 'yahei',
       bodyFontWeight: 400,
       subheadingStyle: 'accent',
       highlightStyle: 'underline',
@@ -1955,7 +1955,7 @@ export const THEMES: ThemeDefinition[] = [
     editor: {
       bodySize: 28,
       lineHeight: 1.62,
-      bodyFontMode: 'dengxian',
+      bodyFontMode: 'yahei',
       bodyFontWeight: 500,
       subheadingStyle: 'accent',
       highlightStyle: 'border',
@@ -2983,7 +2983,7 @@ export const THEMES: ThemeDefinition[] = [
       highlightMarkerAlpha: 0.3, highlightDashAlpha: 0.9,
     },
     editor: {
-      bodySize: 29, lineHeight: 1.85, bodyFontMode: 'songtisc', bodyFontWeight: 400,
+      bodySize: 29, lineHeight: 1.85, bodyFontMode: 'simsun', bodyFontWeight: 400,
       subheadingStyle: 'large', highlightStyle: 'underline',
       heading: {
         h1Scale: 2.9, h2Scale: 1.55, h3Scale: 1.3,
@@ -3263,7 +3263,7 @@ export const THEMES: ThemeDefinition[] = [
     preset: 'Nebula',
     description: '紫蓝柔和渐变，Mac 风格红绿灯圆点，中间白色内容区',
     tags: ['渐变', 'macOS', '紫蓝'],
-    mode: 'modern',
+    mode: 'paper',
     palette: {
       page: '#f5f0fa', pageAlt: '#e8e0f5', text: '#1a1a1a', muted: '#888',
       accent: '#9b7fd4', accentSoft: 'rgba(155,127,212,0.12)',
