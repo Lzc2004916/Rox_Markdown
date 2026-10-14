@@ -1376,10 +1376,37 @@ function drawMatchaZenDecor(ctx: CanvasRenderingContext2D): void {
 
 function drawCaramelDecor(ctx: CanvasRenderingContext2D): void {
   ctx.save()
-  const inset = 22 + 10  
-  ctx.strokeStyle = 'rgba(92,58,26,0.6)'
-  ctx.lineWidth = 1.5
-  ctx.strokeRect(inset, inset, PAGE_WIDTH - inset * 2, PAGE_HEIGHT - inset * 2)
+
+  // 底色：浅米黄渐变
+  const bg = ctx.createLinearGradient(0, 0, PAGE_WIDTH, PAGE_HEIGHT)
+  bg.addColorStop(0, '#f7e8c8')
+  bg.addColorStop(0.5, '#f2dcb0')
+  bg.addColorStop(1, '#e8cd9a')
+  ctx.fillStyle = bg
+  ctx.fillRect(0, 0, PAGE_WIDTH, PAGE_HEIGHT)
+
+  // 四角和边缘深棕色水彩晕染
+  function washCorner(cx: number, cy: number, r: number, alpha: number): void {
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r)
+    g.addColorStop(0, `rgba(139,90,43,${alpha})`)
+    g.addColorStop(0.5, `rgba(160,110,60,${alpha * 0.5})`)
+    g.addColorStop(1, 'rgba(160,110,60,0)')
+    ctx.fillStyle = g
+    ctx.fillRect(0, 0, PAGE_WIDTH, PAGE_HEIGHT)
+  }
+
+  washCorner(0, 0, 500, 0.55)                    // 左上
+  washCorner(PAGE_WIDTH, 0, 450, 0.4)            // 右上
+  washCorner(0, PAGE_HEIGHT, 550, 0.5)          // 左下
+  washCorner(PAGE_WIDTH, PAGE_HEIGHT, 500, 0.5) // 右下
+
+  // 左侧边缘一条窄的深棕晕染
+  const left = ctx.createLinearGradient(0, 0, 120, 0)
+  left.addColorStop(0, 'rgba(139,90,43,0.35)')
+  left.addColorStop(1, 'rgba(139,90,43,0)')
+  ctx.fillStyle = left
+  ctx.fillRect(0, 0, 120, PAGE_HEIGHT)
+
   ctx.restore()
 }
 
