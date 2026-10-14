@@ -541,56 +541,33 @@ export const BODY_FONT_FAMILY =
 
 
 export type BodyFontMode =
-  
-  | 'wenkai' | 'simsun' | 'fangsong' | 'kaiti' | 'notoserif' | 'songtisc' | 'stsong'
-  
-  | 'yahei' | 'simhei' | 'dengxian' | 'notosans' | 'pingfang' | 'segoe' | 'helvetica' | 'arial' | 'inter' | 'roboto'
-  
-  | 'jetbrains' | 'fira' | 'consolas' | 'menlo'
-  
-  | 'youyuan' | 'yuanti' | 'hannoi' | 'lanting' | 'zcool' | 'opposans' | 'hm'
-  
-  | 'times' | 'georgia' | 'courier' | 'verdana' | 'garamond'
+  | 'wenkai' | 'simsun' | 'fangsong' | 'kaiti' | 'notoserif'
+  | 'yahei' | 'simhei' | 'notosans' | 'inter' | 'roboto'
+  | 'jetbrains' | 'fira' | 'consolas'
+  | 'youyuan'
+  | 'times' | 'garamond'
 
 export const BODY_FONT_MODES: Record<BodyFontMode, { family: string; label: string; category: string }> = {
-  
   wenkai:    { family: '"LXGW WenKai","KaiTi","STKaiti",serif',                       label: '霞鹜文楷',     category: '宋体衬线' },
   simsun:    { family: '"SimSun","Songti SC","Noto Serif SC",serif',                  label: '宋体',         category: '宋体衬线' },
   fangsong:  { family: '"FangSong","STFangsong","Noto Serif SC",serif',               label: '仿宋',         category: '宋体衬线' },
   kaiti:     { family: '"KaiTi","STKaiti","LXGW WenKai",serif',                       label: '楷体',         category: '宋体衬线' },
   notoserif: { family: '"Noto Serif SC","Songti SC","SimSun",serif',                  label: '思源宋体',     category: '宋体衬线' },
-  songtisc:  { family: '"Songti SC","STSong","SimSun",serif',                         label: '苹方宋体',     category: '宋体衬线' },
-  stsong:    { family: '"STSong","SimSun","Noto Serif SC",serif',                      label: '华文宋体',     category: '宋体衬线' },
-  
+
   yahei:     { family: '"Microsoft YaHei","PingFang SC","Helvetica Neue",sans-serif', label: '微软雅黑',     category: '黑体无衬线' },
   simhei:    { family: '"SimHei","PingFang SC","Microsoft YaHei",sans-serif',         label: '黑体',         category: '黑体无衬线' },
-  dengxian:  { family: '"DengXian","PingFang SC","Microsoft YaHei",sans-serif',       label: '等线',         category: '黑体无衬线' },
   notosans:  { family: '"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif',   label: '思源黑体',     category: '黑体无衬线' },
-  pingfang:  { family: '"PingFang SC","Microsoft YaHei",sans-serif',                   label: '苹方',         category: '黑体无衬线' },
-  segoe:     { family: '"Segoe UI","Helvetica Neue",Arial,sans-serif',                 label: 'Segoe UI',     category: '黑体无衬线' },
-  helvetica: { family: '"Helvetica Neue",Helvetica,Arial,sans-serif',                  label: 'Helvetica',    category: '黑体无衬线' },
-  arial:     { family: 'Arial,Helvetica,sans-serif',                                   label: 'Arial',        category: '黑体无衬线' },
   inter:     { family: 'Inter,"Helvetica Neue",Arial,sans-serif',                     label: 'Inter',        category: '黑体无衬线' },
   roboto:    { family: 'Roboto,"Segoe UI",Arial,sans-serif',                          label: 'Roboto',       category: '黑体无衬线' },
-  
+
   jetbrains: { family: '"JetBrains Mono",Consolas,Menlo,monospace',                    label: 'JetBrains Mono', category: '等宽' },
   fira:      { family: '"Fira Code",Consolas,Menlo,monospace',                        label: 'Fira Code',    category: '等宽' },
   consolas:  { family: 'Consolas,"JetBrains Mono",Menlo,monospace',                    label: 'Consolas',     category: '等宽' },
-  menlo:     { family: 'Menlo,Consolas,"JetBrains Mono",monospace',                    label: 'Menlo',        category: '等宽' },
-  
+
   youyuan:   { family: '"YouYuan","PingFang SC","Microsoft YaHei",sans-serif',        label: '幼圆',         category: '圆体装饰' },
-  yuanti:    { family: '"Yuanti SC","YouYuan","PingFang SC",sans-serif',              label: '圆体',         category: '圆体装饰' },
-  hannoi:    { family: '"HanziPen SC","Hannotate SC","KaiTi",cursive',                 label: '翩翩体',       category: '圆体装饰' },
-  lanting:   { family: '"Lantinghei SC","Microsoft YaHei",sans-serif',               label: '兰亭黑',       category: '圆体装饰' },
-  zcool:     { family: '"Zcool KuaiLe","YouYuan",sans-serif',                          label: '站酷快乐体',   category: '圆体装饰' },
-  opposans:  { family: '"OPPO Sans","PingFang SC",sans-serif',                        label: 'OPPO Sans',    category: '圆体装饰' },
-  hm:        { family: '"HarmonyOS Sans SC","PingFang SC",sans-serif',                 label: '鸿蒙黑体',     category: '圆体装饰' },
-  
-  times:     { family: '"Times New Roman",Times,serif',                                label: 'Times New Roman', category: '西文' },
-  georgia:   { family: 'Georgia,"Times New Roman",serif',                              label: 'Georgia',      category: '西文' },
-  courier:   { family: '"Courier New",Courier,monospace',                              label: 'Courier New',  category: '西文' },
-  verdana:   { family: 'Verdana,Geneva,sans-serif',                                   label: 'Verdana',      category: '西文' },
-  garamond:  { family: '"EB Garamond",Garamond,"Times New Roman",serif',               label: 'Garamond',     category: '西文' },
+
+  times:     { family: '"Times New Roman",Times,serif',                                label: 'Times New Roman', category: '西文衬线' },
+  garamond:  { family: '"EB Garamond",Garamond,"Times New Roman",serif',               label: 'Garamond',     category: '西文衬线' },
 }
 
 export const DEFAULT_BODY_FONT_MODE: BodyFontMode = 'wenkai'
