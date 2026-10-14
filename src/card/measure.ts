@@ -573,16 +573,21 @@ export function getPosterMetrics(
   _page: CardPage,
   settings: TypographySettings,
   footerEnabled: boolean,
+  theme?: ThemeDefinition,
 ): PosterMetrics {
   const bodySize = Math.max(21, settings.bodySize - 4)
   const bodyLineHeight = bodySize * Math.max(1.58, settings.lineHeight - 0.06)
   const bodyParagraphGap = Math.max(30, bodySize * 1.25)
 
-  const separatorY = 110
+  const inset = theme?.contentInset ?? {}
+  const topPad = inset.top ?? 0
+  const bottomPad = inset.bottom ?? 0
+  const leftPad = inset.left ?? 0
+  const rightPad = inset.right ?? 0
+
+  const separatorY = 110 + topPad
   const bodyTopY = separatorY + 10
-  const bodyBottomY = footerEnabled
-    ? BODY_BOTTOM_WITH_FOOTER
-    : BODY_BOTTOM_WITHOUT_FOOTER
+  const bodyBottomY = (footerEnabled ? BODY_BOTTOM_WITH_FOOTER : BODY_BOTTOM_WITHOUT_FOOTER) - bottomPad
 
   return {
     bodySize,
@@ -592,6 +597,6 @@ export function getPosterMetrics(
     separatorY,
     bodyTopY,
     bodyBottomY,
-    bodyWidth: CONTENT_WIDTH,
+    bodyWidth: CONTENT_WIDTH - leftPad - rightPad,
   }
 }

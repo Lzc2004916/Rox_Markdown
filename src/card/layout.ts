@@ -706,7 +706,7 @@ export function layoutPages(opts: LayoutOptions): LayoutResult {
       blocks: [],
     }
 
-    const metrics = getPosterMetrics(page, settings, footerEnabled)
+    const metrics = getPosterMetrics(page, settings, footerEnabled, theme)
     let cursorY = metrics.bodyTopY
     let previousBlock: ParagraphBlock | null = null
 

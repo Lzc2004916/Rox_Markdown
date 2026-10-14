@@ -282,7 +282,14 @@ export interface ThemeDefinition {
   decor?: ThemeDecor
   
   outerFrame?: ThemeOuterFrame
-  
+
+  contentInset?: {
+    top?: number
+    bottom?: number
+    left?: number
+    right?: number
+  }
+
   coverHeading?: CoverHeadingConfig
   
   gradient?: {

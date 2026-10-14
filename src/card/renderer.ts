@@ -1412,6 +1412,102 @@ function drawCaramelDecor(ctx: CanvasRenderingContext2D): void {
 }
 
 
+function drawPinkChatroomDecor(ctx: CanvasRenderingContext2D): void {
+  ctx.save()
+
+  // 整体粉色背景
+  ctx.fillStyle = '#ff9eb5'
+  ctx.fillRect(0, 0, PAGE_WIDTH, PAGE_HEIGHT)
+
+  // 中间米白文字区
+  ctx.fillStyle = '#fff5ee'
+  ctx.fillRect(20, 200, PAGE_WIDTH - 40, PAGE_HEIGHT - 380)
+
+  // 顶部标题栏
+  ctx.fillStyle = '#e06090'
+  ctx.fillRect(0, 0, PAGE_WIDTH, 80)
+  // 笑脸图标
+  ctx.fillStyle = '#ffd700'
+  ctx.fillRect(20, 20, 40, 40)
+  ctx.fillStyle = '#000'
+  ctx.fillRect(28, 30, 6, 6)
+  ctx.fillRect(46, 30, 6, 6)
+  ctx.fillRect(30, 44, 16, 4)
+  // 标题文字
+  ctx.fillStyle = '#fff'
+  ctx.font = 'bold 28px sans-serif'
+  ctx.textAlign = 'left'
+  ctx.textBaseline = 'middle'
+  ctx.fillText('聊天室', 75, 40)
+  // 最小化按钮
+  ctx.fillStyle = '#fff'
+  ctx.fillRect(PAGE_WIDTH - 90, 25, 30, 30)
+  ctx.fillStyle = '#000'
+  ctx.fillRect(PAGE_WIDTH - 83, 43, 16, 3)
+  // 关闭按钮
+  ctx.fillStyle = '#ff4444'
+  ctx.fillRect(PAGE_WIDTH - 50, 25, 30, 30)
+  ctx.fillStyle = '#fff'
+  ctx.font = 'bold 18px sans-serif'
+  ctx.textAlign = 'center'
+  ctx.fillText('×', PAGE_WIDTH - 35, 41)
+
+  // 菜单栏
+  ctx.fillStyle = '#ffb6c1'
+  ctx.fillRect(0, 80, PAGE_WIDTH, 50)
+  ctx.fillStyle = '#4a2c2a'
+  ctx.font = '18px monospace'
+  ctx.textAlign = 'left'
+  ctx.textBaseline = 'middle'
+  ctx.fillText('File   Edit   View   Help', 25, 105)
+
+  // 底部按钮栏
+  const by = PAGE_HEIGHT - 160
+  ctx.fillStyle = '#ffb6c1'
+  ctx.fillRect(0, by, PAGE_WIDTH, 60)
+  // 4个按钮
+  const btnColors = ['#fff', '#87ceeb', '#ff6b6b', '#ffd700']
+  const btnLabels = ['A', '🖼', '♥', '★']
+  for (let i = 0; i < 4; i++) {
+    const bx = 25 + i * 60
+    ctx.fillStyle = '#fff'
+    ctx.fillRect(bx, by + 10, 40, 40)
+    ctx.strokeStyle = '#4a2c2a'
+    ctx.lineWidth = 2
+    ctx.strokeRect(bx, by + 10, 40, 40)
+    ctx.fillStyle = btnColors[i]
+    ctx.font = 'bold 20px sans-serif'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText(btnLabels[i], bx + 20, by + 30)
+  }
+
+  // 底部输入框
+  const iy = PAGE_HEIGHT - 80
+  ctx.fillStyle = '#fff'
+  ctx.fillRect(70, iy, PAGE_WIDTH - 90, 50)
+  ctx.strokeStyle = '#4a2c2a'
+  ctx.lineWidth = 2
+  ctx.strokeRect(70, iy, PAGE_WIDTH - 90, 50)
+  // 箭头
+  ctx.fillStyle = '#4a2c2a'
+  ctx.beginPath()
+  ctx.moveTo(40, iy + 25)
+  ctx.lineTo(55, iy + 15)
+  ctx.lineTo(55, iy + 35)
+  ctx.closePath()
+  ctx.fill()
+  // 头像
+  ctx.fillStyle = '#87ceeb'
+  ctx.fillRect(10, iy - 5, 50, 60)
+  ctx.fillStyle = '#4a2c2a'
+  ctx.font = '10px sans-serif'
+  ctx.textAlign = 'center'
+  ctx.fillText('👤', 35, iy + 25)
+
+  ctx.restore()
+}
+
 function drawStarryDecor(ctx: CanvasRenderingContext2D): void {
   ctx.save()
 
@@ -1666,7 +1762,7 @@ export function renderCard(opts: RenderOptions): HTMLCanvasElement {
   if (!ctx) throw new Error('Failed to create canvas context')
   ctx.scale(CANVAS_SCALE, CANVAS_SCALE)
 
-  const metrics = getPosterMetrics(page, settings, footerEnabled)
+  const metrics = getPosterMetrics(page, settings, footerEnabled, theme)
   const bodyFontWeight = settings.bodyFontWeight ?? theme.editor.bodyFontWeight ?? BODY_TEXT_WEIGHT
 
   
@@ -1701,6 +1797,10 @@ export function renderCard(opts: RenderOptions): HTMLCanvasElement {
   
   if (theme.id === 'caramel') {
     drawCaramelDecor(ctx)
+  }
+
+  if (theme.id === 'pink-chatroom') {
+    drawPinkChatroomDecor(ctx)
   }
   
   if (theme.id === 'starry') {

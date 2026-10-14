@@ -3213,6 +3213,49 @@ export const THEMES: ThemeDefinition[] = [
     outerFrame: { kind: 'none', color: 'transparent', opacity: 0 },
     gradient: { enabled: false, color1: '#0a1628', color2: '#1a3a5c' },
   },
+
+  {
+    id: 'pink-chatroom',
+    name: '粉色聊天室',
+    mood: '90年代复古粉色窗口',
+    preset: 'Y2K Pink',
+    description: '粉色复古聊天室界面，顶栏底栏装饰，中间米白文字区',
+    tags: ['复古', '粉色', 'Y2K'],
+    mode: 'vintage',
+    palette: {
+      page: '#fff5ee', pageAlt: '#ffb6c1', text: '#4a2c2a', muted: '#8b6b6a',
+      accent: '#e06090', accentSoft: 'rgba(224,96,144,0.15)',
+      border: 'rgba(200,80,120,0.3)', shadow: 'rgba(200,80,120,0.15)', glow: 'transparent',
+    },
+    surface: {
+      grainAlpha: 0, vignetteAlpha: 0, washStrength: 0,
+      innerFrameAlpha: 0, innerFrameInset: 0, titleAccentMix: 0,
+      footerLineAlpha: 0, footerTextAlpha: 0,
+      previewShadow: '0 16px 40px rgba(200,80,120,0.25)',
+    },
+    components: {
+      quoteFillAlpha: 0.1, quoteStrokeAlpha: 0.2, quoteBarAlpha: 0.8,
+      quoteRadius: 6, quoteTreatment: 'paper',
+      highlightTreatment: 'softUnderline', highlightUnderlineAlpha: 0.8,
+      highlightMarkerAlpha: 0.3, highlightDashAlpha: 0.9,
+    },
+    editor: {
+      bodySize: 29, lineHeight: 1.8, bodyFontMode: 'simsun', bodyFontWeight: 400,
+      subheadingStyle: 'large', highlightStyle: 'underline',
+      heading: {
+        h1Scale: 2.6, h2Scale: 1.5, h3Scale: 1.25,
+        h1LineHeight: 1.25, h2LineHeight: 1.35, h3LineHeight: 1.45,
+        h1FontWeight: 700, h2FontWeight: 600, h3FontWeight: 600,
+        h1MarginTop: 22, h1MarginBottom: 10,
+      },
+      list: { bulletChar: '•', bulletSizeRatio: 0.8, indentPerLevel: 26, itemGap: 7 },
+    },
+    colorTag: 'pink',
+    decor: { kind: 'none', opacity: 0 },
+    outerFrame: { kind: 'none' },
+    contentInset: { top: 170, bottom: 180 },
+    gradient: { enabled: false, color1: '#fff5ee', color2: '#fff0e8' },
+  },
 ]
 
 
