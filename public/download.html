@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rox-Markdown 下载</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-6">
+  <div class="max-w-md w-full text-center">
+
+    <!-- Logo -->
+    <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-blue-600 flex items-center justify-center">
+      <svg class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+      </svg>
+    </div>
+
+    <h1 class="text-2xl font-bold mb-2">Rox-Markdown</h1>
+    <p class="text-gray-600 mb-8 text-sm">Markdown 转精美图文卡片，53款主题，高清导出</p>
+
+    <!-- 下载按钮 -->
+    <button
+      id="downloadBtn"
+      class="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg font-medium py-4 rounded-xl shadow-lg transition-all"
+    >
+      <span class="flex items-center justify-center gap-2">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path>
+        </svg>
+        下载 Windows 版
+      </span>
+    </button>
+
+    <p class="text-xs text-gray-500 mt-4">
+      v1.0.0 · Windows 10/11 64位 · 免费下载
+    </p>
+
+  </div>
+
+  <script>
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+      window.location.href = '/api/app/download'
+    })
+  </script>
+</body>
+</html>

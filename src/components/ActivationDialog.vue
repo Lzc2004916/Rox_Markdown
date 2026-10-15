@@ -67,6 +67,7 @@ const auth = useAuthStore()
 const dialogRef = ref<HTMLDialogElement | null>(null)
 const rawToken = ref('')
 const errorMsg = ref('')
+const loading = ref(false)
 
 watch(() => props.visible, (v) => {
   if (v) {
@@ -80,12 +81,15 @@ watch(() => props.visible, (v) => {
 
 async function onSubmit() {
   errorMsg.value = ''
+  loading.value = true
   try {
     await auth.activate(rawToken.value)
     emit('success')
     emit('close')
   } catch (e: any) {
     errorMsg.value = e.message || '激活失败，请检查激活码'
+  } finally {
+    loading.value = false
   }
 }
 

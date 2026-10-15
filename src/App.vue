@@ -1,6 +1,11 @@
 <template>
   <ThemeProvider :theme-id="cardTheme" :highlight-color="highlightColor">
-  <div class="h-screen flex flex-col overflow-hidden bg-base-200">
+
+  <!-- 下载页模式 -->
+  <DownloadPage v-if="showDownloadPage" @back="showDownloadPage = false" />
+
+  <!-- 主界面 -->
+  <div v-else class="h-screen flex flex-col overflow-hidden bg-base-200">
     
     <div class="navbar bg-base-100 border-b border-base-300/60 z-20 shrink-0 min-h-0 py-0 h-11">
       <div class="navbar-start">
@@ -10,7 +15,17 @@
       <div class="navbar-center"></div>
 
       <div class="navbar-end">
-        
+
+        <button
+          class="btn btn-ghost btn-sm mr-2 text-xs"
+          @click="showDownloadPage = true"
+        >
+          <svg class="w-3.5 h-3.5 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path>
+          </svg>
+          下载最新版
+        </button>
+
         <div v-if="isDesktopPlatform" class="flex items-center h-full win-controls" role="group" :aria-label="isMaximized ? '还原' : '最大化'">
           <button
             class="win-btn"
@@ -304,6 +319,7 @@ import { useSettings } from '@/composables/useSettings'
 import { useSearch, type SearchMatch } from '@/composables/useSearch'
 import SearchDialog from '@/components/SearchDialog.vue'
 import ActivationDialog from '@/components/ActivationDialog.vue'
+import DownloadPage from '@/components/DownloadPage.vue'
 import { useAuthStore } from '@/stores/auth'
 import { isDesktop } from '@/platforms/detection'
 import MobileLayout from '@/layouts/MobileLayout.vue'
@@ -335,6 +351,7 @@ onMounted(() => {
 const store = useDocumentsStore()
 const auth = useAuthStore()
 const showActivationDialog = ref(false)
+const showDownloadPage = ref(false)
 
 
 
