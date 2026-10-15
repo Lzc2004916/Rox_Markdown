@@ -68,7 +68,14 @@
               : `0 2px 8px ${theme.palette.shadow}`,
           }"
         >
-          
+
+          <!-- VIP 未解锁遮罩 -->
+          <div
+            v-if="auth.isPaidTheme(theme.id) && !auth.isVip"
+            class="absolute inset-0 z-[1] pointer-events-none"
+            style="background: rgba(0,0,0,0.25)"
+          />
+
           <div
             class="absolute inset-0 pointer-events-none theme-preview-grain"
             :style="{ opacity: theme.surface.grainAlpha * 3 }"
@@ -100,6 +107,18 @@
               <svg class="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
             </div>
           </Transition>
+
+          <!-- VIP 标识：左上角金色皇冠标签 -->
+          <div
+            v-if="auth.isPaidTheme(theme.id) && !auth.isVip"
+            class="absolute top-1 left-1 flex items-center gap-0.5 px-1.5 py-0.5 rounded-md z-[2] shadow-sm"
+            style="background: linear-gradient(135deg, #f59e0b, #d97706)"
+          >
+            <svg class="w-2.5 h-2.5 text-white" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm0 3h14v2H5v-2z"/>
+            </svg>
+            <span class="text-[9px] font-bold text-white leading-none">VIP</span>
+          </div>
         </div>
 
         
@@ -132,6 +151,7 @@
 <script setup lang="ts">
 import { ref, watch, computed, nextTick, onBeforeUnmount, onMounted } from 'vue'
 import type { ThemeDefinition } from '@/card'
+import { useAuthStore } from '@/stores/auth'
 
 const props = withDefaults(
   defineProps<{
@@ -144,11 +164,14 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   (e: 'update:modelValue', id: string): void
+  (e: 'need-activate'): void
 }>()
 
+const auth = useAuthStore()
 
 
-type CategoryKey = 'all' | 'red' | 'orange' | 'yellow' | 'brown' | 'green' | 'blue' | 'pink' | 'neutral'
+
+type CategoryKey = 'all' | 'free' | 'vip' | 'red' | 'orange' | 'yellow' | 'brown' | 'green' | 'blue' | 'pink' | 'neutral'
 interface CategoryTab { key: CategoryKey; label: string; dot?: string }
 
 const activeCategory = ref<CategoryKey>('all')
@@ -156,6 +179,8 @@ const keyword = ref('')
 
 const allCategories: CategoryTab[] = [
   { key: 'all', label: '全部' },
+  { key: 'free', label: '免费' },
+  { key: 'vip', label: 'VIP' },
   { key: 'red', label: '红', dot: '#e74c3c' },
   { key: 'orange', label: '橙', dot: '#e67e22' },
   { key: 'yellow', label: '黄', dot: '#f1c40f' },
@@ -170,7 +195,11 @@ const categories = computed<CategoryTab[]>(() => allCategories)
 
 const filteredThemes = computed<ThemeDefinition[]>(() => {
   let list = props.themes
-  if (activeCategory.value !== 'all') {
+  if (activeCategory.value === 'free') {
+    list = list.filter((t) => !auth.isPaidTheme(t.id))
+  } else if (activeCategory.value === 'vip') {
+    list = list.filter((t) => auth.isPaidTheme(t.id))
+  } else if (activeCategory.value !== 'all') {
     list = list.filter((t) => t.colorTag === activeCategory.value)
   }
   const kw = keyword.value.trim().toLowerCase()
@@ -359,6 +388,14 @@ let checkTimer: ReturnType<typeof setTimeout> | null = null
 
 function select(id: string, idx: number): void {
   focusedIdx.value = idx
+
+  // VIP 主题拦截：没激活就弹激活窗
+  if (auth.isPaidTheme(id) && !auth.isVip) {
+    auth.pendingTheme = id
+    emit('need-activate')
+    return
+  }
+
   emit('update:modelValue', id)
   showCheck.value = true
   if (checkTimer) clearTimeout(checkTimer)

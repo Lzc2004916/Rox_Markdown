@@ -1,8 +1,24 @@
 <template>
   <div class="flex flex-col h-full bg-base-100">
-    
+
     <div class="px-4 py-3 border-b border-base-200 shrink-0">
       <div class="flex items-center gap-2 flex-wrap">
+        <button
+          v-if="!auth.isVip"
+          class="btn btn-sm btn-primary h-8 min-h-0 gap-1.5 px-2.5 text-xs font-medium"
+          @click="emit('need-activate')"
+        >
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          激活会员
+        </button>
+        <div
+          v-else
+          class="badge badge-primary badge-sm gap-1 px-2.5"
+        >
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12" /></svg>
+          VIP 已激活
+        </div>
+
         <button
           class="btn btn-sm btn-outline h-8 min-h-0 gap-1.5 px-2.5 text-xs font-medium"
           @click="emit('update:appTheme', appTheme === 'dark' ? 'light' : 'dark')"
@@ -78,7 +94,7 @@
 
     
     <SettingSection title="卡片 UI">
-      <ThemeSelector v-model="themeId" :themes="THEMES" />
+      <ThemeSelector v-model="themeId" :themes="THEMES" @need-activate="emit('need-activate')" />
       <div class="pt-2 border-t border-base-200">
         <GradientPicker :model-value="gradientConfig" @update:model-value="(v: GradientConfig) => emit('update:gradientConfig', v)" />
       </div>
@@ -94,6 +110,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import ThemeSelector from '@/components/ThemeSelector.vue'
+import { useAuthStore } from '@/stores/auth'
 import Dropdown from '@/components/Dropdown.vue'
 import FontPicker from '@/components/FontPicker.vue'
 import GradientPicker from '@/components/GradientPicker.vue'
@@ -134,6 +151,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const auth = useAuthStore()
 
 const emit = defineEmits<{
   (e: 'update:appTheme', value: 'light' | 'dark'): void
@@ -150,6 +168,7 @@ const emit = defineEmits<{
   (e: 'export-png'): void
   (e: 'export-jpg'): void
   (e: 'export-pdf'): void
+  (e: 'need-activate'): void
 }>()
 
 const themeId = computed({

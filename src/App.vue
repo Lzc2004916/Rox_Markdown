@@ -173,6 +173,7 @@
           @export-png="handleBatchExportPNG"
           @export-jpg="handleBatchExportJPG"
           @export-pdf="handleExportPDF"
+          @need-activate="showActivationDialog = true"
         />
         </div>
       </div>
@@ -270,6 +271,12 @@
         <button>取消</button>
       </form>
     </dialog>
+
+    <ActivationDialog
+      :visible="showActivationDialog"
+      @close="showActivationDialog = false"
+      @success="onActivateSuccess"
+    />
   </div>
   </ThemeProvider>
 </template>
@@ -296,6 +303,8 @@ import type { TypographySettings, HighlightStyle, SubheadingStyle, HeadingStyleO
 import { useSettings } from '@/composables/useSettings'
 import { useSearch, type SearchMatch } from '@/composables/useSearch'
 import SearchDialog from '@/components/SearchDialog.vue'
+import ActivationDialog from '@/components/ActivationDialog.vue'
+import { useAuthStore } from '@/stores/auth'
 import { isDesktop } from '@/platforms/detection'
 import MobileLayout from '@/layouts/MobileLayout.vue'
 
@@ -313,11 +322,19 @@ function applyAppTheme(): void {
 
 onMounted(() => {
   applyAppTheme()
+  // 校验登录状态：没 token 或 token 失效就弹激活窗
+  auth.initFromStorage().finally(() => {
+    if (!auth.isLoggedIn && !auth.offline) {
+      showActivationDialog.value = true
+    }
+  })
 })
 
 
 
 const store = useDocumentsStore()
+const auth = useAuthStore()
+const showActivationDialog = ref(false)
 
 
 
@@ -522,6 +539,14 @@ function handleCancelClose(): void {
 
 function onCloseDialogDismiss(): void {
   showCloseDialog.value = false
+}
+
+function onActivateSuccess(): void {
+  // 激活成功后，如果用户之前点了某个 VIP 主题，自动切过去
+  if (auth.pendingTheme) {
+    cardTheme.value = auth.pendingTheme
+    auth.pendingTheme = null
+  }
 }
 
 onMounted(() => {

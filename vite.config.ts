@@ -54,6 +54,14 @@ export default defineConfig({
           renderer(),
         ]),
   ],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:6060',
+        changeOrigin: true,
+      },
+    },
+  },
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
