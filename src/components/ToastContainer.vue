@@ -1,24 +1,17 @@
 <template>
-  <div class="fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none">
+  <div class="fixed top-6 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 pointer-events-none items-center">
     <TransitionGroup name="toast">
       <div
         v-for="item in list"
         :key="item.id"
-        class="px-4 py-2 rounded-lg shadow-lg text-sm backdrop-blur-md bg-base-100/90 border border-base-300/50 pointer-events-auto flex items-center gap-3"
+        class="px-6 py-3 rounded-full shadow-xl text-sm font-medium backdrop-blur-md border pointer-events-auto min-w-[200px] text-center"
         :class="{
-          'border-l-4 border-l-success': item.type === 'success',
-          'border-l-4 border-l-error': item.type === 'error',
-          'border-l-4 border-l-info': item.type === 'info',
+          'bg-success/90 text-success-content border-success/30': item.type === 'success',
+          'bg-error/90 text-error-content border-error/30': item.type === 'error',
+          'bg-info/90 text-info-content border-info/30': item.type === 'info',
         }"
       >
-        <span>{{ item.message }}</span>
-        <button
-          v-if="item.actionText"
-          class="text-primary font-medium hover:underline"
-          @click="item.actionCallback?.()"
-        >
-          {{ item.actionText }}
-        </button>
+        {{ item.message }}
       </div>
     </TransitionGroup>
   </div>
@@ -45,14 +38,14 @@ onUnmounted(() => {
 <style scoped>
 .toast-enter-active,
 .toast-leave-active {
-  transition: all 0.25s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .toast-enter-from {
   opacity: 0;
-  transform: translateX(20px);
+  transform: translateY(-20px) scale(0.95);
 }
 .toast-leave-to {
   opacity: 0;
-  transform: translateX(20px);
+  transform: translateY(-20px) scale(0.95);
 }
 </style>

@@ -378,10 +378,6 @@ async function selectTheme(newThemeId: string) {
     auth.markExpired()
     // 自动切回免费主题
     cardTheme.value = 'moss-paper'
-    // 弹提示
-    toast.info('会员已过期，已为你切换回免费主题', 5000, '去激活', () => {
-      showActivationDialog.value = true
-    })
     // 自动弹激活窗
     setTimeout(() => {
       showActivationDialog.value = true

@@ -56,12 +56,7 @@ service.interceptors.response.use(
     const isVipError = msg === 'VIP_EXPIRED' || msg.includes('需开通会员') || error.response?.status === 403
     if (isVipError) {
       window.dispatchEvent(new CustomEvent('vip-expired'))
-      toast.info(
-        '会员已过期，已为你切换回免费主题',
-        5000,
-        '去激活',
-        () => window.dispatchEvent(new CustomEvent('open-activate-dialog'))
-      )
+      toast.error('会员已过期，已为你切换回免费主题')
       return Promise.reject(new Error('VIP_EXPIRED'))
     }
 

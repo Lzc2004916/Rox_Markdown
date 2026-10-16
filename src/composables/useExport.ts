@@ -1,5 +1,6 @@
 import { ref, type Ref } from 'vue'
 import { jsPDF } from 'jspdf'
+import { toast } from '@/utils/toast'
 
 
 
@@ -55,9 +56,13 @@ export function useExport(): {
       progress.value = 100
 
       if (window.electronAPI?.saveImage) {
-        await window.electronAPI.saveImage(dataUrl, 'card.png')
+        const result = await window.electronAPI.saveImage(dataUrl, 'card.png')
+        if (result.success) {
+          toast.success('导出成功')
+        }
       } else {
         downloadURL(dataUrl, 'card.png')
+        toast.success('导出成功')
       }
     } catch (e) {
       throw new Error(`PNG export failed: ${e instanceof Error ? e.message : String(e)}`)
@@ -106,6 +111,7 @@ export function useExport(): {
         const result = await window.electronAPI.saveImagesToFolder(images)
         if (!result.success) return
         progress.value = 100
+        toast.success('导出成功')
       } else {
         
         for (let i = 0; i < images.length; i++) {
@@ -141,6 +147,7 @@ export function useExport(): {
         const result = await window.electronAPI.saveImagesToFolder(images)
         if (!result.success) return
         progress.value = 100
+        toast.success('导出成功')
       } else {
         for (let i = 0; i < images.length; i++) {
           downloadURL(images[i]!.dataUrl, images[i]!.filename)
@@ -214,6 +221,7 @@ export function useExport(): {
 
       pdf.save('cards.pdf')
       progress.value = 100
+      toast.success('PDF 导出成功')
     } catch (e) {
       throw new Error(`Multi-PDF export failed: ${e instanceof Error ? e.message : String(e)}`)
     } finally {
