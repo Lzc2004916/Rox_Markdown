@@ -34,6 +34,14 @@
 
       <p v-if="errorMsg" class="text-error text-xs mt-2">{{ errorMsg }}</p>
 
+      <!-- 购买渠道 -->
+      <div class="mt-5 p-3 bg-base-200 rounded-lg text-center">
+        <p class="text-xs text-base-content/70 mb-2">没有激活码？加微信购买，秒发</p>
+        <img src="/wechat-qr.png" alt="微信二维码" class="w-28 h-28 mx-auto rounded-lg mb-2">
+        <p class="text-xs text-base-content/60">微信：sygg248</p>
+        <p class="text-xs text-base-content/60 mt-1">七天体验卡 / 永久VIP卡，买完发你激活码直接输入就行</p>
+      </div>
+
       <div class="modal-action">
         <button class="btn btn-ghost" @click="onClose" :disabled="loading">
           先用免费主题

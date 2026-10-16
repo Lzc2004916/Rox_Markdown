@@ -165,7 +165,7 @@
           :app-theme="appTheme"
           @update:app-theme="(v: 'light' | 'dark') => { appTheme = v; applyAppTheme() }"
           :card-theme="cardTheme"
-          @update:card-theme="cardTheme = $event"
+          @update:card-theme="selectTheme"
           :body-font-mode="bodyFontMode"
           @update:body-font-mode="(v: string) => bodyFontMode = v as BodyFontMode"
           :body-font-size="bodyFontSize"
@@ -326,6 +326,8 @@ import ActivationDialog from '@/components/theme/ActivationDialog.vue'
 import ToastContainer from '@/components/ToastContainer.vue'
 import DownloadPage from '@/components/preview/DownloadPage.vue'
 import { useAuthStore } from '@/stores/auth'
+import { checkThemeAccess } from '@/api/theme'
+import { toast } from '@/utils/toast'
 import { isDesktop } from '@/platforms/detection'
 import MobileLayout from '@/layouts/MobileLayout.vue'
 
@@ -350,6 +352,42 @@ onMounted(() => {
     }
   })
 })
+
+// 切换主题：付费主题先调后端校验，防止前端以为还是VIP但实际已过期
+async function selectTheme(newThemeId: string) {
+  // 免费主题直接切
+  if (!auth.isPaidTheme(newThemeId)) {
+    cardTheme.value = newThemeId
+    return
+  }
+
+  // 付费主题：后端离线时直接切，不卡用户
+  if (auth.offline) {
+    cardTheme.value = newThemeId
+    return
+  }
+
+  try {
+    // 调后端校验权限
+    await checkThemeAccess(newThemeId)
+    cardTheme.value = newThemeId
+  } catch (e: any) {
+    // 校验失败（过期/无权限）：直接在当前上下文处理，保证UI响应式更新
+    console.debug('主题校验失败', e)
+    // 立刻重置VIP状态，UI马上同步
+    auth.markExpired()
+    // 自动切回免费主题
+    cardTheme.value = 'moss-paper'
+    // 弹提示
+    toast.info('会员已过期，已为你切换回免费主题', 5000, '去激活', () => {
+      showActivationDialog.value = true
+    })
+    // 自动弹激活窗
+    setTimeout(() => {
+      showActivationDialog.value = true
+    }, 500)
+  }
+}
 
 
 

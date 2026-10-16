@@ -4,14 +4,21 @@
       <div
         v-for="item in list"
         :key="item.id"
-        class="px-4 py-2 rounded-lg shadow-lg text-sm backdrop-blur-md bg-base-100/90 border border-base-300/50 pointer-events-auto"
+        class="px-4 py-2 rounded-lg shadow-lg text-sm backdrop-blur-md bg-base-100/90 border border-base-300/50 pointer-events-auto flex items-center gap-3"
         :class="{
           'border-l-4 border-l-success': item.type === 'success',
           'border-l-4 border-l-error': item.type === 'error',
           'border-l-4 border-l-info': item.type === 'info',
         }"
       >
-        {{ item.message }}
+        <span>{{ item.message }}</span>
+        <button
+          v-if="item.actionText"
+          class="text-primary font-medium hover:underline"
+          @click="item.actionCallback?.()"
+        >
+          {{ item.actionText }}
+        </button>
       </div>
     </TransitionGroup>
   </div>

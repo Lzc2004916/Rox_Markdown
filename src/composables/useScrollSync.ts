@@ -1,4 +1,4 @@
-import { ref, watch, nextTick, type Ref } from 'vue'
+import { ref, watch, type Ref } from 'vue'
 
 /**
  * 横向滚动容器的页码同步逻辑

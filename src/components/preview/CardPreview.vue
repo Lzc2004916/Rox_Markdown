@@ -373,9 +373,9 @@ async function doRender(): Promise<void> {
       activeIdx.value = targetPage
       const cardW = getRenderedCardWidth()
       const pageW = cardW + CARD_GAP
-      const scrollRef = scrollRef.value
-      if (scrollRef) {
-        scrollRef.scrollLeft = targetPage * pageW
+      const container = scrollRef.value
+      if (container) {
+        container.scrollLeft = targetPage * pageW
       }
     }
   }
@@ -447,7 +447,6 @@ const {
   activeIdx,
   onWheel,
   onScroll,
-  resetToCurrentPage,
 } = useScrollSync({
   scrollRef,
   canvasesLength: computed(() => canvases.value.length),

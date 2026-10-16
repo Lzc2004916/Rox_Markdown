@@ -74,6 +74,12 @@ export const useAuthStore = defineStore('auth', () => {
     active.value = false
   }
 
+  /** 会员过期：重置VIP状态，前端UI自动更新 */
+  function markExpired(): void {
+    active.value = false
+    pendingTheme.value = null
+  }
+
   return {
     token,
     active,
@@ -87,5 +93,6 @@ export const useAuthStore = defineStore('auth', () => {
     initFromStorage,
     activate,
     logout,
+    markExpired,
   }
 })

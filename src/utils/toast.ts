@@ -8,6 +8,8 @@ interface ToastItem {
   id: number
   type: ToastType
   message: string
+  actionText?: string
+  actionCallback?: () => void
 }
 
 let toastList: ToastItem[] = []
@@ -19,8 +21,8 @@ function emit() {
 }
 
 /** 弹出提示，默认 2.5 秒自动消失 */
-function show(type: ToastType, message: string, duration = 2500) {
-  const item: ToastItem = { id: nextId++, type, message }
+function show(type: ToastType, message: string, duration = 2500, actionText?: string, actionCallback?: () => void) {
+  const item: ToastItem = { id: nextId++, type, message, actionText, actionCallback }
   toastList.push(item)
   emit()
   setTimeout(() => {
@@ -32,7 +34,7 @@ function show(type: ToastType, message: string, duration = 2500) {
 export const toast = {
   success: (msg: string, duration?: number) => show('success', msg, duration),
   error: (msg: string, duration?: number) => show('error', msg, duration),
-  info: (msg: string, duration?: number) => show('info', msg, duration),
+  info: (msg: string, duration?: number, actionText?: string, actionCallback?: () => void) => show('info', msg, duration, actionText, actionCallback),
 }
 
 /** 供 ToastContainer 组件订阅，不用外部手动调 */

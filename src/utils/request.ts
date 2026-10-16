@@ -51,6 +51,20 @@ service.interceptors.response.use(
       clearToken()
     }
     const msg = error.response?.data?.msg || error.message || '网络错误'
+
+    // 会员相关错误：触发全局事件，App.vue 里切回免费主题弹激活窗
+    const isVipError = msg === 'VIP_EXPIRED' || msg.includes('需开通会员') || error.response?.status === 403
+    if (isVipError) {
+      window.dispatchEvent(new CustomEvent('vip-expired'))
+      toast.info(
+        '会员已过期，已为你切换回免费主题',
+        5000,
+        '去激活',
+        () => window.dispatchEvent(new CustomEvent('open-activate-dialog'))
+      )
+      return Promise.reject(new Error('VIP_EXPIRED'))
+    }
+
     toast.error(msg)
     return Promise.reject(new Error(msg))
   },

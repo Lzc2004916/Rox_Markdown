@@ -41,7 +41,10 @@ defineEmits<{
 }>()
 
 function openOfficialSite() {
-  // 在浏览器打开下载页
-  window.open('/download.html', '_blank')
+  // 在浏览器打开下载页，用生产环境后端地址拼
+  const apiBase = import.meta.env.VITE_API_BASE || '/api'
+  // 把 /api 去掉，拼 download.html
+  const baseUrl = apiBase.replace(/\/api$/, '')
+  window.open(`${baseUrl}/download.html`, '_blank')
 }
 </script>
