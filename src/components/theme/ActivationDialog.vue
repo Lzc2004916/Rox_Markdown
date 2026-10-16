@@ -10,7 +10,7 @@
         </div>
         <div class="flex items-start gap-2">
           <span class="text-primary mt-0.5">✦</span>
-          <span>持续更新新主题，一次激活永久使用</span>
+          <span>7天体验卡 / 包月卡 / 永久卡，到期自动恢复免费主题</span>
         </div>
         <div class="flex items-start gap-2">
           <span class="text-primary mt-0.5">✦</span>
@@ -39,7 +39,7 @@
         <p class="text-xs text-base-content/70 mb-2">没有激活码？加微信购买，秒发</p>
         <img src="/wechat-qr.png" alt="微信二维码" class="w-28 h-28 mx-auto rounded-lg mb-2">
         <p class="text-xs text-base-content/60">微信：sygg248</p>
-        <p class="text-xs text-base-content/60 mt-1">七天体验卡 / 永久VIP卡，买完发你激活码直接输入就行</p>
+        <p class="text-xs text-base-content/60 mt-1">7天卡9.9元 / 包月12.9元 / 永久29.9元，买完发你激活码直接输入就行</p>
       </div>
 
       <div class="modal-action">

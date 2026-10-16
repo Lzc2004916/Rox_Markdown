@@ -134,6 +134,7 @@ export function drawTableBlock(
     cx: number,
     cy: number,
     cw: number,
+    cellHeight: number,
     isBold: boolean,
     _alignment: 'left' | 'center' | 'right',
   ): void {
@@ -149,6 +150,10 @@ export function drawTableBlock(
     ctx.fillStyle = theme.palette.text
     ctx.textBaseline = 'alphabetic'
 
+    // 垂直居中：计算文字总高度，整体往下偏移
+    const totalTextHeight = lines.length * lineHeight
+    const startYOffset = (cellHeight - totalTextHeight) / 2
+
     for (let li = 0; li < lines.length; li++) {
       const line = lines[li]!
       let lineWidth = 0
@@ -158,7 +163,8 @@ export function drawTableBlock(
 
       
       let startX: number
-      const align = _alignment
+      // 强制居中对齐
+      const align: 'left' | 'center' | 'right' = 'center'
       if (align === 'center') {
         startX = cx + (cw - lineWidth) / 2
       } else if (align === 'right') {
@@ -170,7 +176,7 @@ export function drawTableBlock(
       let cursorX = startX
       for (const token of line.tokens) {
         const tw = getBodyTokenWidth(token, fontSize)
-        ctx.fillText(token.text, cursorX, cy + fontSize * 0.84 + li * lineHeight)
+        ctx.fillText(token.text, cursorX, cy + startYOffset + fontSize * 0.84 + li * lineHeight)
         cursorX += tw
       }
     }
@@ -201,8 +207,9 @@ export function drawTableBlock(
     for (let ci = 0; ci < numCols; ci++) {
       const cw = colWidths[ci]!
       const cellText = ci < row.length ? (row[ci] ?? '') : ''
-      const align = block.alignments[ci] ?? 'left'
-      drawCellText(cellText, cx, cursorY, cw, ri === 0, align)
+      // 默认居中对齐
+      const align: 'left' | 'center' | 'right' = 'center'
+      drawCellText(cellText, cx, cursorY, cw, rowH, ri === 0, align)
       cx += cw
     }
 
@@ -223,6 +230,14 @@ export function drawTableBlock(
   }
 
   
+  // 表格整体浅背景，看起来是独立区域
+  ctx.save()
+  ctx.fillStyle = `rgba(0,0,0,0.03)`
+  ctx.beginPath()
+  ctx.roundRect(x - 4, y - 4, totalWidth + 8, totalHeight + 8, 6)
+  ctx.fill()
+  ctx.restore()
+
   ctx.save()
   ctx.strokeStyle = theme.palette.border
   ctx.lineWidth = OUTER_BORDER_WIDTH

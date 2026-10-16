@@ -61,12 +61,24 @@
 
     
     <template v-if="isDesktopPlatform">
-    <div class="flex-1 flex overflow-hidden">
+    <div class="flex-1 flex overflow-hidden relative">
       
       <div
-        class="flex flex-col overflow-hidden border-r border-base-300 min-w-[200px]"
-        :style="{ flexBasis: split + '%' }"
+        class="flex flex-col overflow-hidden border-r border-base-300 min-w-[200px] transition-all duration-300 ease-in-out"
+        :class="{
+          '!min-w-0 !border-r-0 -translate-x-full opacity-0 pointer-events-none': !leftPanelOpen
+        }"
+        :style="{ flexBasis: leftPanelOpen ? split + '%' : '0%' }"
       >
+        <div class="h-9 shrink-0 bg-base-200/70 px-2 border-b border-base-300/60 flex items-center justify-between">
+          <span class="text-xs font-medium opacity-60">Markdown 编辑</span>
+          <button class="btn btn-ghost btn-sm gap-1" @click="toggleLeftPanel">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>
+            </svg>
+            收起
+          </button>
+        </div>
         <EditorToolbar
           @insert="onToolbarInsert"
           @command="onToolbarCommand"
@@ -92,17 +104,30 @@
         </div>
       </div>
 
+      <!-- 左边收起后的悬浮展开按钮 -->
+      <button
+        v-if="!leftPanelOpen"
+        class="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-base-200 shadow-lg flex items-center justify-center cursor-pointer transition-none hover:bg-base-200 active:bg-base-200"
+        @click="toggleLeftPanel"
+        title="展开编辑栏"
+      >
+        <svg class="w-4 h-4 text-base-content/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+
       
       <div
-        class="w-1 cursor-col-resize select-none shrink-0 z-10 transition-colors duration-200 drag-bar"
+        class="w-1 cursor-col-resize select-none shrink-0 z-10 transition-all duration-300 drag-bar"
         :class="dragging ? 'bg-primary' : 'bg-base-300'"
         @mousedown="onDragStart"
+        v-show="leftPanelOpen"
       ></div>
 
       
       <div
         class="flex flex-col min-w-[200px] min-h-0 overflow-hidden"
-        :style="{ flexBasis: (100 - split - rightSplit) + '%' }"
+        :style="{ flexBasis: `calc(100% - ${leftPanelOpen ? split : 0}% - ${rightPanelOpen ? rightSplit : 0}%)` }"
       >
         <div class="h-9 shrink-0 bg-base-200/70 px-4 border-b border-base-300/60 text-xs font-medium flex items-center justify-between">
           <span class="opacity-50">滚轮横滑翻页 · Ctrl+滚轮缩放</span>
@@ -147,18 +172,28 @@
 
       
       <div
-        class="w-1 cursor-col-resize select-none shrink-0 z-10 transition-colors duration-200 drag-bar"
+        class="w-1 cursor-col-resize select-none shrink-0 z-10 transition-all duration-300 drag-bar"
         :class="draggingRight ? 'bg-primary' : 'bg-base-300'"
         @mousedown="onDragStartRight"
+        v-show="rightPanelOpen"
       ></div>
 
       
       <div
-        class="min-w-[240px] flex flex-col overflow-hidden bg-base-100"
-        :style="{ flexBasis: rightSplit + '%' }"
+        class="min-w-[240px] flex flex-col overflow-hidden bg-base-100 transition-all duration-300 ease-in-out"
+        :class="{
+          '!min-w-0 translate-x-full opacity-0 pointer-events-none': !rightPanelOpen
+        }"
+        :style="{ flexBasis: rightPanelOpen ? rightSplit + '%' : '0%' }"
       >
-        <div class="h-9 shrink-0 bg-base-200/70 px-4 border-b border-base-300/60 text-xs font-medium flex items-center">
+        <div class="h-9 shrink-0 bg-base-200/70 px-4 border-b border-base-300/60 text-xs font-medium flex items-center justify-between">
           <span class="opacity-60">卡片设置</span>
+          <button class="btn btn-ghost btn-sm gap-1" @click="toggleRightPanel">
+            收起
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
+            </svg>
+          </button>
         </div>
         <div class="flex-1 min-h-0 overflow-y-auto">
         <ControlPanel
@@ -195,6 +230,19 @@
         </div>
       </div>
     </div>
+
+    <!-- 右边收起后的悬浮展开按钮 -->
+    <button
+      v-if="!rightPanelOpen"
+      class="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-base-200 shadow-lg flex items-center justify-center cursor-pointer transition-none hover:bg-base-200 active:bg-base-200"
+      @click="toggleRightPanel"
+      title="展开设置面板"
+    >
+      <svg class="w-4 h-4 text-base-content/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.636 2.698 2.37-.67 1.744.337 3.843 1.722 4.726 1.403.88 1.403 2.975 0 3.854-1.385.887-2.392 2.986-1.722 4.726.612 1.734-1.155 3.31-2.698 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.636-2.698-2.37.67-1.744-.337-3.843-1.722-4.726-1.403-.88-1.403-2.975 0-3.854 1.385-.887 2.392-2.986 1.722-4.726-.612-1.734 1.155-3.31 2.698-2.37a1.724 1.724 0 002.573-1.066z"></path>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+      </svg>
+    </button>
     </template>
 
     
@@ -345,12 +393,8 @@ function applyAppTheme(): void {
 
 onMounted(() => {
   applyAppTheme()
-  // 校验登录状态：没 token 或 token 失效就弹激活窗
-  auth.initFromStorage().finally(() => {
-    if (!auth.isLoggedIn && !auth.offline) {
-      showActivationDialog.value = true
-    }
-  })
+  // 校验登录状态，不主动弹激活窗，用户点VIP主题时再弹
+  auth.initFromStorage()
 })
 
 // 切换主题：付费主题先调后端校验，防止前端以为还是VIP但实际已过期
@@ -434,6 +478,19 @@ const canUndo = computed<boolean>(() => store.activeId ? store.canUndo(store.act
 const canRedo = computed<boolean>(() => store.activeId ? store.canRedo(store.activeId) : false)
 
 const cardTheme = ref<string>('moss-paper')
+// 左右面板抽屉开关，默认都展开
+const leftPanelOpen = ref(true)
+const rightPanelOpen = ref(true)
+
+// 切换左面板
+function toggleLeftPanel() {
+  leftPanelOpen.value = !leftPanelOpen.value
+}
+
+// 切换右面板
+function toggleRightPanel() {
+  rightPanelOpen.value = !rightPanelOpen.value
+}
 const bodyFontMode = ref<BodyFontMode>('wenkai')
 
 
