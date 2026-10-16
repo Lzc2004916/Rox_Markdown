@@ -1,7 +1,7 @@
 
 
 
-import type { ThemeDefinition } from './types'
+import type { ThemeDefinition } from '../types'
 
 export const THEMES: ThemeDefinition[] = [
   
@@ -1214,13 +1214,19 @@ export const THEMES: ThemeDefinition[] = [
         h1LineHeight: 1.35, h2LineHeight: 1.45, h3LineHeight: 1.55,
         h1FontWeight: 700, h2FontWeight: 600, h3FontWeight: 500,
         h1MarginTop: 30, h1MarginBottom: 16,
-        h1Color: '#c9422e',     
+        h1Color: '#b8860b',
+        h2Color: '#b8860b',
+        h3Color: '#b8860b',
+        h4Color: '#b8860b',
+        h5Color: '#b8860b',
+        h6Color: '#b8860b',
       },
       list: { bulletChar: '◦', bulletSizeRatio: 0.82, indentPerLevel: 30, itemGap: 9 },
     },
     colorTag: 'red',
     decor: { kind: 'none', opacity: 0 },
     outerFrame: { kind: 'none', color: 'transparent', opacity: 0 },
+    contentInset: { top: 20, bottom: 20, left: 0, right: 0 },
     gradient: { enabled: false, color1: '#c8291a', color2: '#a81f10' },
   },
 

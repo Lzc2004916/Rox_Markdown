@@ -23,6 +23,7 @@ import {
   measureParagraphBlock,
   getParagraphMaxLines,
   measureListBlock,
+  measureListItem,
 } from './measure'
 import { measureCodeBlock } from './code-renderer'
 import { measureTableBlock } from './table-renderer'
@@ -733,11 +734,10 @@ export function layoutPages(opts: LayoutOptions): LayoutResult {
       const block = nextBlock
 
       // ── For non-text blocks: measure and fit atomically ─────
+      // 代码块、表格、多列：整块放置，不拆分
       if (block.kind === 'code' ||
           block.kind === 'table' ||
-          block.kind === 'columnContainer' ||
-          block.kind === 'orderedList' ||
-          block.kind === 'unorderedList') {
+          block.kind === 'columnContainer') {
         // 估算非文本块的高度（传入完整尺寸参数以获得准确列表高度）
         const estHeight = estimateBlockHeight(
           block, metrics.bodySize, metrics.bodyLineHeight,
@@ -764,6 +764,67 @@ export function layoutPages(opts: LayoutOptions): LayoutResult {
         page.blocks.push(block)
         if (!nextIsCarried) currentParagraph++
         continue
+      }
+
+      // ── 列表块：按项拆分，一页放几项算几项，剩下的带到下一页 ──
+      if (block.kind === 'orderedList' || block.kind === 'unorderedList') {
+        const listBlock = block as any
+        const listStyle = theme.editor.list
+        const bodyLineHeight = metrics.bodyLineHeight
+        const fontSize = metrics.bodySize
+
+        // 计算每一项的高度
+        const itemHeights: number[] = []
+        for (const item of listBlock.items) {
+          const indent = item.indent * listStyle.indentPerLevel
+          const effectiveMarkerSize = listBlock.kind === 'orderedList' ? fontSize : Math.round(fontSize * 0.9)
+          const textWidth = Math.max(60, metrics.bodyWidth - indent - effectiveMarkerSize - 8)
+          const { height } = measureListItem(item.text, fontSize, bodyLineHeight, textWidth, bodyFontFamily, bodyFontWeight)
+          itemHeights.push(Math.max(height, bodyLineHeight))
+        }
+
+        const leadingGap = getGapBetweenBlocks(previousBlock, { kind: 'body', raw: '' } as any, metrics, headingOverrides, theme, pageKind === 'cover')
+        let y = cursorY + leadingGap
+        let count = 0
+
+        // 一页能放几项就放几项
+        for (let i = 0; i < listBlock.items.length; i++) {
+          const itemBottom = y + itemHeights[i]! + (i > 0 ? listStyle.itemGap : 0)
+          // 当前页已经有内容了，放不下就停
+          if (itemBottom > metrics.bodyBottomY && page.blocks.length > 0) break
+          y = itemBottom
+          count++
+        }
+
+        // 保护：至少放一项（空页或者第一项特别高）
+        if (count === 0) {
+          count = 1
+          y = cursorY + leadingGap + itemHeights[0]!
+        }
+
+        if (count > 0) {
+          // 把这几项放进当前页
+          page.blocks.push({
+            ...listBlock,
+            items: listBlock.items.slice(0, count),
+          })
+          cursorY = y
+          previousBlock = { kind: 'body', raw: '' } as any
+
+          // 剩下的项带到下一页
+          if (count < listBlock.items.length) {
+            carryBlock = {
+              ...listBlock,
+              items: listBlock.items.slice(count),
+            }
+            if (!nextIsCarried) currentParagraph++
+          } else {
+            carryBlock = null
+            carryParagraph = null
+            if (!nextIsCarried) currentParagraph++
+          }
+          continue
+        }
       }
 
       // ── For text blocks: existing measurement + splitting ──

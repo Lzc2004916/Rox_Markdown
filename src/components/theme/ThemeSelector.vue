@@ -71,7 +71,7 @@
 
           <!-- VIP 未解锁遮罩 -->
           <div
-            v-if="auth.isPaidTheme(theme.id) && !auth.isVip"
+            v-if="isPaidTheme(theme.id) && !isVip"
             class="absolute inset-0 z-[1] pointer-events-none"
             style="background: rgba(0,0,0,0.25)"
           />
@@ -110,7 +110,7 @@
 
           <!-- VIP 标识：左上角金色皇冠标签 -->
           <div
-            v-if="auth.isPaidTheme(theme.id) && !auth.isVip"
+            v-if="isPaidTheme(theme.id) && !isVip"
             class="absolute top-1 left-1 flex items-center gap-0.5 px-1.5 py-0.5 rounded-md z-[2] shadow-sm"
             style="background: linear-gradient(135deg, #f59e0b, #d97706)"
           >
@@ -151,15 +151,16 @@
 <script setup lang="ts">
 import { ref, watch, computed, nextTick, onBeforeUnmount, onMounted } from 'vue'
 import type { ThemeDefinition } from '@/card'
-import { useAuthStore } from '@/stores/auth'
 
 const props = withDefaults(
   defineProps<{
     modelValue: string
     themes: ThemeDefinition[]
     label?: string
+    paidThemes?: string[]
+    isVip?: boolean
   }>(),
-  { label: '卡片主题' },
+  { label: '卡片主题', paidThemes: () => [], isVip: false },
 )
 
 const emit = defineEmits<{
@@ -167,7 +168,10 @@ const emit = defineEmits<{
   (e: 'need-activate'): void
 }>()
 
-const auth = useAuthStore()
+/** 判断是不是付费主题 */
+function isPaidTheme(id: string): boolean {
+  return props.paidThemes.includes(id)
+}
 
 
 
@@ -196,9 +200,9 @@ const categories = computed<CategoryTab[]>(() => allCategories)
 const filteredThemes = computed<ThemeDefinition[]>(() => {
   let list = props.themes
   if (activeCategory.value === 'free') {
-    list = list.filter((t) => !auth.isPaidTheme(t.id))
+    list = list.filter((t) => !isPaidTheme(t.id))
   } else if (activeCategory.value === 'vip') {
-    list = list.filter((t) => auth.isPaidTheme(t.id))
+    list = list.filter((t) => isPaidTheme(t.id))
   } else if (activeCategory.value !== 'all') {
     list = list.filter((t) => t.colorTag === activeCategory.value)
   }
@@ -390,8 +394,7 @@ function select(id: string, idx: number): void {
   focusedIdx.value = idx
 
   // VIP 主题拦截：没激活就弹激活窗
-  if (auth.isPaidTheme(id) && !auth.isVip) {
-    auth.pendingTheme = id
+  if (isPaidTheme(id) && !props.isVip) {
     emit('need-activate')
     return
   }

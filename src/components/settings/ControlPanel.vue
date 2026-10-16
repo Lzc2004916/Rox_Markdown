@@ -94,7 +94,7 @@
 
     
     <SettingSection title="卡片 UI">
-      <ThemeSelector v-model="themeId" :themes="THEMES" @need-activate="emit('need-activate')" />
+      <ThemeSelector v-model="themeId" :themes="THEMES" :paid-themes="auth.paidThemes" :is-vip="auth.isVip" @need-activate="emit('need-activate')" />
       <div class="pt-2 border-t border-base-200">
         <GradientPicker :model-value="gradientConfig" @update:model-value="(v: GradientConfig) => emit('update:gradientConfig', v)" />
       </div>
@@ -109,12 +109,12 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import ThemeSelector from '@/components/ThemeSelector.vue'
+import ThemeSelector from '@/components/theme/ThemeSelector.vue'
 import { useAuthStore } from '@/stores/auth'
 import Dropdown from '@/components/Dropdown.vue'
-import FontPicker from '@/components/FontPicker.vue'
-import GradientPicker from '@/components/GradientPicker.vue'
-import LoadingSpinner from '@/components/LoadingSpinner.vue'
+import FontPicker from '@/components/editor/FontPicker.vue'
+import GradientPicker from '@/components/editor/GradientPicker.vue'
+import LoadingSpinner from '@/components/preview/LoadingSpinner.vue'
 import HeadingStylePanel from '@/components/editor/HeadingStylePanel.vue'
 import SettingSection from '@/components/settings/SettingSection.vue'
 import SettingRow from '@/components/settings/SettingRow.vue'

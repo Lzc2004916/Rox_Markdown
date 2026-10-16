@@ -1,4 +1,5 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse } from 'axios'
+import { toast } from './toast'
 
 const TOKEN_KEY = 'rox_token'
 
@@ -40,7 +41,9 @@ service.interceptors.response.use(
       return res.data
     }
     // 业务错误
-    return Promise.reject(new Error(res.msg || '请求失败'))
+    const msg = res.msg || '请求失败'
+    toast.error(msg)
+    return Promise.reject(new Error(msg))
   },
   (error) => {
     // 401 → token 失效，清掉
@@ -48,6 +51,7 @@ service.interceptors.response.use(
       clearToken()
     }
     const msg = error.response?.data?.msg || error.message || '网络错误'
+    toast.error(msg)
     return Promise.reject(new Error(msg))
   },
 )

@@ -1,7 +1,7 @@
 <template>
   <div
     ref="containerRef"
-    class="flex flex-col w-full h-full rounded-xl bg-transparent"
+    class="flex flex-col w-full h-full rounded-xl bg-transparent relative"
   >
     
     <div
@@ -11,24 +11,27 @@
       class="flex-1 min-h-0 overflow-x-auto overflow-y-hidden px-6 flex items-center gap-6 outline-none"
       @scroll="onScroll"
       @wheel="onWheel"
-      @keydown="onKeydown"
     >
       <canvas
         v-for="(_, idx) in canvases"
         :key="idx"
         :ref="(el: unknown) => setCanvasRef(el, idx)"
-        class="card-canvas block w-auto shrink-0 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.06),0_8px_28px_rgba(0,0,0,0.05),0_0_0_1px_rgba(0,0,0,0.04)]"
+        class="card-canvas block w-auto shrink-0 shadow-lg rounded-md"
         :style="canvasDisplayStyle"
       ></canvas>
     </div>
 
     
-    <canvas
+    <div
       v-else-if="canvases.length > 0"
-      ref="singleCanvasRef"
-      class="card-canvas block h-auto shrink-0 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.06),0_8px_28px_rgba(0,0,0,0.05),0_0_0_1px_rgba(0,0,0,0.04)]"
-      :style="canvasDisplayStyle"
-    ></canvas>
+      class="flex-1 min-h-0 flex items-center justify-center px-6 py-6 overflow-auto"
+    >
+      <canvas
+        ref="singleCanvasRef"
+        class="card-canvas block h-auto shrink-0 shadow-lg rounded-md"
+        :style="canvasDisplayStyle"
+      ></canvas>
+    </div>
 
     
     <div
@@ -41,6 +44,19 @@
         size="lg"
         text="渲染中…"
       />
+    </div>
+
+    <!-- 渲染中遮罩：禁用交互 -->
+    <div
+      v-if="rendering && canvases.length > 0"
+      class="absolute inset-0 z-10 flex flex-col items-center justify-center bg-base-100/70 backdrop-blur-sm"
+    >
+      <div class="flex items-center gap-1.5 mb-3">
+        <div class="w-2 h-2 rounded-full bg-primary animate-bounce" style="animation-delay: 0ms"></div>
+        <div class="w-2 h-2 rounded-full bg-primary animate-bounce" style="animation-delay: 150ms"></div>
+        <div class="w-2 h-2 rounded-full bg-primary animate-bounce" style="animation-delay: 300ms"></div>
+      </div>
+      <span class="text-xs text-base-content/60">正在加载预览</span>
     </div>
 
     
@@ -71,7 +87,8 @@
 import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { renderAllPagesAsync, renderAllPages, renderCard, PAGE_WIDTH, getTheme, extractTokens, applyTokensToElement } from '@/card'
 import type { HighlightStyle, FooterRightMode, CardCornerMode, TypographySettings, GradientConfig, CardPage, HeadingStyleOverrides } from '@/card'
-import LoadingSpinner from '@/components/LoadingSpinner.vue'
+import LoadingSpinner from '@/components/preview/LoadingSpinner.vue'
+import { useScrollSync } from '@/composables/useScrollSync'
 
 
 
@@ -146,11 +163,12 @@ const canvases = ref<HTMLCanvasElement[]>([])
 
 const truncated = ref(false)
 
+const rendering = ref(false)
+
 const containerRef = ref<HTMLDivElement | null>(null)
 const scrollRef = ref<HTMLDivElement | null>(null)
 const singleCanvasRef = ref<HTMLCanvasElement | null>(null)
 const canvasRefs = ref<Record<number, HTMLCanvasElement | null>>({})
-const activeIdx = ref(props.currentPage)
 
 
 
@@ -197,11 +215,15 @@ let lastLayoutKey = ''
 let cachedLayoutPages: CardPage[] = []
 
 
+/**
+ * 生成排版缓存 key
+ * 排版只和内容、字号、行距、字体有关，和主题颜色无关
+ * 切主题时 key 不变，只重画不重新分页，速度快很多
+ */
 function buildLayoutKey(): string {
   const t = props.typography
   return JSON.stringify({
     source: props.source,
-    themeId: props.themeId,
     bodySize: t?.bodySize,
     lineHeight: t?.lineHeight,
     bodyFontMode: t?.bodyFontMode,
@@ -219,13 +241,17 @@ function scheduleRender(): void {
     abortController = null
   }
   if (debounceTimer) clearTimeout(debounceTimer)
-  debounceTimer = setTimeout(doRender, 300)
+  rendering.value = true
+  debounceTimer = setTimeout(doRender, 500)
 }
 
 async function doRender(): Promise<void> {
   
   abortController = new AbortController()
   const signal = abortController.signal
+
+  // 渲染前记住当前在第几页，渲染完尽量回到这里
+  const pageBeforeRender = activeIdx.value
 
   try {
     const layoutKey = buildLayoutKey()
@@ -247,6 +273,8 @@ async function doRender(): Promise<void> {
         highlightColor: props.highlightColor,
         bodyTextColor: props.bodyTextColor,
       }, signal)
+      // 释放旧 canvas 引用，帮助 GC
+      canvases.value.forEach(c => { c.width = 0; c.height = 0 })
       canvases.value = result.canvases
       cachedLayoutPages = result.pages
       truncated.value = result.truncated
@@ -335,6 +363,21 @@ async function doRender(): Promise<void> {
       truncated.value = result.truncated
       lastLayoutKey = buildLayoutKey()
     } catch {  }
+  } finally {
+    rendering.value = false
+    // 渲染完成后 nextTick，等 DOM 重建完再同步位置
+    await nextTick()
+    if (useScroll.value) {
+      // 尽量回到渲染前看的那一页，而不是跳回第一页
+      const targetPage = Math.min(pageBeforeRender, canvases.value.length - 1)
+      activeIdx.value = targetPage
+      const cardW = getRenderedCardWidth()
+      const pageW = cardW + CARD_GAP
+      const scrollRef = scrollRef.value
+      if (scrollRef) {
+        scrollRef.scrollLeft = targetPage * pageW
+      }
+    }
   }
 }
 
@@ -399,105 +442,18 @@ function setCanvasRef(el: unknown, idx: number): void {
   }
 }
 
-let isProgrammaticScroll = false
-let scrollTimer: ReturnType<typeof setTimeout> | null = null
-
-
-let targetLeft = 0
-let rafId: number | null = null
-
-function smoothLoop(): void {
-  const container = scrollRef.value
-  if (!container) return
-  const diff = targetLeft - container.scrollLeft
-  if (Math.abs(diff) < 0.5) {
-    container.scrollLeft = targetLeft
-    rafId = null
-    return
-  }
-  container.scrollLeft += diff * 0.12
-  rafId = requestAnimationFrame(smoothLoop)
-}
-
-function animateTo(left: number): void {
-  const container = scrollRef.value
-  if (!container) return
-  const max = container.scrollWidth - container.clientWidth
-  targetLeft = Math.max(0, Math.min(max, left))
-  if (rafId === null) rafId = requestAnimationFrame(smoothLoop)
-}
-
-function onWheel(e: WheelEvent): void {
-  
-  if (e.ctrlKey || e.metaKey) return
-  const container = scrollRef.value
-  if (!container) return
-
-  
-  
-  const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 400 : 1
-  const deltaY = e.deltaY * unit
-  const deltaX = e.deltaX * unit
-
-  
-  if (Math.abs(deltaX) > Math.abs(deltaY)) return
-  if (deltaY === 0) return
-
-  
-  
-  
-  
-  const max = container.scrollWidth - container.clientWidth
-  if ((targetLeft <= 0 && deltaY < 0) || (targetLeft >= max && deltaY > 0)) return
-
-  e.preventDefault()
-  animateTo(targetLeft + deltaY)
-}
-
-function onKeydown(e: KeyboardEvent): void {
-  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
-  e.preventDefault()
-  const cardW = getRenderedCardWidth()
-  const pageW = cardW + CARD_GAP
-  const dir = e.key === 'ArrowRight' ? 1 : -1
-  animateTo(targetLeft + dir * pageW)
-}
-
-function onScroll(): void {
-  if (isProgrammaticScroll) return
-  
-  
-  if (rafId === null && scrollRef.value) {
-    targetLeft = scrollRef.value.scrollLeft
-  }
-  if (scrollTimer) clearTimeout(scrollTimer)
-  scrollTimer = setTimeout(() => {
-    const container = scrollRef.value
-    if (!container) return
-    const cardW = getRenderedCardWidth()
-    if (cardW <= 0) return
-    const pageW = cardW + CARD_GAP
-    const idx = Math.round(container.scrollLeft / pageW)
-    const clamped = Math.max(0, Math.min(canvases.value.length - 1, idx))
-    if (clamped !== activeIdx.value) {
-      activeIdx.value = clamped
-      emit('update:currentPage', clamped)
-    }
-  }, 120)
-}
-
-watch(
-  () => props.currentPage,
-  (page) => {
-    const container = scrollRef.value
-    if (!container || !useScroll.value) return
-    if (page === activeIdx.value) return
-    const cardW = getRenderedCardWidth()
-    const pageW = cardW + CARD_GAP
-    animateTo(page * pageW)
-    activeIdx.value = page
-  },
-)
+/** 初始化滚动页码同步逻辑 */
+const {
+  activeIdx,
+  onWheel,
+  onScroll,
+  resetToCurrentPage,
+} = useScrollSync({
+  scrollRef,
+  canvasesLength: computed(() => canvases.value.length),
+  currentPage: computed(() => props.currentPage),
+  getCardWidth: getRenderedCardWidth,
+})
 
 
 
@@ -526,8 +482,6 @@ onMounted(() => {
 onBeforeUnmount(() => {
   if (abortController) abortController.abort()
   if (debounceTimer) clearTimeout(debounceTimer)
-  if (scrollTimer) clearTimeout(scrollTimer)
-  if (rafId) cancelAnimationFrame(rafId)
 })
 
 

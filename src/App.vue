@@ -110,12 +110,14 @@
             <button
               class="btn btn-ghost btn-xs btn-circle"
               title="排版异常时点此重排"
+              :disabled="reloading"
               @click="onRelayout"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg v-if="!reloading" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 1.44 4"/>
                 <path d="M21 3v6h-6"/>
               </svg>
+              <span v-else class="loading loading-spinner loading-xs"></span>
             </button>
             <span class="opacity-40 tabular-nums">{{ Math.round(previewScale * 100) }}%</span>
           </span>
@@ -292,6 +294,8 @@
       @close="showActivationDialog = false"
       @success="onActivateSuccess"
     />
+
+    <ToastContainer />
   </div>
   </ThemeProvider>
 </template>
@@ -302,10 +306,10 @@ import type { EditorView } from '@codemirror/view'
 import MarkdownEditor from '@/components/editor/MarkdownEditor.vue'
 import EditorToolbar from '@/components/editor/EditorToolbar.vue'
 import type { ToolbarItem } from '@/components/editor/EditorToolbar.vue'
-import CardPreview from '@/components/CardPreview.vue'
-import ThemeProvider from '@/components/ThemeProvider.vue'
+import CardPreview from '@/components/preview/CardPreview.vue'
+import ThemeProvider from '@/components/theme/ThemeProvider.vue'
 import DocumentTabs from '@/components/DocumentTabs.vue'
-import ControlPanel from '@/components/ControlPanel.vue'
+import ControlPanel from '@/components/settings/ControlPanel.vue'
 import { useMarkdown } from '@/composables/useMarkdown'
 import { useExport } from '@/composables/useExport'
 import { useDocumentsStore } from '@/stores/documents'
@@ -317,9 +321,10 @@ import type { GradientConfig } from '@/card'
 import type { TypographySettings, HighlightStyle, SubheadingStyle, HeadingStyleOverrides } from '@/card'
 import { useSettings } from '@/composables/useSettings'
 import { useSearch, type SearchMatch } from '@/composables/useSearch'
-import SearchDialog from '@/components/SearchDialog.vue'
-import ActivationDialog from '@/components/ActivationDialog.vue'
-import DownloadPage from '@/components/DownloadPage.vue'
+import SearchDialog from '@/components/editor/SearchDialog.vue'
+import ActivationDialog from '@/components/theme/ActivationDialog.vue'
+import ToastContainer from '@/components/ToastContainer.vue'
+import DownloadPage from '@/components/preview/DownloadPage.vue'
 import { useAuthStore } from '@/stores/auth'
 import { isDesktop } from '@/platforms/detection'
 import MobileLayout from '@/layouts/MobileLayout.vue'
@@ -453,13 +458,17 @@ const gradientConfig = ref<GradientConfig>({
 const previewScale = ref<number>(0.65)
 const previewContainerRef = ref<HTMLDivElement | null>(null)
 const relayoutKey = ref<number>(0)
+const reloading = ref(false)
 
 async function onRelayout() {
+  if (reloading.value) return
+  reloading.value = true
   clearMeasureCaches()
   if (document.fonts?.ready) {
     try { await document.fonts.ready } catch { /* ignore */ }
   }
   relayoutKey.value++
+  setTimeout(() => { reloading.value = false }, 500)
 }
 
 

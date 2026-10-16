@@ -428,7 +428,7 @@ export function measureParagraphBlock(
 
 
 
-function measureListItem(
+export function measureListItem(
   text: string,
   fontSize: number,
   lineHeight: number,

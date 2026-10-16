@@ -6,5 +6,5 @@ export interface RedeemResult {
 
 /** 用激活码兑换 JWT */
 export function redeem(rawToken: string) {
-  return post<RedeemResult>('/auth/redeem', { rawToken })
+  return post<RedeemResult>('/auth/login', { token: rawToken })
 }

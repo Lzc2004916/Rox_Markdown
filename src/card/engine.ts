@@ -78,10 +78,14 @@ function ensureFontsReady(fontFamilyStack: string, fontSize: number): Promise<vo
       }
       loads.push(document.fonts.ready.then(() => undefined).catch(() => undefined))
     }
-    cached = Promise.allSettled(loads).then(() => {
-      // 瀛椾綋鐘舵€佸凡鍙樺寲锛氭竻鎺夊彲鑳界敤 fallback 瀛楀鍐欏叆鐨勬姌琛?瑙ｆ瀽缂撳瓨
-      clearMeasureCaches()
-    })
+    // 2 秒超时，字体加载慢就先渲染，不等了
+    const timeout = new Promise<void>((resolve) => setTimeout(resolve, 2000))
+    cached = Promise.race([
+      Promise.allSettled(loads).then(() => {
+        clearMeasureCaches()
+      }),
+      timeout,
+    ])
     _fontLoadPromises.set(fontFamilyStack, cached)
   }
   return cached

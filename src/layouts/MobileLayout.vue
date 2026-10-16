@@ -120,8 +120,8 @@ import type { TypographySettings, HighlightStyle, GradientConfig, HeadingStyleOv
 import MarkdownEditor from '@/components/editor/MarkdownEditor.vue'
 import EditorToolbar from '@/components/editor/EditorToolbar.vue'
 import type { ToolbarItem } from '@/components/editor/EditorToolbar.vue'
-import CardPreview from '@/components/CardPreview.vue'
-import ControlPanel from '@/components/ControlPanel.vue'
+import CardPreview from '@/components/preview/CardPreview.vue'
+import ControlPanel from '@/components/settings/ControlPanel.vue'
 
 
 

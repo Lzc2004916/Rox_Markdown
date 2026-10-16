@@ -51,7 +51,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import Dropdown from './Dropdown.vue'
+import Dropdown from '@/components/Dropdown.vue'
 
 export interface FontOption {
   id: string
