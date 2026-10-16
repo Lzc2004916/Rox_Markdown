@@ -123,37 +123,30 @@ function defaultDoc(): Document {
 
 
 
-const WELCOME_CONTENT = `# Welcome to Markdown Card
+const WELCOME_CONTENT = `# ✨ Rox Markdown
 
-## Getting Started
+你的专属图文卡片创作工具
 
-This is a **Markdown editor** with live card preview.
+---
 
-### Features
+## 🎨 为什么用 Rox？
 
-- Real-time preview
-- Syntax highlighting
+✅ **50+ 精选主题** — 国风、赛博、简约、复古，总有一款适合你
+✅ **实时预览** — 写什么马上看到效果
+✅ **一键导出** — 高清 PNG，直接发社交平台
+✅ **免费主题够用** — 不用花钱也能做出好看的图
 
-### Code Example
+---
 
-\`\`\`javascript
-function greet(name) {
-  return \`Hello, \${name}!\`;
-}
-\`\`\`
+## 📝 怎么用？
 
-### Blockquote
+1. 左边输入框写 Markdown
+2. 右边选喜欢的主题
+3. 点导出保存图片
 
-> The best way to predict the future is to create it.
+---
 
-### Table
-
-| Feature | Status |
-|---------|--------|
-| Markdown | ✅ |
-| Diagrams | ✅ |
-
-Enjoy writing! 😊
+> 创作不用等，输入即所见。
 `
 
 
