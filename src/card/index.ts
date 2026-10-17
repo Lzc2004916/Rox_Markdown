@@ -95,7 +95,11 @@ export { renderAllPages, renderAllPagesAsync, canvasToPreviewUrl, canvasToExport
 export type { EngineOptions } from './engine'
 
 
-export { layoutPages, getParagraphBlock, parseInputBlocks } from './layout'
+export { layoutPages, getParagraphBlock, parseInputBlocks, computeImageMaxHeights, IMAGE_HEIGHT_MIN, IMAGE_HEIGHT_MAX } from './layout'
+
+
+export { parseImages, setImageHeight, nextImageKey, DEFAULT_IMAGE_HEIGHT } from './imageMarkdown'
+export type { ImageMarkdownItem } from './imageMarkdown'
 
 
 export { renderCard } from './renderer'

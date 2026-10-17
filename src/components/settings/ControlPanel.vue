@@ -79,7 +79,6 @@
       </SettingRow>
     </SettingSection>
 
-    
     <SettingSection title="位置">
       <SettingRow label="页脚">
         <label class="flex items-center gap-2 cursor-pointer">
@@ -104,6 +103,34 @@
     <SettingSection title="标题样式">
       <HeadingStylePanel />
     </SettingSection>
+
+
+    <SettingSection v-if="imageList.length > 0" title="图片">
+      <div v-for="img in imageList" :key="img.key" class="flex flex-col gap-1.5">
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-xs font-semibold text-base-content/80 truncate min-w-0">
+            {{ img.label }}
+            <span v-if="img.filename" class="text-base-content/45 font-normal">{{ img.filename }}</span>
+          </span>
+          <span
+            class="text-[11px] font-medium tabular-nums shrink-0"
+            :class="isOverLimit(img) ? 'text-error' : 'text-base-content/65'"
+          >{{ img.height }}px</span>
+        </div>
+        <input
+          type="range"
+          :min="IMAGE_HEIGHT_MIN"
+          :max="sliderMax(img)"
+          step="1"
+          :value="sliderValue(img)"
+          class="range range-xs range-primary"
+          @input="onImageInput(img.key, $event)"
+        />
+        <div v-if="isOverLimit(img)" class="text-[11px] text-error">
+          已超出该页可用高度，自动限制为 {{ Math.round(img.maxHeight) }}px
+        </div>
+      </div>
+    </SettingSection>
   </div>
 </template>
 
@@ -118,7 +145,7 @@ import LoadingSpinner from '@/components/preview/LoadingSpinner.vue'
 import HeadingStylePanel from '@/components/editor/HeadingStylePanel.vue'
 import SettingSection from '@/components/settings/SettingSection.vue'
 import SettingRow from '@/components/settings/SettingRow.vue'
-import { THEMES } from '@/card'
+import { THEMES, IMAGE_HEIGHT_MIN } from '@/card'
 import type { GradientConfig } from '@/card'
 
 const HIGHLIGHT_STYLE_OPTIONS = [
@@ -131,6 +158,15 @@ export interface FontOption {
   id: string
   label: string
   family: string
+}
+
+/** 单张图片的高度滑块数据 */
+export interface ImageItem {
+  key: string
+  label: string
+  filename: string
+  height: number
+  maxHeight: number
 }
 
 interface Props {
@@ -148,6 +184,7 @@ interface Props {
   isExporting: boolean
   progress: number
   bodyTextColor: string | null
+  images?: ImageItem[]
 }
 
 const props = defineProps<Props>()
@@ -165,6 +202,7 @@ const emit = defineEmits<{
   (e: 'update:gradientConfig', value: GradientConfig): void
   (e: 'update:previewScale', value: number): void
   (e: 'update:bodyTextColor', value: string | null): void
+  (e: 'update:imageHeight', key: string, height: number): void
   (e: 'export-png'): void
   (e: 'export-jpg'): void
   (e: 'export-pdf'): void
@@ -175,4 +213,22 @@ const themeId = computed({
   get: () => props.cardTheme,
   set: (v: string) => emit('update:cardTheme', v),
 })
+
+const imageList = computed(() => props.images ?? [])
+
+function sliderMax(img: ImageItem): number {
+  return Math.max(IMAGE_HEIGHT_MIN, Math.round(img.maxHeight))
+}
+
+function sliderValue(img: ImageItem): number {
+  return Math.min(img.height, sliderMax(img))
+}
+
+function isOverLimit(img: ImageItem): boolean {
+  return img.height > img.maxHeight
+}
+
+function onImageInput(key: string, e: Event): void {
+  emit('update:imageHeight', key, Number((e.target as HTMLInputElement).value))
+}
 </script>

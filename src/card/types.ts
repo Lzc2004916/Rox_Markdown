@@ -410,6 +410,11 @@ export interface ImageBlock {
   kind: 'image'
   src: string
   alt: string
+  height: number
+  /** 图片唯一标识（markdown 里写作 {#img1}），无则为 undefined（老图） */
+  key?: string
+  /** 排版时记录的块顶 Y 坐标（布局元数据，供动态高度上限计算） */
+  blockTop?: number
 }
 
 export type Block =

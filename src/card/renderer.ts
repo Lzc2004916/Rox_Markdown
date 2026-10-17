@@ -1077,13 +1077,11 @@ function drawColumnBlocks(
   _colDrawnHeight = cursorY - y
 }
 
-/** 图片块固定高度（px） */
-const IMAGE_BLOCK_HEIGHT = 150
-/** 图片块底部间距（px），与 layout 里 estimateBlockHeight 的 160 保持一致 */
+/** 图片块底部间距（px），与 layout 里 estimateBlockHeight 的 `height + 10` 保持一致 */
 const IMAGE_BLOCK_GAP = 10
 
 /**
- * 绘制单个图片块：cover 居中裁切到固定框（高 IMAGE_BLOCK_HEIGHT，宽由调用方指定）。
+ * 绘制单个图片块：按 block.height 拉伸铺满宽高（不保持原图比例），宽由调用方指定。
  * 图片已在渲染前由 preloadImages 预加载进缓存，这里同步取缓存绘制，
  * 保证 CardPreview 拷贝源 canvas 时图片像素已经就位。
  * @returns 占用的垂直高度（含底部间距），供调用方推进游标
@@ -1096,36 +1094,28 @@ function drawImageBlock(
   width: number,
 ): number {
   const img = getLoadedImage(block.src)
+  const h = block.height
 
   if (img && img.naturalWidth > 0 && img.naturalHeight > 0) {
     ctx.save()
-    // 固定尺寸 + cover 居中裁切：先 clip 到固定框，否则按原图比例放大后
-    // 会溢出占位区域、覆盖到后续文本（图片与文本重叠的根因）。
-    ctx.beginPath()
-    ctx.rect(x, y, width, IMAGE_BLOCK_HEIGHT)
-    ctx.clip()
-    const scale = Math.max(width / img.naturalWidth, IMAGE_BLOCK_HEIGHT / img.naturalHeight)
-    const scaledW = img.naturalWidth * scale
-    const scaledH = img.naturalHeight * scale
-    const offsetX = (width - scaledW) / 2
-    const offsetY = (IMAGE_BLOCK_HEIGHT - scaledH) / 2
-    ctx.drawImage(img, x + offsetX, y + offsetY, scaledW, scaledH)
+    // 直接拉伸铺满父容器，不管原图比例，填满宽高，不留白不溢出
+    ctx.drawImage(img, x, y, width, h)
     ctx.restore()
   } else {
     // 加载中 / 加载失败占位
     const failed = getImageStatus(block.src) === 'error'
     ctx.save()
     ctx.fillStyle = failed ? 'rgba(239,68,68,0.1)' : 'rgba(0,0,0,0.05)'
-    ctx.fillRect(x, y, width, IMAGE_BLOCK_HEIGHT)
+    ctx.fillRect(x, y, width, h)
     ctx.fillStyle = failed ? 'rgba(239,68,68,0.6)' : 'rgba(0,0,0,0.35)'
     ctx.font = '14px sans-serif'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
-    ctx.fillText(failed ? '图片加载失败' : '图片加载中…', x + width / 2, y + IMAGE_BLOCK_HEIGHT / 2)
+    ctx.fillText(failed ? '图片加载失败' : '图片加载中…', x + width / 2, y + h / 2)
     ctx.restore()
   }
 
-  return IMAGE_BLOCK_HEIGHT + IMAGE_BLOCK_GAP
+  return h + IMAGE_BLOCK_GAP
 }
 
 function drawInlineParagraph(
@@ -2117,7 +2107,7 @@ export function renderCard(opts: RenderOptions): HTMLCanvasElement {
     
     if (paragraph.kind === 'image') {
       const imgBlock = paragraph as ImageBlock
-      const imgTotalHeight = IMAGE_BLOCK_HEIGHT + IMAGE_BLOCK_GAP
+      const imgTotalHeight = imgBlock.height + IMAGE_BLOCK_GAP
       const blockBottom = blockTopWithGap + imgTotalHeight
       if (blockBottom > metrics.bodyBottomY && page.blocks.indexOf(paragraph) > 0) break
       paragraphY = blockTopWithGap

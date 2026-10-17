@@ -16,6 +16,7 @@ import type {
   ListItem,
   HeadingLevel,
   LayoutResult,
+  ImageBlock,
 } from './types'
 import {
   getPosterMetrics,
@@ -27,8 +28,14 @@ import {
 } from './measure'
 import { measureCodeBlock } from './code-renderer'
 import { measureTableBlock } from './table-renderer'
-import { getBodyFontFamily, BODY_TEXT_WEIGHT } from './types'
+import {
+  getBodyFontFamily,
+  BODY_TEXT_WEIGHT,
+  BODY_BOTTOM_WITH_FOOTER,
+  BODY_BOTTOM_WITHOUT_FOOTER,
+} from './types'
 import type { ThemeDefinition } from './types'
+import { parseImageAttrs, DEFAULT_IMAGE_HEIGHT } from './imageMarkdown'
 
 
 
@@ -260,17 +267,22 @@ export function parseInputBlocks(raw: string): Block[] {
     }
 
 
-    // ── Image (整行或跨行的 ![alt](src)) ────────────────────────
-    const imgMatch = line.trim().match(/^!\[([^\]]*)\]\(([^)]+)\)$/)
+    // ── Image (整行或跨行的 ![alt](src){#img1}{height=xxx}) ──────────────────
+    const imgMatch = line.trim().match(/^!\[([^\]]*)\]\(([^)]+)\)((?:\s*\{[^{}]*\})*)$/)
     const imgStartMatch = line.trim().match(/^!\[([^\]]*)\]$/)
     if (imgMatch || imgStartMatch) {
       flushTextBuffer(textBuffer)
       textBuffer = ''
       let alt = ''
       let src = ''
+      let height = DEFAULT_IMAGE_HEIGHT
+      let key: string | undefined
       if (imgMatch) {
         alt = imgMatch[1] || ''
         src = imgMatch[2] || ''
+        const attrs = parseImageAttrs(imgMatch[3] ?? '')
+        if (attrs.height != null) height = attrs.height
+        key = attrs.key
         i++
       } else {
         // 跨行：alt 在这一行，url 在下一行
@@ -279,9 +291,12 @@ export function parseInputBlocks(raw: string): Block[] {
         // 跳过空行，找下一行的 (src)
         while (i < lines.length && !lines[i]!.trim()) i++
         if (i < lines.length) {
-          const urlMatch = lines[i]!.trim().match(/^\(\s*([^)]+)\s*\)$/)
+          const urlMatch = lines[i]!.trim().match(/^\(\s*([^)]+)\s*\)((?:\s*\{[^{}]*\})*)$/)
           if (urlMatch) {
             src = urlMatch[1]
+            const attrs = parseImageAttrs(urlMatch[2] ?? '')
+            if (attrs.height != null) height = attrs.height
+            key = attrs.key
             i++
           }
         }
@@ -290,6 +305,8 @@ export function parseInputBlocks(raw: string): Block[] {
         kind: 'image',
         alt,
         src,
+        height,
+        key,
       })
       continue
     }
@@ -648,9 +665,11 @@ function estimateBlockHeight(
       const lineH = bodySize * 1.55
       return 14 + lb.items.length * (lineH + 10) + 14
     }
-    case 'image':
-      // 图片固定高度 150px + 10px 间距
-      return 160
+    case 'image': {
+      const imgBlock = block as ImageBlock
+      // 用图片自己设置的高度 + 10px 间距
+      return imgBlock.height + 10
+    }
     default:
       return 40
   }
@@ -783,6 +802,9 @@ export function layoutPages(opts: LayoutOptions): LayoutResult {
         )
         const blockTop = cursorY + getGapBetweenBlocks(previousBlock, { kind: 'body', raw: '' }, metrics, headingOverrides, theme, pageKind === 'cover')
         const blockBottom = blockTop + estHeight
+
+        // 记录图片块顶坐标，供动态高度上限计算（computeImageMaxHeights）
+        if (block.kind === 'image') (block as ImageBlock).blockTop = blockTop
 
         if (blockBottom <= metrics.bodyBottomY || page.blocks.length === 0) {
           page.blocks.push(block)
@@ -1014,4 +1036,42 @@ export function layoutPages(opts: LayoutOptions): LayoutResult {
   }
 
   return { pages, truncated }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 图片动态高度上限
+// ═══════════════════════════════════════════════════════════════════════════
+
+/** 图片高度下限（px） */
+export const IMAGE_HEIGHT_MIN = 50
+/** 图片高度硬上限（px） */
+export const IMAGE_HEIGHT_MAX = 600
+/** 图片块底部间距（px），与 estimateBlockHeight 的 `height + 10` 保持一致 */
+const IMAGE_BLOCK_GAP = 10
+
+/**
+ * 计算每张图片的动态高度上限（key → maxHeight）。
+ * 公式：clamp(50, 所在页 bodyBottomY − 图片块顶 blockTop − 底部间距, 600)。
+ * bodyBottomY 只受主题安全区(bottom)与页脚开关影响，全页一致；blockTop 由
+ * 排版阶段记录在图片块上。无 key / 未排版（blockTop 缺失）的图片不出现在结果里。
+ */
+export function computeImageMaxHeights(
+  pages: CardPage[],
+  theme: ThemeDefinition | undefined,
+  footerEnabled: boolean,
+): Record<string, number> {
+  const bottomPad = theme?.contentInset?.bottom ?? 0
+  const bodyBottomY = (footerEnabled ? BODY_BOTTOM_WITH_FOOTER : BODY_BOTTOM_WITHOUT_FOOTER) - bottomPad
+  const map: Record<string, number> = {}
+  for (const page of pages) {
+    for (const block of page.blocks) {
+      if (block.kind !== 'image') continue
+      const img = block as ImageBlock
+      if (!img.key || img.blockTop == null) continue
+      const available = bodyBottomY - img.blockTop - IMAGE_BLOCK_GAP
+      // floor 保证结果为整数：既避免把小数高度写进 markdown，也保证"高度<=上限"收敛不震荡
+      map[img.key] = Math.floor(Math.min(IMAGE_HEIGHT_MAX, Math.max(IMAGE_HEIGHT_MIN, available)))
+    }
+  }
+  return map
 }

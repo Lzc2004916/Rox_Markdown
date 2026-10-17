@@ -157,6 +157,7 @@
             ref="cardPreviewRef"
             :key="relayoutKey"
             v-model:current-page="currentPage"
+            @update:imageMaxHeights="imageMaxHeights = $event"
             :source="source"
             :theme-id="cardTheme"
             :typography="typography"
@@ -223,6 +224,8 @@
           :progress="progress"
           :body-text-color="bodyTextColor"
           @update:body-text-color="bodyTextColor = $event"
+          :images="imageItems"
+          @update:imageHeight="onImageHeightChange"
           @export-png="handleBatchExportPNG"
           @export-jpg="handleBatchExportJPG"
           @export-pdf="handleExportPDF"
@@ -359,11 +362,12 @@ import CardPreview from '@/components/preview/CardPreview.vue'
 import ThemeProvider from '@/components/theme/ThemeProvider.vue'
 import DocumentTabs from '@/components/DocumentTabs.vue'
 import ControlPanel from '@/components/settings/ControlPanel.vue'
+import type { ImageItem } from '@/components/settings/ControlPanel.vue'
 import { useMarkdown } from '@/composables/useMarkdown'
 import { useExport } from '@/composables/useExport'
 import { useDocumentsStore } from '@/stores/documents'
 import { useDrafts, type AppSettings } from '@/composables/useDrafts'
-import { BODY_FONT_MODES, getTheme, type BodyFontMode } from '@/card'
+import { BODY_FONT_MODES, getTheme, type BodyFontMode, parseImages, setImageHeight, nextImageKey, IMAGE_HEIGHT_MAX } from '@/card'
 import { clearMeasureCaches } from '@/card/measure'
 import DraftRecoveryModal from '@/components/DraftRecoveryModal.vue'
 import type { GradientConfig } from '@/card'
@@ -480,6 +484,47 @@ const canUndo = computed<boolean>(() => store.activeId ? store.canUndo(store.act
 const canRedo = computed<boolean>(() => store.activeId ? store.canRedo(store.activeId) : false)
 
 const cardTheme = ref<string>('moss-paper')
+
+// ── 图片高度滑块相关状态 ──────────────────────────────────────────
+// CardPreview 每次排版后回填：key -> 该图所在页的可用高度上限
+const imageMaxHeights = ref<Record<string, number>>({})
+
+// 从 markdown 扫描出的图片项（key + 高度 + 动态上限）
+const imageItems = computed<ImageItem[]>(() => {
+  return parseImages(source.value).map((it) => {
+    const n = /^img(\d+)$/.exec(it.key)?.[1] ?? it.key
+    return {
+      key: it.key,
+      label: `图${n}`,
+      filename: it.alt || '',
+      height: it.height,
+      maxHeight: imageMaxHeights.value[it.key] ?? IMAGE_HEIGHT_MAX,
+    }
+  })
+})
+
+// 滑块拖动：改写对应图片的 {height=}
+function onImageHeightChange(key: string, height: number): void {
+  const next = setImageHeight(source.value, key, height)
+  if (next !== source.value) source.value = next
+}
+
+// 排版回填上限后，若某图当前高度超出上限（主题切换/内容变化导致），自动 clamp 并提示
+watch(imageMaxHeights, (maxes) => {
+  let next = source.value
+  let changed = false
+  for (const it of parseImages(source.value)) {
+    const mx = maxes[it.key]
+    if (mx != null && it.height > mx) {
+      next = setImageHeight(next, it.key, mx)
+      changed = true
+    }
+  }
+  if (changed && next !== source.value) {
+    source.value = next
+    toast.info('部分图片高度已按当前卡片可用空间自动调整')
+  }
+})
 // 左右面板抽屉开关，默认都展开
 const leftPanelOpen = ref(true)
 const rightPanelOpen = ref(true)
@@ -922,7 +967,9 @@ async function onSelectImage() {
 
   // Markdown 里写绝对路径（正斜杠化）；预览渲染时再转成 rox-image:// 加载。
   // 用 insertStandaloneBlock 保证图片代码独占一行，否则布局引擎识别不到图片块。
-  const text = `![${result.name}](${normalizeImagePath(result.path)})`
+  // 默认高度200px；每张图分配唯一 key（{#imgN}），供高度滑块独立寻址。
+  const key = nextImageKey(source.value)
+  const text = `![${result.name}](${normalizeImagePath(result.path)}){#${key}}{height=200}`
   activeEditor.value?.insertStandaloneBlock(text)
   activeEditor.value?.focus()
   toast.success('图片已插入')

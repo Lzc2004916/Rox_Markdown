@@ -85,7 +85,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
-import { renderAllPagesAsync, renderAllPages, renderCard, preloadImages, collectImageSrcs, PAGE_WIDTH, getTheme, extractTokens, applyTokensToElement } from '@/card'
+import { renderAllPagesAsync, renderAllPages, renderCard, preloadImages, collectImageSrcs, PAGE_WIDTH, getTheme, extractTokens, applyTokensToElement, computeImageMaxHeights } from '@/card'
 import type { HighlightStyle, FooterRightMode, CardCornerMode, TypographySettings, GradientConfig, CardPage, HeadingStyleOverrides } from '@/card'
 import LoadingSpinner from '@/components/preview/LoadingSpinner.vue'
 import { useScrollSync } from '@/composables/useScrollSync'
@@ -148,6 +148,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   (e: 'update:currentPage', page: number): void
+  (e: 'update:imageMaxHeights', maxHeights: Record<string, number>): void
 }>()
 
 
@@ -370,6 +371,14 @@ async function doRender(): Promise<void> {
     } catch {  }
   } finally {
     rendering.value = false
+    // 回填每张图片的动态高度上限（key → maxHeight）。
+    // 上限依赖主题安全区与页脚，主题切换时即使排版缓存命中也要重算，故放在 finally 统一处理。
+    const maxHeights = computeImageMaxHeights(
+      cachedLayoutPages,
+      getTheme(props.themeId ?? 'moss-paper'),
+      props.footerEnabled ?? true,
+    )
+    emit('update:imageMaxHeights', maxHeights)
     // 渲染完成后 nextTick，等 DOM 重建完再同步位置
     await nextTick()
     if (useScroll.value) {
