@@ -58,6 +58,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
 
   /**
+   * 打开原生图片选择器，只支持图片格式。
+   * @returns 文件路径和文件名（去扩展名），取消则返回 null。
+   */
+  selectImage: (): Promise<{ path: string; name: string } | null> => {
+    return ipcRenderer.invoke('file:select-image')
+  },
+
+  /**
    * 将 Markdown 内容保存到用户选择的文件。
    * @param content     - 要写入的 Markdown 文本。
    * @param defaultName - 建议的文件名。

@@ -269,6 +269,39 @@ function insertAtCursor(text: string): void {
 }
 
 
+/**
+ * 插入一段必须独占一行的块级内容（如图片 Markdown 语法）。
+ * 若光标/选区所在行的前后还有非空白文本，则自动补换行，保证内容独占一行，
+ * 否则布局引擎无法把它识别为块（会当成正文内联文本渲染）。
+ */
+function insertStandaloneBlock(text: string): void {
+  const view = editorView
+  if (!view) return
+
+  const { state } = view
+  const changeSet = state.changeByRange((range) => {
+    const lineFrom = state.doc.lineAt(range.from)
+    const lineTo = state.doc.lineAt(range.to)
+    const beforeText = state.doc.sliceString(lineFrom.from, range.from)
+    const afterText = state.doc.sliceString(range.to, lineTo.to)
+    const needLead = beforeText.trim().length > 0
+    const needTail = afterText.trim().length > 0
+    const insertText = (needLead ? '\n' : '') + text + (needTail ? '\n' : '')
+    const cursorPos = range.from + insertText.length
+    return {
+      changes: { from: range.from, to: range.to, insert: insertText },
+      range: EditorSelection.range(cursorPos, cursorPos),
+    }
+  })
+
+  view.dispatch({
+    changes: changeSet.changes,
+    selection: changeSet.selection,
+    scrollIntoView: true,
+  })
+}
+
+
 function stripInlineMarkdown(text: string): string {
   let result = text
   let changed = true
@@ -412,6 +445,7 @@ function scrollToSearchMatch(from: number, to: number): void {
 
 defineExpose({
   insertAtCursor,
+  insertStandaloneBlock,
   wrapSelectionOrInsert,
   setCurrentLineHeading,
   getCurrentLineHeadingLevel,

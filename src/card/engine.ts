@@ -15,6 +15,7 @@ import { layoutPages } from './layout'
 import { renderCard } from './renderer'
 import { getTheme } from './themes'
 import { clearMeasureCaches } from './measure'
+import { preloadImages, collectImageSrcs } from './image-loader'
 import { getBodyFontFamily, BODY_TEXT_WEIGHT, BODY_BOLD_WEIGHT } from './types'
 
 
@@ -147,6 +148,11 @@ export async function renderAllPagesAsync(
     footerEnabled: opts.footerEnabled ?? true,
     headingOverrides: opts.headingOverrides,
   })
+
+  // 渲染前预加载全部图片块，保证 renderCard 同步绘制时图片已就绪；
+  // 否则图片只能 onload 后画在源 canvas 上，显示 canvas 的拷贝早已完成。
+  await preloadImages(collectImageSrcs(pages))
+  if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
 
   const canvases: HTMLCanvasElement[] = []
 

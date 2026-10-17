@@ -82,6 +82,7 @@
         <EditorToolbar
           @insert="onToolbarInsert"
           @command="onToolbarCommand"
+          @select-image="onSelectImage"
           :can-undo="canUndo"
           :can-redo="canRedo"
         />
@@ -376,6 +377,7 @@ import DownloadPage from '@/components/preview/DownloadPage.vue'
 import { useAuthStore } from '@/stores/auth'
 import { checkThemeAccess } from '@/api/theme'
 import { toast } from '@/utils/toast'
+import { isSupportedImage, normalizeImagePath, IMAGE_EXTENSIONS_LABEL } from '@/utils/image'
 import { isDesktop } from '@/platforms/detection'
 import MobileLayout from '@/layouts/MobileLayout.vue'
 
@@ -837,6 +839,7 @@ watch(
 
 interface MarkdownEditorAPI {
   insertAtCursor: (text: string) => void
+  insertStandaloneBlock: (text: string) => void
   wrapSelectionOrInsert: (prefix: string, suffix: string, placeholder: string) => void
   focus: () => void
   undo: () => void
@@ -887,6 +890,42 @@ function onToolbarInsert(item: ToolbarItem): void {
     activeEditor.value?.insertAtCursor(item.template)
   }
   activeEditor.value?.focus()
+}
+
+// 选择本地图片并插入
+async function onSelectImage() {
+  if (!window.electronAPI?.selectImage) {
+    toast.error('当前环境不支持插入本地图片')
+    return
+  }
+
+  let result: { path: string; name: string } | null = null
+  try {
+    result = await window.electronAPI.selectImage()
+  } catch {
+    toast.error('图片选择失败，请重试')
+    return
+  }
+
+  if (!result) return // 用户取消：不插入任何内容，不弹提示
+
+  if (!result.path) {
+    toast.error('图片路径获取失败，请重试')
+    return
+  }
+
+  // 插入前校验格式（对话框过滤器之外的兜底：用户可手动输入文件名）
+  if (!isSupportedImage(result.path)) {
+    toast.error(`仅支持图片格式（${IMAGE_EXTENSIONS_LABEL}）`)
+    return
+  }
+
+  // Markdown 里写绝对路径（正斜杠化）；预览渲染时再转成 rox-image:// 加载。
+  // 用 insertStandaloneBlock 保证图片代码独占一行，否则布局引擎识别不到图片块。
+  const text = `![${result.name}](${normalizeImagePath(result.path)})`
+  activeEditor.value?.insertStandaloneBlock(text)
+  activeEditor.value?.focus()
+  toast.success('图片已插入')
 }
 
 function onToolbarCommand(action: 'undo' | 'redo'): void {

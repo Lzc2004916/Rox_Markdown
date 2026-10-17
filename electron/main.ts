@@ -7,9 +7,12 @@ import {
   Menu,
   Tray,
   globalShortcut,
+  protocol,
+  net,
 } from 'electron'
 import path from 'node:path'
 import fs from 'node:fs'
+import { pathToFileURL } from 'node:url'
 
 // ─── 环境 ───────────────────────────────────────────────
 process.env.DIST = path.join(__dirname, '../dist')
@@ -24,6 +27,22 @@ const ICON_PATH = path.join(process.env.VITE_PUBLIC!, 'icon.png')
 let win: BrowserWindow | null = null
 let tray: Tray | null = null
 let forceClose = false
+
+// ─── 自定义协议：rox-image:// ─────────────────────────────────
+// 必须在 app ready 之前注册为特权 scheme，否则 dev 模式下
+// 页面源是 http://localhost，渲染进程加载 rox-image:// 子资源会被拦截。
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: 'rox-image',
+    privileges: {
+      standard: true,
+      secure: true,
+      supportFetchAPI: true,
+      stream: true,
+      bypassCSP: true,
+    },
+  },
+])
 
 // ─── 窗口边界持久化 ────────────────────────────────
 
@@ -315,6 +334,28 @@ ipcMain.handle('file:open', async (): Promise<{
   }
 })
 
+// ─── IPC: 选择本地图片文件 ───────────────────────────────────
+ipcMain.handle('file:select-image', async (): Promise<{
+  path: string
+  name: string
+} | null> => {
+  const result = await dialog.showOpenDialog(win!, {
+    title: '选择图片',
+    filters: [
+      { name: '图片', extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'] }
+    ],
+    properties: ['openFile'],
+  })
+
+  if (result.canceled || result.filePaths.length === 0) {
+    return null
+  }
+
+  const filePath = result.filePaths[0]
+  const fileName = path.basename(filePath).replace(/\.[^.]+$/, '')
+  return { path: filePath, name: fileName }
+})
+
 // ─── IPC: 保存 Markdown 文件 ───────────────────────────────────
 ipcMain.handle(
   'file:save',
@@ -356,6 +397,26 @@ app.on('will-quit', () => {
 })
 
 app.whenReady().then(() => {
+  // rox-image://image/<encodeURIComponent(绝对路径)> → 本地文件
+  // 用 protocol.handle + net.fetch 替代已废弃的 registerFileProtocol；
+  // 附带 ACAO 头，允许 http(dev) 源下的 fetch 跨 scheme 访问。
+  protocol.handle('rox-image', async (request) => {
+    try {
+      const url = new URL(request.url)
+      const filePath = decodeURIComponent(url.pathname).replace(/^\/+/, '')
+      const res = await net.fetch(pathToFileURL(filePath).toString())
+      return new Response(res.body, {
+        status: res.status,
+        headers: {
+          'Content-Type': res.headers.get('Content-Type') ?? 'application/octet-stream',
+          'Access-Control-Allow-Origin': '*',
+        },
+      })
+    } catch {
+      return new Response('Not Found', { status: 404 })
+    }
+  })
+
   createWindow()
   createTray()
   registerGlobalShortcuts()

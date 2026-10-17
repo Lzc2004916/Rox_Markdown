@@ -260,6 +260,40 @@ export function parseInputBlocks(raw: string): Block[] {
     }
 
 
+    // ── Image (整行或跨行的 ![alt](src)) ────────────────────────
+    const imgMatch = line.trim().match(/^!\[([^\]]*)\]\(([^)]+)\)$/)
+    const imgStartMatch = line.trim().match(/^!\[([^\]]*)\]$/)
+    if (imgMatch || imgStartMatch) {
+      flushTextBuffer(textBuffer)
+      textBuffer = ''
+      let alt = ''
+      let src = ''
+      if (imgMatch) {
+        alt = imgMatch[1] || ''
+        src = imgMatch[2] || ''
+        i++
+      } else {
+        // 跨行：alt 在这一行，url 在下一行
+        alt = imgStartMatch![1] || ''
+        i++
+        // 跳过空行，找下一行的 (src)
+        while (i < lines.length && !lines[i]!.trim()) i++
+        if (i < lines.length) {
+          const urlMatch = lines[i]!.trim().match(/^\(\s*([^)]+)\s*\)$/)
+          if (urlMatch) {
+            src = urlMatch[1]
+            i++
+          }
+        }
+      }
+      blocks.push({
+        kind: 'image',
+        alt,
+        src,
+      })
+      continue
+    }
+
     // ── Table (consecutive |...| lines) ────────────────────────
     if (isTableLine(line)) {
       flushTextBuffer(textBuffer)
@@ -614,6 +648,9 @@ function estimateBlockHeight(
       const lineH = bodySize * 1.55
       return 14 + lb.items.length * (lineH + 10) + 14
     }
+    case 'image':
+      // 图片固定高度 150px + 10px 间距
+      return 160
     default:
       return 40
   }
@@ -737,7 +774,8 @@ export function layoutPages(opts: LayoutOptions): LayoutResult {
       // 代码块、表格、多列：整块放置，不拆分
       if (block.kind === 'code' ||
           block.kind === 'table' ||
-          block.kind === 'columnContainer') {
+          block.kind === 'columnContainer' ||
+          block.kind === 'image') {
         // 估算非文本块的高度（传入完整尺寸参数以获得准确列表高度）
         const estHeight = estimateBlockHeight(
           block, metrics.bodySize, metrics.bodyLineHeight,

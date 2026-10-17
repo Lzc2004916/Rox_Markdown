@@ -101,6 +101,9 @@ export { layoutPages, getParagraphBlock, parseInputBlocks } from './layout'
 export { renderCard } from './renderer'
 
 
+export { preloadImages, collectImageSrcs, getLoadedImage, getImageStatus } from './image-loader'
+
+
 export { drawCodeBlock, measureCodeBlock, tokenizeCode } from './code-renderer'
 export { drawTableBlock, measureTableBlock } from './table-renderer'
 

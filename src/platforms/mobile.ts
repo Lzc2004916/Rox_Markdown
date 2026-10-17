@@ -2,7 +2,7 @@
 
 import { Filesystem, Directory } from '@capacitor/filesystem'
 import { Share } from '@capacitor/share'
-import type { ElectronAPI, SaveImageResult } from './types'
+import type { ElectronAPI, SaveImageResult, SelectImageResult } from './types'
 
 function noopUnsubscribe(): () => void {
   return () => {}
@@ -14,7 +14,11 @@ function base64FromDataUrl(dataUrl: string): string {
 
 export function createMobileAPI(): ElectronAPI {
   return {
-    
+
+    // 移动端不支持插入本地图片（桌面端独占功能）
+    selectImage: async (): Promise<SelectImageResult | null> => null,
+
+
 
     saveImage: async (dataUrl: string, defaultName: string): Promise<SaveImageResult> => {
       try {

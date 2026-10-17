@@ -405,12 +405,20 @@ export interface ListBlock {
   start?: number
 }
 
+// 图片块
+export interface ImageBlock {
+  kind: 'image'
+  src: string
+  alt: string
+}
+
 export type Block =
   | TextBlock
   | CodeBlock
   | TableDisplayBlock
   | ColumnContainerBlock
   | ListBlock
+  | ImageBlock
 
 
 

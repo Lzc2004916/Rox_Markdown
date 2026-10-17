@@ -85,7 +85,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
-import { renderAllPagesAsync, renderAllPages, renderCard, PAGE_WIDTH, getTheme, extractTokens, applyTokensToElement } from '@/card'
+import { renderAllPagesAsync, renderAllPages, renderCard, preloadImages, collectImageSrcs, PAGE_WIDTH, getTheme, extractTokens, applyTokensToElement } from '@/card'
 import type { HighlightStyle, FooterRightMode, CardCornerMode, TypographySettings, GradientConfig, CardPage, HeadingStyleOverrides } from '@/card'
 import LoadingSpinner from '@/components/preview/LoadingSpinner.vue'
 import { useScrollSync } from '@/composables/useScrollSync'
@@ -302,6 +302,11 @@ async function doRender(): Promise<void> {
         truncated.value = result.truncated
       } else {
         const theme = getTheme(props.themeId ?? 'moss-paper')
+        // 复用排版结果的重渲染分支（仅主题/样式变化）：
+        // renderAllPagesAsync 内部会预加载图片，这里绕过它直接 renderCard，
+        // 需要手动预加载一次（缓存命中时几乎无开销）
+        await preloadImages(collectImageSrcs(cachedLayoutPages))
+        if (signal.aborted) return
         const canvasesList: HTMLCanvasElement[] = []
         for (let i = 0; i < cachedLayoutPages.length; i++) {
           if (signal.aborted) return

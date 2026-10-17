@@ -44,7 +44,7 @@
         class="btn btn-ghost btn-sm btn-square h-7 w-7 min-h-0"
         :aria-label="item.label"
         @mousedown.prevent
-        @click="emit('insert', item)"
+        @click="item.id === 'image' ? emit('select-image') : emit('insert', item)"
       >
         
         <svg v-if="item.id === 'highlight'" class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -164,6 +164,7 @@ defineProps<{
 const emit = defineEmits<{
   (e: 'insert', item: ToolbarItem): void
   (e: 'command', action: 'undo' | 'redo'): void
+  (e: 'select-image'): void
 }>()
 
 
