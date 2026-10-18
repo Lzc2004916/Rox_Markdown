@@ -9,8 +9,13 @@
       ref="scrollRef"
       tabindex="0"
       class="flex-1 min-h-0 overflow-x-auto overflow-y-hidden px-6 flex items-center gap-6 outline-none"
+      style="cursor: grab; user-select: none;"
       @scroll="onScroll"
       @wheel="onWheel"
+      @mousedown="onMouseDown"
+      @mousemove="onMouseMove"
+      @mouseup="onMouseUp"
+      @mouseleave="onMouseLeave"
     >
       <canvas
         v-for="(_, idx) in canvases"
@@ -136,7 +141,7 @@ const props = withDefaults(defineProps<Props>(), {
   highlightStyle: 'underline' as HighlightStyle,
   footerLeft: '',
   footerRightMode: 'page' as FooterRightMode,
-  footerEnabled: true,
+  footerEnabled: false,
   cardCornerMode: 'square' as CardCornerMode,
   previewScale: 1.0,
   gradientConfig: () => ({ enabled: false, color1: '#6c5ce7', color2: '#a29bfe', angle: 135 }),
@@ -206,7 +211,10 @@ function getRenderedCardWidth(): number {
 
 
 
-let debounceTimer: ReturnType<typeof setTimeout> | null = null
+// 渲染节流：前缘立即渲染 + 尾部补偿，替代纯防抖，让删除操作立即跟手
+const RENDER_THROTTLE_MS = 300
+let throttleTimer: ReturnType<typeof setTimeout> | null = null
+let lastRenderAt = 0
 
 
 let abortController: AbortController | null = null
@@ -241,13 +249,37 @@ function scheduleRender(): void {
     abortController.abort()
     abortController = null
   }
-  if (debounceTimer) clearTimeout(debounceTimer)
-  rendering.value = true
-  debounceTimer = setTimeout(doRender, 500)
+
+  const now = performance.now()
+  const remaining = RENDER_THROTTLE_MS - (now - lastRenderAt)
+
+  if (remaining <= 0) {
+    // 前缘：距上次渲染已超过节流窗口，立即渲染（删除等离散操作即时响应）
+    if (throttleTimer) {
+      clearTimeout(throttleTimer)
+      throttleTimer = null
+    }
+    lastRenderAt = now
+    rendering.value = true
+    doRender()
+  } else {
+    // 尾部：窗口内连续变更只记一次，窗口结束后补渲染，保证最终结果落地
+    if (throttleTimer) clearTimeout(throttleTimer)
+    rendering.value = true
+    throttleTimer = setTimeout(() => {
+      throttleTimer = null
+      lastRenderAt = performance.now()
+      doRender()
+    }, remaining)
+  }
 }
 
 async function doRender(): Promise<void> {
-  
+  // 先让出当前同步执行栈：setup 阶段 immediate watch 触发首帧渲染时，
+  // activeIdx（来自 useScrollSync）尚未初始化，同步访问会 TDZ。
+  // 延后到微任务后，setup 已完成，变量均已就绪。
+  await Promise.resolve()
+
   abortController = new AbortController()
   const signal = abortController.signal
 
@@ -312,7 +344,7 @@ async function doRender(): Promise<void> {
         for (let i = 0; i < cachedLayoutPages.length; i++) {
           if (signal.aborted) return
           canvasesList.push(
-            renderCard({
+            await renderCard({
               page: cachedLayoutPages[i]!,
               theme,
               settings: props.typography,
@@ -350,9 +382,9 @@ async function doRender(): Promise<void> {
 
     console.warn('[CardPreview] Render failed:', e)
     try {
-      const result = renderAllPages({
+      const result = await renderAllPagesAsync({
         source: props.source,
-          themeId: props.themeId,
+        themeId: props.themeId,
         typography: props.typography,
         highlightStyle: props.highlightStyle,
         footerLeft: props.footerLeft,
@@ -461,6 +493,10 @@ const {
   activeIdx,
   onWheel,
   onScroll,
+  onMouseDown,
+  onMouseMove,
+  onMouseUp,
+  onMouseLeave,
 } = useScrollSync({
   scrollRef,
   canvasesLength: computed(() => canvases.value.length),
@@ -494,7 +530,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (abortController) abortController.abort()
-  if (debounceTimer) clearTimeout(debounceTimer)
+  if (throttleTimer) clearTimeout(throttleTimer)
 })
 
 

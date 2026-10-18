@@ -159,8 +159,6 @@ defineProps<{
   canRedo?: boolean
 }>()
 
-
-
 const emit = defineEmits<{
   (e: 'insert', item: ToolbarItem): void
   (e: 'command', action: 'undo' | 'redo'): void

@@ -36,7 +36,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   bodyFontMode: 'wenkai',
   bodyFontSize: 30,
   highlightStyle: 'underline',
-  footerEnabled: true,
+  footerEnabled: false,
   split: 50,
   rightSplit: 22,
   previewScale: 1.0,

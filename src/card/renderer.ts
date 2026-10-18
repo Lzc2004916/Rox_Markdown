@@ -270,10 +270,35 @@ function traceCardShape(
 
 
 
-function drawBackground(
+// 全局缓存所有主题背景图，切换主题时不会异步加载
+const bgImageCache = new Map<string, HTMLImageElement>()
+
+function loadBgImage(src: string): Promise<HTMLImageElement> {
+  if (bgImageCache.has(src)) {
+    return Promise.resolve(bgImageCache.get(src)!)
+  }
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => {
+      bgImageCache.set(src, img)
+      resolve(img)
+    }
+    img.onerror = reject
+    img.src = src
+  })
+}
+
+async function drawBackground(
   ctx: CanvasRenderingContext2D,
   theme: ThemeDefinition,
-): void {
+): Promise<void> {
+  // 支持主题直接用图片作为背景，先等图片加载完成，避免异步覆盖正文
+  if (theme.backgroundImage) {
+    const img = await loadBgImage(theme.backgroundImage)
+    ctx.drawImage(img, 0, 0, PAGE_WIDTH, PAGE_HEIGHT)
+    return
+  }
+
   const gradient = ctx.createLinearGradient(0, 0, 0, PAGE_HEIGHT)
 
   if (theme.mode === 'archive') {
@@ -1860,7 +1885,7 @@ function drawFooter(
 
 
 
-export function renderCard(opts: RenderOptions): HTMLCanvasElement {
+export async function renderCard(opts: RenderOptions): Promise<HTMLCanvasElement> {
   const {
     page,
     theme,
@@ -1905,7 +1930,7 @@ export function renderCard(opts: RenderOptions): HTMLCanvasElement {
 
   traceCardShape(ctx, 0, 0, PAGE_WIDTH, PAGE_HEIGHT, cardCornerMode,
     isBrutalTheme(theme) ? 0 : 36)
-  drawBackground(ctx, theme)
+  await drawBackground(ctx, theme)
 
   
   if (theme.id === 'ink-wash') {
@@ -2017,7 +2042,7 @@ export function renderCard(opts: RenderOptions): HTMLCanvasElement {
       }
 
       drawInlineParagraph(
-        ctx, block, CONTENT_LEFT, paragraphY,
+        ctx, block, metrics.bodyLeftX, paragraphY,
         metrics.bodySize, metrics.bodyLineHeight, metrics.bodyWidth,
         theme, highlightStyle, settings.subheadingStyle, metrics.bodyFontFamily,
         isCover,
@@ -2041,7 +2066,7 @@ export function renderCard(opts: RenderOptions): HTMLCanvasElement {
       const blockBottom = blockTopWithGap + height
       if (blockBottom > metrics.bodyBottomY && page.blocks.indexOf(paragraph) > 0) break
       paragraphY = blockTopWithGap
-      const drawnH = drawCodeBlock(ctx, paragraph, CONTENT_LEFT, paragraphY, metrics.bodySize, theme)
+      const drawnH = drawCodeBlock(ctx, paragraph, metrics.bodyLeftX, paragraphY, metrics.bodySize, theme)
       paragraphY += drawnH
       previousBlock = { kind: 'body', raw: '' }
       continue
@@ -2053,7 +2078,7 @@ export function renderCard(opts: RenderOptions): HTMLCanvasElement {
       const blockBottom = blockTopWithGap + totalHeight
       if (blockBottom > metrics.bodyBottomY && page.blocks.indexOf(paragraph) > 0) break
       paragraphY = blockTopWithGap
-      const drawnH = drawTableBlock(ctx, paragraph, CONTENT_LEFT, paragraphY,
+      const drawnH = drawTableBlock(ctx, paragraph, metrics.bodyLeftX, paragraphY,
         metrics.bodySize, metrics.bodyLineHeight, theme, metrics.bodyFontFamily)
       paragraphY += drawnH
       previousBlock = { kind: 'body', raw: '' }
@@ -2073,7 +2098,7 @@ export function renderCard(opts: RenderOptions): HTMLCanvasElement {
       paragraphY = blockTopWithGap
       const drawnH = drawListBlock(
         ctx, listBlock,
-        CONTENT_LEFT, paragraphY,
+        metrics.bodyLeftX, paragraphY,
         metrics.bodySize, metrics.bodyLineHeight, metrics.bodyWidth,
         theme, metrics.bodyFontFamily,
         bodyFontWeight,
@@ -2093,7 +2118,7 @@ export function renderCard(opts: RenderOptions): HTMLCanvasElement {
       paragraphY = blockTopWithGap
       const drawnH = drawColumnContainer(
         ctx, colBlock,
-        CONTENT_LEFT, paragraphY,
+        metrics.bodyLeftX, paragraphY,
         metrics, theme, settings, highlightStyle,
         opts.headingOverrides,
         highlightColor,
@@ -2111,7 +2136,7 @@ export function renderCard(opts: RenderOptions): HTMLCanvasElement {
       const blockBottom = blockTopWithGap + imgTotalHeight
       if (blockBottom > metrics.bodyBottomY && page.blocks.indexOf(paragraph) > 0) break
       paragraphY = blockTopWithGap
-      paragraphY += drawImageBlock(ctx, imgBlock, CONTENT_LEFT, paragraphY, metrics.bodyWidth)
+      paragraphY += drawImageBlock(ctx, imgBlock, metrics.bodyLeftX, paragraphY, metrics.bodyWidth)
       previousBlock = { kind: 'body', raw: '' }
       continue
     }

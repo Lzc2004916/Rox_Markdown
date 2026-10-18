@@ -20,6 +20,7 @@ import {
   BODY_FONT_FAMILY,
   LEADING_PUNCTUATION,
   CONTENT_WIDTH,
+  CONTENT_LEFT,
   BODY_BOTTOM_WITH_FOOTER,
   BODY_BOTTOM_WITHOUT_FOOTER,
   getBodyFontFamily,
@@ -614,5 +615,6 @@ export function getPosterMetrics(
     bodyTopY,
     bodyBottomY,
     bodyWidth: CONTENT_WIDTH - leftPad - rightPad,
+    bodyLeftX: CONTENT_LEFT + leftPad,
   }
 }

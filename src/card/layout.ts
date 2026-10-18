@@ -33,6 +33,7 @@ import {
   BODY_TEXT_WEIGHT,
   BODY_BOTTOM_WITH_FOOTER,
   BODY_BOTTOM_WITHOUT_FOOTER,
+  DEFAULT_LIST_STYLE,
 } from './types'
 import type { ThemeDefinition } from './types'
 import { parseImageAttrs, DEFAULT_IMAGE_HEIGHT } from './imageMarkdown'
@@ -384,26 +385,40 @@ export function parseInputBlocks(raw: string): Block[] {
       continue
     }
 
-    // ── List block (consecutive list items) ──────────────────────
+    // ── List block (consecutive list items of the SAME type) ──
     if (isListItemLine(line)) {
       flushTextBuffer(textBuffer)
       textBuffer = ''
-      const listItems: ListItem[] = []
-      const isOrdered = !isUnorderedListItem(line)
 
+      // 逐段处理：连续「同类型」的列表项合并为一个块；无序/有序切换时拆分为新块，
+      // 避免「- 项」和「1. 项」被合并成单一列表、导致某一种标记丢失。
       while (i < lines.length && isListItemLine(lines[i]!)) {
-        const itemLine = lines[i]!
-        listItems.push({
-          text: getListItemText(itemLine),
-          indent: getListItemIndent(itemLine),
-        })
-        i++
-      }
+        const firstLine = lines[i]!
+        const isOrdered = !isUnorderedListItem(firstLine)
 
-      blocks.push({
-        kind: isOrdered ? 'orderedList' : 'unorderedList',
-        items: listItems,
-      } as ListBlock)
+        // 有序列表：解析起始序号（如 "3. xxx" 的 3），切块/跨页后编号仍连续
+        const start = isOrdered
+          ? Number(firstLine.match(ORDERED_LIST_RE)?.[2] ?? 1)
+          : undefined
+
+        const listItems: ListItem[] = []
+        while (i < lines.length && isListItemLine(lines[i]!)) {
+          const curLine = lines[i]!
+          const curIsOrdered = !isUnorderedListItem(curLine)
+          if (curIsOrdered !== isOrdered) break // 类型切换，拆分为新块
+          listItems.push({
+            text: getListItemText(curLine),
+            indent: getListItemIndent(curLine),
+          })
+          i++
+        }
+
+        blocks.push({
+          kind: isOrdered ? 'orderedList' : 'unorderedList',
+          items: listItems,
+          start,
+        } as ListBlock)
+      }
       continue
     }
 
@@ -829,7 +844,7 @@ export function layoutPages(opts: LayoutOptions): LayoutResult {
       // ── 列表块：按项拆分，一页放几项算几项，剩下的带到下一页 ──
       if (block.kind === 'orderedList' || block.kind === 'unorderedList') {
         const listBlock = block as any
-        const listStyle = theme.editor.list
+        const listStyle = theme.editor.list ?? DEFAULT_LIST_STYLE
         const bodyLineHeight = metrics.bodyLineHeight
         const fontSize = metrics.bodySize
 
@@ -850,16 +865,20 @@ export function layoutPages(opts: LayoutOptions): LayoutResult {
         // 一页能放几项就放几项
         for (let i = 0; i < listBlock.items.length; i++) {
           const itemBottom = y + itemHeights[i]! + (i > 0 ? listStyle.itemGap : 0)
-          // 当前页已经有内容了，放不下就停
-          if (itemBottom > metrics.bodyBottomY && page.blocks.length > 0) break
+          // 放不下就停（空页也一样）；「空页且第一项超高」由下方保护分支兜底
+          if (itemBottom > metrics.bodyBottomY) break
           y = itemBottom
           count++
         }
 
-        // 保护：至少放一项（空页或者第一项特别高）
+        // 保护：空页且第一项特别高时至少放一项；非空页放不下则整块留到下一页
         if (count === 0) {
-          count = 1
-          y = cursorY + leadingGap + itemHeights[0]!
+          if (page.blocks.length === 0) {
+            count = 1
+            y = cursorY + leadingGap + itemHeights[0]!
+          } else {
+            break
+          }
         }
 
         if (count > 0) {
@@ -871,19 +890,22 @@ export function layoutPages(opts: LayoutOptions): LayoutResult {
           cursorY = y
           previousBlock = { kind: 'body', raw: '' } as any
 
-          // 剩下的项带到下一页
+          // 剩下的项带到下一页：结束当前页，由外层开新页继续排剩余项
           if (count < listBlock.items.length) {
             carryBlock = {
               ...listBlock,
               items: listBlock.items.slice(count),
+              // 剩余项从「上一页已放完的下一号」继续编号，避免跨页后从 1 重新开始
+              start: (listBlock.start ?? 1) + count,
             }
             if (!nextIsCarried) currentParagraph++
+            break
           } else {
             carryBlock = null
             carryParagraph = null
             if (!nextIsCarried) currentParagraph++
+            continue
           }
-          continue
         }
       }
 
@@ -1017,7 +1039,8 @@ export function layoutPages(opts: LayoutOptions): LayoutResult {
       carryPendingWasSplit = pendingWasSplits.shift()!
     } else {
       carryParagraph = null
-      carryBlock = null
+      // 不要清空 carryBlock：列表拆分会把剩余项放在 carryBlock，内层循环 break 后
+      // 需原样带到下一页。若此处无条件清空，列表剩余项会丢失（历史 bug）。
     }
 
     

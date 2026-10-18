@@ -84,7 +84,7 @@ const footerRightMode = ref<'blank' | 'page' | 'date'>(
   (localStorage.getItem(STORAGE_PREFIX + 'footerRightMode') as 'blank' | 'page' | 'date') || 'page',
 )
 const footerEnabled = ref<boolean>(
-  localStorage.getItem(STORAGE_PREFIX + 'footerEnabled') !== 'false',
+  localStorage.getItem(STORAGE_PREFIX + 'footerEnabled') === 'true',
 )
 const cardCornerMode = ref<'rounded' | 'square'>(
   (localStorage.getItem(STORAGE_PREFIX + 'cardCornerMode') as 'rounded' | 'square') || 'square',

@@ -30,8 +30,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-defineProps<{ title: string; defaultOpen?: boolean }>()
-const open = ref(true)
+const props = defineProps<{ title: string; defaultOpen?: boolean }>()
+const open = ref(props.defaultOpen ?? true)
 </script>
 
 <style scoped>

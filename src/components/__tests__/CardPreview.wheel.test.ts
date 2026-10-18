@@ -32,10 +32,13 @@ vi.mock('@/card', () => {
     getTheme: () => ({ editor: { highlightStyle: 'underline' } }),
     extractTokens: () => ({}),
     applyTokensToElement: () => {},
+    preloadImages: async () => {},
+    collectImageSrcs: () => [],
+    computeImageMaxHeights: () => ({}),
   }
 })
 
-import CardPreview from '../CardPreview.vue'
+import CardPreview from '../preview/CardPreview.vue'
 
 const RENDER_WAIT = 420
 

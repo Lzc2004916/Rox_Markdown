@@ -234,7 +234,7 @@ export interface ThemeEditor {
 
 
 
-export type DecorKind = 'none' | 'cornerBracket' | 'topRule' | 'watermark' | 'geometricPattern' | 'leafMotif' | 'circuitTrace' | 'goldFoil' | 'auroraGlow' | 'fanBurst' | 'macosWindow' | 'desertSun' | 'sakuraPetal' | 'coralBranch' | 'crystalFacet' | 'sketchHatch' | 'matchaRing' | 'sealStamp' | 'iosNotesNav'
+export type DecorKind = 'none' | 'cornerBracket' | 'topRule' | 'watermark' | 'geometricPattern' | 'leafMotif' | 'circuitTrace' | 'goldFoil' | 'auroraGlow' | 'fanBurst' | 'macosWindow' | 'desertSun' | 'sakuraPetal' | 'coralBranch' | 'crystalFacet' | 'sketchHatch' | 'iosNotesNav'
 
 export interface ThemeDecor {
   
@@ -299,6 +299,8 @@ export interface ThemeDefinition {
     
     angle?: number
   }
+
+  backgroundImage?: string
 }
 
 

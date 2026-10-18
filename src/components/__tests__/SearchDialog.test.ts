@@ -3,7 +3,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { nextTick } from 'vue'
-import SearchDialog from '../SearchDialog.vue'
+import SearchDialog from '../editor/SearchDialog.vue'
 
 function mountDialog(visible = true): VueWrapper<InstanceType<typeof SearchDialog>> {
   return mount(SearchDialog, {

@@ -160,7 +160,7 @@ export async function renderAllPagesAsync(
     if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
 
     canvases.push(
-      renderCard({
+      await renderCard({
         page: pages[i]!,
         theme,
         settings,

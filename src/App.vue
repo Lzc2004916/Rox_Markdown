@@ -108,7 +108,7 @@
       <!-- 左边收起后的悬浮展开按钮 -->
       <button
         v-if="!leftPanelOpen"
-        class="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-base-200 shadow-lg flex items-center justify-center cursor-pointer transition-none hover:bg-base-200 active:bg-base-200"
+        class="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-base-200 shadow-lg border border-base-300 flex items-center justify-center cursor-pointer transition-all hover:bg-base-300 hover:border-base-400"
         @click="toggleLeftPanel"
         title="展开编辑栏"
       >
@@ -238,7 +238,7 @@
     <!-- 右边收起后的悬浮展开按钮 -->
     <button
       v-if="!rightPanelOpen"
-      class="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-base-200 shadow-lg flex items-center justify-center cursor-pointer transition-none hover:bg-base-200 active:bg-base-200"
+      class="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-base-200 shadow-lg border border-base-300 flex items-center justify-center cursor-pointer transition-all hover:bg-base-300 hover:border-base-400"
       @click="toggleRightPanel"
       title="展开设置面板"
     >
@@ -586,7 +586,7 @@ const bodyFontSize = ref<number>(30)
 const bodyFontWeight = ref<number>(400)
 const highlightStyle = ref<HighlightStyle>('underline' as HighlightStyle)
 const highlightColor = ref<string | null>(null)
-const footerEnabled = ref<boolean>(true)
+const footerEnabled = ref<boolean>(false)
 const gradientConfig = ref<GradientConfig>({
   enabled: false,
   color1: '#6c5ce7',

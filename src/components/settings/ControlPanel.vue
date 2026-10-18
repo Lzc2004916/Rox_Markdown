@@ -58,8 +58,19 @@
       <SettingRow label="正文字号" :value="bodyFontSize">
         <input :value="bodyFontSize" type="range" min="20" max="40" step="1" class="range range-xs range-primary flex-1" @input="emit('update:bodyFontSize', Number(($event.target as HTMLInputElement).value))" />
       </SettingRow>
-      <SettingRow label="正文字重" :value="bodyFontWeight">
-        <input :value="bodyFontWeight" type="range" min="100" max="900" step="100" class="range range-xs range-primary flex-1" @input="emit('update:bodyFontWeight', Number(($event.target as HTMLInputElement).value))" />
+      <SettingRow label="正文字重" :value="bodyFontWeight === 700 ? '粗体' : '常规'">
+        <div class="join">
+          <button
+            class="btn btn-xs join-item h-6 min-h-0 px-3 text-xs"
+            :class="bodyFontWeight !== 700 ? 'btn-primary' : 'btn-ghost text-base-content/60'"
+            @click="emit('update:bodyFontWeight', 400)"
+          >常规</button>
+          <button
+            class="btn btn-xs join-item h-6 min-h-0 px-3 text-xs"
+            :class="bodyFontWeight === 700 ? 'btn-primary' : 'btn-ghost text-base-content/60'"
+            @click="emit('update:bodyFontWeight', 700)"
+          >粗体</button>
+        </div>
       </SettingRow>
       <SettingRow label="高亮样式">
         <div class="join">
@@ -100,36 +111,40 @@
     </SettingSection>
 
 
-    <SettingSection title="标题样式">
-      <HeadingStylePanel />
+    <SettingSection title="图片" :default-open="imageList.length > 0">
+      <template v-if="imageList.length > 0">
+        <div v-for="img in imageList" :key="img.key" class="flex flex-col gap-1.5">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs font-semibold text-base-content/80 truncate min-w-0">
+              {{ img.label }}
+              <span v-if="img.filename" class="text-base-content/45 font-normal">{{ img.filename }}</span>
+            </span>
+            <span
+              class="text-[11px] font-medium tabular-nums shrink-0"
+              :class="isOverLimit(img) ? 'text-error' : 'text-base-content/65'"
+            >{{ img.height }}px</span>
+          </div>
+          <input
+            type="range"
+            :min="IMAGE_HEIGHT_MIN"
+            :max="sliderMax(img)"
+            step="1"
+            :value="sliderValue(img)"
+            class="range range-xs range-primary"
+            @input="onImageInput(img.key, $event)"
+          />
+          <div v-if="isOverLimit(img)" class="text-[11px] text-error">
+            已超出该页可用高度，自动限制为 {{ Math.round(img.maxHeight) }}px
+          </div>
+        </div>
+      </template>
+      <div v-else class="text-xs text-base-content/40 py-1">
+        暂无图片，插入图片后可在此调整高度
+      </div>
     </SettingSection>
 
-
-    <SettingSection v-if="imageList.length > 0" title="图片">
-      <div v-for="img in imageList" :key="img.key" class="flex flex-col gap-1.5">
-        <div class="flex items-center justify-between gap-2">
-          <span class="text-xs font-semibold text-base-content/80 truncate min-w-0">
-            {{ img.label }}
-            <span v-if="img.filename" class="text-base-content/45 font-normal">{{ img.filename }}</span>
-          </span>
-          <span
-            class="text-[11px] font-medium tabular-nums shrink-0"
-            :class="isOverLimit(img) ? 'text-error' : 'text-base-content/65'"
-          >{{ img.height }}px</span>
-        </div>
-        <input
-          type="range"
-          :min="IMAGE_HEIGHT_MIN"
-          :max="sliderMax(img)"
-          step="1"
-          :value="sliderValue(img)"
-          class="range range-xs range-primary"
-          @input="onImageInput(img.key, $event)"
-        />
-        <div v-if="isOverLimit(img)" class="text-[11px] text-error">
-          已超出该页可用高度，自动限制为 {{ Math.round(img.maxHeight) }}px
-        </div>
-      </div>
+    <SettingSection title="标题样式">
+      <HeadingStylePanel />
     </SettingSection>
   </div>
 </template>
