@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div
     ref="containerRef"
     class="flex flex-col w-full h-full rounded-xl bg-transparent relative"
@@ -130,7 +130,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   currentPage: 0,
-  themeId: 'moss-paper',
+  themeId: 'warm-editor',
   typography: () => ({
     bodySize: 30,
     lineHeight: 1.84,
@@ -334,7 +334,7 @@ async function doRender(): Promise<void> {
         cachedLayoutPages = result.pages
         truncated.value = result.truncated
       } else {
-        const theme = getTheme(props.themeId ?? 'moss-paper')
+        const theme = getTheme(props.themeId ?? 'warm-editor')
         // 复用排版结果的重渲染分支（仅主题/样式变化）：
         // renderAllPagesAsync 内部会预加载图片，这里绕过它直接 renderCard，
         // 需要手动预加载一次（缓存命中时几乎无开销）
@@ -407,7 +407,7 @@ async function doRender(): Promise<void> {
     // 上限依赖主题安全区与页脚，主题切换时即使排版缓存命中也要重算，故放在 finally 统一处理。
     const maxHeights = computeImageMaxHeights(
       cachedLayoutPages,
-      getTheme(props.themeId ?? 'moss-paper'),
+      getTheme(props.themeId ?? 'warm-editor'),
       props.footerEnabled ?? true,
     )
     emit('update:imageMaxHeights', maxHeights)
@@ -510,7 +510,7 @@ const {
 watch(
   () => [props.themeId, props.gradientConfig] as const,
   () => {
-    const theme = getTheme(props.themeId ?? 'moss-paper')
+    const theme = getTheme(props.themeId ?? 'warm-editor')
     const tokens = extractTokens(
       theme,
       props.gradientConfig,

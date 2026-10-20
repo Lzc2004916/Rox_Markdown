@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="min-h-screen bg-base-200 flex items-center justify-center p-6">
     <div class="max-w-md w-full">
       <div class="bg-base-100 rounded-2xl shadow-xl p-8 text-center">
@@ -48,3 +48,4 @@ function openOfficialSite() {
   window.open(`${baseUrl}/download.html`, '_blank')
 }
 </script>
+

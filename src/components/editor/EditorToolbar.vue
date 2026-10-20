@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="flex flex-wrap items-center gap-0.5 px-2 py-1 bg-base-200 border-b border-base-300 select-none">
     
     <button

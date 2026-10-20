@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="heading-style-panel px-3 py-2 space-y-2.5">
       
       <div
@@ -426,3 +426,4 @@ function resetAll(): void {
   height: 0.75rem;
 }
 </style>
+

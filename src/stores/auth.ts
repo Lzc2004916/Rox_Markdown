@@ -1,141 +1,114 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { getToken, setToken, clearToken } from '@/utils/request'
-import { redeem } from '@/api/auth'
-import { getMyTheme, getPublicThemes } from '@/api/theme'
+import { redeem, getVipStatus, getPaidThemeList } from '@/api/auth'
 
-// 本地缓存的异或混淆密钥（仅混淆，非真正加密）
-const XOR_KEY = 'rox_vip_2026'
-const VIP_TYPE_KEY = 'rox_vip_type'
-const VIP_EXPIRE_KEY = 'rox_vip_expire'
-const PAID_THEMES_KEY = 'rox_paid_themes'
-
-function xorBytes(str: string): string {
-  return [...str]
-    .map((c, i) => String.fromCharCode(c.charCodeAt(0) ^ XOR_KEY.charCodeAt(i % XOR_KEY.length)))
-    .join('')
+// 简单XOR加密混淆，防止直接改localStorage明文
+const encrypt = (str: string, key = 'rox_vip_2026'): string => {
+  return btoa(str.split('').map((c, i) => String.fromCharCode(c.charCodeAt(0) ^ key.charCodeAt(i % key.length))).join(''))
 }
-
-function encrypt(str: string): string {
-  return btoa(xorBytes(str))
-}
-
-function decrypt(encoded: string): string {
-  return xorBytes(atob(encoded))
+const decrypt = (str: string, key = 'rox_vip_2026'): string => {
+  try {
+    return atob(str).split('').map((c, i) => String.fromCharCode(c.charCodeAt(0) ^ key.charCodeAt(i % key.length))).join('')
+  } catch { return '' }
 }
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref<string | null>(getToken())
-  const offline = ref(false)
-  /** VIP 类型：'NONE' | 'WEEK' | 'MONTH' | ... | 'EXPIRED' */
-  const vipType = ref('NONE')
-  /** VIP 到期时间戳（毫秒），永久卡为 null */
-  const vipExpire = ref<number | null>(null)
+  const active = ref(false)
+  const vipType = ref<string>('FREE')
+  const expireAtMs = ref<number>(0)
   const paidThemes = ref<string[]>([])
   /** 用户点了 VIP 主题但还没激活，激活成功后自动切过去 */
   const pendingTheme = ref<string | null>(null)
   const loading = ref(false)
-
-  let expireTimer: ReturnType<typeof setTimeout> | null = null
+  /** 后端连不上时降级：离线模式，免费主题可用 */
+  const offline = ref(false)
+  /** 到期前3天提示过的标记 */
+  const tipShown3Days = ref<boolean>(decrypt(localStorage.getItem('rox_tip_shown') || '') === '1')
+  let expiryTimer: ReturnType<typeof setTimeout> | null = null
 
   const isLoggedIn = computed(() => !!token.value)
-  const isVip = computed(
-    () => vipType.value !== 'NONE' && vipType.value !== 'EXPIRED' && (vipExpire.value === null || vipExpire.value > Date.now()),
-  )
+  const isVip = computed(() => {
+    if (vipType.value === 'FREE' || vipType.value === 'EXPIRED') return false
+    if (vipType.value === 'LIFETIME') return true
+    return expireAtMs.value > Date.now()
+  })
+  // 剩余天数，永久卡返回-1
+  const remainingDays = computed(() => {
+    if (vipType.value === 'LIFETIME') return -1
+    return Math.max(0, Math.ceil((expireAtMs.value - Date.now()) / 86400000))
+  })
 
   function isPaidTheme(themeId: string): boolean {
     return paidThemes.value.includes(themeId)
   }
 
-  function persistVip(): void {
-    try {
-      localStorage.setItem(VIP_TYPE_KEY, encrypt(vipType.value))
-      if (vipExpire.value !== null) {
-        localStorage.setItem(VIP_EXPIRE_KEY, encrypt(String(vipExpire.value)))
-      } else {
-        localStorage.removeItem(VIP_EXPIRE_KEY)
-      }
-      localStorage.setItem(PAID_THEMES_KEY, encrypt(JSON.stringify(paidThemes.value)))
-    } catch {
-      // 本地缓存写失败不影响主流程
-    }
-  }
-
-  function clearExpireTimer(): void {
-    if (expireTimer) {
-      clearTimeout(expireTimer)
-      expireTimer = null
-    }
-  }
-
   function scheduleExpiry(): void {
-    clearExpireTimer()
-    if (vipExpire.value !== null && vipExpire.value > Date.now()) {
-      expireTimer = setTimeout(() => {
-        vipType.value = 'EXPIRED'
-        vipExpire.value = null
-        pendingTheme.value = null
-        persistVip()
-      }, vipExpire.value - Date.now())
-    }
-  }
+    if (expiryTimer) clearTimeout(expiryTimer)
+    expiryTimer = null
+    if (vipType.value === 'FREE' || vipType.value === 'EXPIRED' || vipType.value === 'LIFETIME') return
 
-  /** 先从本地缓存恢复离线状态，并处理已过期的情况 */
-  function applyCachedVip(): void {
-    try {
-      const cachedType = localStorage.getItem(VIP_TYPE_KEY)
-      if (cachedType) vipType.value = decrypt(cachedType)
-      const cachedExpire = localStorage.getItem(VIP_EXPIRE_KEY)
-      if (cachedExpire) vipExpire.value = Number(decrypt(cachedExpire))
-      const cachedThemes = localStorage.getItem(PAID_THEMES_KEY)
-      if (cachedThemes) paidThemes.value = JSON.parse(decrypt(cachedThemes))
-    } catch {
-      // 缓存损坏则忽略
+    const remaining = expireAtMs.value - Date.now()
+    if (remaining <= 0) {
+      markExpired()
+      return
     }
-    if (vipExpire.value !== null && vipExpire.value <= Date.now()) {
-      vipType.value = 'EXPIRED'
-      vipExpire.value = null
-    }
-    scheduleExpiry()
+
+    // setTimeout 最大可靠延时约为 2^31-1ms，较长期限分段调度
+    const delay = Math.min(remaining, 2147483647)
+    expiryTimer = setTimeout(() => scheduleExpiry(), delay)
   }
 
   /** 启动时校验登录状态 */
   async function initFromStorage(): Promise<void> {
     loading.value = true
-    offline.value = false
-    applyCachedVip()
+    try {
+      // 调用新的公开接口拉付费主题列表
+      const themeRes = await getPaidThemeList()
+      paidThemes.value = themeRes.allPaidThemes || []
+      localStorage.setItem('rox_paid_themes', encrypt(JSON.stringify(paidThemes.value)))
+    } catch (e) {
+      // 拉不到就降级：离线模式，恢复上次在线获取的付费主题列表
+      try {
+        const cachedPaidThemes = JSON.parse(decrypt(localStorage.getItem('rox_paid_themes') || ''))
+        paidThemes.value = Array.isArray(cachedPaidThemes) ? cachedPaidThemes : []
+      } catch {
+        paidThemes.value = []
+      }
+      offline.value = true
+    }
 
     if (!token.value) {
+      active.value = false
       loading.value = false
       return
     }
 
     try {
-      // 先拉付费主题列表（公开接口，不需要登录）
-      const publicRes = await getPublicThemes()
-      paidThemes.value = publicRes.paidThemes || []
-    } catch {
-      // 拉不到就降级：离线模式，用本地缓存
-      offline.value = true
-    }
-
-    try {
-      const res = await getMyTheme()
+      // 调用新的status接口拉最新状态和到期时间
+      const statusRes = await getVipStatus()
+      vipType.value = statusRes.type
+      expireAtMs.value = statusRes.expireAtMs
+      active.value = statusRes.type !== 'FREE' && statusRes.type !== 'EXPIRED'
       offline.value = false
-      if (res.active) {
-        vipType.value = res.type || 'WEEK'
-        vipExpire.value = res.expireAt ?? null
-      } else {
-        vipType.value = 'EXPIRED'
-        vipExpire.value = null
-      }
-      if (res.paidThemes) paidThemes.value = res.paidThemes
-      persistVip()
-      scheduleExpiry()
-    } catch {
-      // 网络异常 → 离线，保留本地缓存，不清 token，离线也能继续用
+      // 加密存本地
+      localStorage.setItem('rox_vip_type', encrypt(statusRes.type))
+      localStorage.setItem('rox_vip_expire', encrypt(String(statusRes.expireAtMs)))
+    } catch (e) {
+      // 离线，读本地加密缓存
+      vipType.value = decrypt(localStorage.getItem('rox_vip_type') || 'FREE')
+      expireAtMs.value = Number(decrypt(localStorage.getItem('rox_vip_expire') || '0')) || 0
       offline.value = true
+      active.value = isVip.value
     } finally {
+      scheduleExpiry()
+      // 到期前3天弹一次提示
+      if (remainingDays.value > 0 && remainingDays.value <= 3 && !tipShown3Days.value) {
+        alert(`你的VIP还有${remainingDays.value}天到期，请及时续费`)
+        tipShown3Days.value = true
+        localStorage.setItem('rox_tip_shown', encrypt('1'))
+      }
       loading.value = false
     }
   }
@@ -147,24 +120,10 @@ export const useAuthStore = defineStore('auth', () => {
       const res = await redeem(rawToken.trim().toUpperCase())
       token.value = res.token
       setToken(res.token)
+      active.value = true
       offline.value = false
-
-      // 激活成功后拉取最新 VIP 状态
-      try {
-        const my = await getMyTheme()
-        if (my.active) {
-          vipType.value = my.type || 'WEEK'
-          vipExpire.value = my.expireAt ?? null
-        } else {
-          vipType.value = 'EXPIRED'
-          vipExpire.value = null
-        }
-        if (my.paidThemes) paidThemes.value = my.paidThemes
-      } catch {
-        // 拉状态失败不影响激活
-      }
-      persistVip()
-      scheduleExpiry()
+      // 激活成功后拉最新状态
+      await initFromStorage()
     } finally {
       loading.value = false
     }
@@ -172,34 +131,37 @@ export const useAuthStore = defineStore('auth', () => {
 
   /** 登出（暂时不用，预留） */
   function logout(): void {
+    if (expiryTimer) clearTimeout(expiryTimer)
+    expiryTimer = null
     clearToken()
     token.value = null
-    vipType.value = 'EXPIRED'
-    vipExpire.value = null
-    pendingTheme.value = null
-    clearExpireTimer()
-    persistVip()
+    active.value = false
+    vipType.value = 'FREE'
+    expireAtMs.value = 0
   }
 
   /** 会员过期：重置VIP状态，前端UI自动更新 */
   function markExpired(): void {
+    if (expiryTimer) clearTimeout(expiryTimer)
+    expiryTimer = null
+    active.value = false
     vipType.value = 'EXPIRED'
-    vipExpire.value = null
     pendingTheme.value = null
-    clearExpireTimer()
-    persistVip()
   }
 
   return {
     token,
+    active,
     vipType,
-    vipExpire,
+    expireAtMs,
     paidThemes,
     pendingTheme,
     loading,
     offline,
+    tipShown3Days,
     isLoggedIn,
     isVip,
+    remainingDays,
     isPaidTheme,
     initFromStorage,
     activate,

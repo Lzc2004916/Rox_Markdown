@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 主题配置总入口
  * 所有主题定义都放在 themes/ 目录下，按风格分类后续可拆分成：
  * - modern.ts 现代简约类
@@ -17,3 +17,4 @@ export const THEMES: ThemeDefinition[] = ALL_THEMES
 export function getTheme(id: string): ThemeDefinition {
   return getThemeById(id)
 }
+

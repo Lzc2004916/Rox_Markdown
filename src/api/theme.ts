@@ -1,4 +1,4 @@
-import { get } from '@/utils/request'
+﻿import { get } from '@/utils/request'
 
 export interface MyThemeResult {
   active: boolean
@@ -29,3 +29,4 @@ export function getPublicThemes() {
 export function checkThemeAccess(themeId: string) {
   return get<AccessResult>('/theme/access', { params: { themeId } })
 }
+

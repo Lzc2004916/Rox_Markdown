@@ -1,4 +1,4 @@
-
+﻿
 
 import { describe, it, expect, beforeEach } from 'vitest'
 import {
@@ -215,3 +215,4 @@ describe('CSS variable atomic reset on theme switch', () => {
     }
   })
 })
+

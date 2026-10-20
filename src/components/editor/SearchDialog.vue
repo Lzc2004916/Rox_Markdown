@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <Teleport to="body">
     <Transition name="search-fade">
       <div
@@ -435,3 +435,4 @@ onBeforeUnmount(() => {
   opacity: 0;
 }
 </style>
+

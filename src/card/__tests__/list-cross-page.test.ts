@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 列表跨页丢项回归测试。
  *
  * 历史 bug：list 块按「项」拆分跨页时，剩余项经 carryBlock 携带，
@@ -47,7 +47,7 @@ describe('列表跨页不丢项', () => {
     const total = 40
     const source = Array.from({ length: total }, (_, i) => `- 列表项${i + 1}`).join('\n')
     const { pages } = layoutPages({
-      source, settings, theme: getTheme('moss-paper'),
+      source, settings, theme: getTheme('warm-editor'),
       footerEnabled: true, headingOverrides: null,
     })
 
@@ -68,7 +68,7 @@ describe('列表跨页不丢项', () => {
     const total = 40
     const source = Array.from({ length: total }, (_, i) => `${i + 1}. 列表项${i + 1}`).join('\n')
     const { pages } = layoutPages({
-      source, settings, theme: getTheme('moss-paper'),
+      source, settings, theme: getTheme('warm-editor'),
       footerEnabled: true, headingOverrides: null,
     })
 
@@ -89,7 +89,7 @@ describe('列表跨页不丢项', () => {
     const total = 40
     const source = Array.from({ length: total }, (_, i) => `${i + 1}. 列表项${i + 1}`).join('\n')
     const { pages } = layoutPages({
-      source, settings, theme: getTheme('moss-paper'),
+      source, settings, theme: getTheme('warm-editor'),
       footerEnabled: true, headingOverrides: null,
     })
 
@@ -110,3 +110,4 @@ describe('列表跨页不丢项', () => {
     expect(numbers).toEqual(Array.from({ length: total }, (_, i) => i + 1))
   })
 })
+

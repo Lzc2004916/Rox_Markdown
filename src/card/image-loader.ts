@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 卡片引擎的图片加载缓存。
  *
  * 渲染管线是同步的（renderCard 直接 drawImage），所以图片必须在渲染前
@@ -112,3 +112,4 @@ function loadImageElement(url: string): Promise<HTMLImageElement> {
     img.src = url
   })
 }
+

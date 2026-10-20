@@ -13,7 +13,7 @@ export const THEMES: ThemeDefinition[] = [
   
   
   {
-    id: 'moss-paper',
+    id: 'warm-editor',
     name: '苔绿纸书',
     mood: '深苔和纸青铜锈迹书卷气',
     preset: '苔痕',
@@ -3410,9 +3410,10 @@ export const THEMES: ThemeDefinition[] = [
 ]
 
 
-export const DEFAULT_THEME_ID = 'moss-paper'
+export const DEFAULT_THEME_ID = 'warm-editor'
 
 
 export function getTheme(id: string): ThemeDefinition {
   return THEMES.find((t) => t.id === id) ?? THEMES[0]
 }
+

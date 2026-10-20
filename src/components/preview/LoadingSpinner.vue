@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <span
     class="loading-spinner"
     :class="[
@@ -65,3 +65,4 @@ const progressSizeClass = computed(() => {
   }
 })
 </script>
+

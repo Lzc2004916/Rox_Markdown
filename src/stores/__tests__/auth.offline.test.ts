@@ -21,14 +21,14 @@ function decideSelection(store: any, themeId: string): Decision {
   return 'server-check'
 }
 
-vi.mock('@/api/theme', () => ({
-  getMyTheme: vi.fn(),
-  getPublicThemes: vi.fn(),
-  checkThemeAccess: vi.fn(),
+vi.mock('@/api/auth', () => ({
+  redeem: vi.fn(),
+  getVipStatus: vi.fn(),
+  getPaidThemeList: vi.fn(),
 }))
 
 import { useAuthStore } from '@/stores/auth'
-import * as apiTheme from '@/api/theme'
+import * as apiAuth from '@/api/auth'
 
 const DAY = 86400000
 const PAID_THEME = 'royal-ink'
@@ -47,8 +47,8 @@ describe('VIP 离线场景验证', () => {
     localStorage.setItem('rox_vip_expire', xorEncrypt(String(Date.now() + 2 * DAY)))
     localStorage.setItem('rox_paid_themes', xorEncrypt(JSON.stringify([PAID_THEME])))
 
-    vi.mocked(apiTheme.getPublicThemes).mockRejectedValue(new Error('network'))
-    vi.mocked(apiTheme.getMyTheme).mockRejectedValue(new Error('network'))
+    vi.mocked(apiAuth.getPaidThemeList).mockRejectedValue(new Error('network'))
+    vi.mocked(apiAuth.getVipStatus).mockRejectedValue(new Error('network'))
 
     const store = useAuthStore()
     await store.initFromStorage()
@@ -68,8 +68,8 @@ describe('VIP 离线场景验证', () => {
     localStorage.setItem('rox_vip_type', xorEncrypt('WEEK'))
     localStorage.setItem('rox_vip_expire', xorEncrypt(String(now.getTime() + 1000)))
     localStorage.setItem('rox_paid_themes', xorEncrypt(JSON.stringify([PAID_THEME])))
-    vi.mocked(apiTheme.getPublicThemes).mockRejectedValue(new Error('network'))
-    vi.mocked(apiTheme.getMyTheme).mockRejectedValue(new Error('network'))
+    vi.mocked(apiAuth.getPaidThemeList).mockRejectedValue(new Error('network'))
+    vi.mocked(apiAuth.getVipStatus).mockRejectedValue(new Error('network'))
 
     const store = useAuthStore()
     await store.initFromStorage()
@@ -89,8 +89,8 @@ describe('VIP 离线场景验证', () => {
     localStorage.setItem('rox_vip_expire', xorEncrypt(String(Date.now() - DAY)))
     localStorage.setItem('rox_paid_themes', xorEncrypt(JSON.stringify([PAID_THEME])))
 
-    vi.mocked(apiTheme.getPublicThemes).mockRejectedValue(new Error('network'))
-    vi.mocked(apiTheme.getMyTheme).mockRejectedValue(new Error('network'))
+    vi.mocked(apiAuth.getPaidThemeList).mockRejectedValue(new Error('network'))
+    vi.mocked(apiAuth.getVipStatus).mockRejectedValue(new Error('network'))
 
     const store = useAuthStore()
     await store.initFromStorage()
@@ -103,14 +103,14 @@ describe('VIP 离线场景验证', () => {
 
   it('在线获取的付费主题列表会缓存，并可在下次离线启动时恢复', async () => {
     localStorage.setItem('rox_token', 'cached-jwt')
-    vi.mocked(apiTheme.getPublicThemes).mockResolvedValue({
-      paidThemes: [PAID_THEME],
+    vi.mocked(apiAuth.getPaidThemeList).mockResolvedValue({
+      allPaidThemes: [PAID_THEME],
+      allowedPaidThemes: [PAID_THEME],
     })
-    vi.mocked(apiTheme.getMyTheme).mockResolvedValue({
-      active: true,
+    vi.mocked(apiAuth.getVipStatus).mockResolvedValue({
+      token: 'cached-jwt',
       type: 'WEEK',
-      expireAt: Date.now() + 2 * DAY,
-      paidThemes: [PAID_THEME],
+      expireAtMs: Date.now() + 2 * DAY,
     })
 
     const onlineStore = useAuthStore()
@@ -118,8 +118,8 @@ describe('VIP 离线场景验证', () => {
     expect(onlineStore.paidThemes).toEqual([PAID_THEME])
 
     setActivePinia(createPinia())
-    vi.mocked(apiTheme.getPublicThemes).mockRejectedValue(new Error('network'))
-    vi.mocked(apiTheme.getMyTheme).mockRejectedValue(new Error('network'))
+    vi.mocked(apiAuth.getPaidThemeList).mockRejectedValue(new Error('network'))
+    vi.mocked(apiAuth.getVipStatus).mockRejectedValue(new Error('network'))
 
     const offlineStore = useAuthStore()
     await offlineStore.initFromStorage()

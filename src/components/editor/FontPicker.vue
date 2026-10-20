@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <Dropdown>
     <template #trigger="{ open }">
       <button
@@ -97,3 +97,4 @@ function select(id: string, close: () => void): void {
   close()
 }
 </script>
+

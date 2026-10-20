@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div ref="editorRef" class="markdown-editor"></div>
 </template>
 

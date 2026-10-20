@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 跨页丢字回归测试。
  *
  * 历史 bug：段落跨页切分时，layout 把"行片段"序列化成文本塞进 page.blocks，
@@ -76,7 +76,7 @@ function collectDrawnText(source: string): string {
   const { pages } = layoutPages({
     source,
     settings,
-    theme: getTheme('moss-paper'),
+    theme: getTheme('warm-editor'),
     footerEnabled: true,
   })
   const parts: string[] = []
@@ -101,7 +101,7 @@ describe('跨页切分不得丢字（行切分预切行 prefixedLines）', () =>
     const { pages } = layoutPages({
       source,
       settings,
-      theme: getTheme('moss-paper'),
+      theme: getTheme('warm-editor'),
       footerEnabled: true,
     })
     expect(pages.length).toBeGreaterThan(1)
@@ -140,7 +140,7 @@ describe('跨页切分不得丢字（行切分预切行 prefixedLines）', () =>
     const { pages } = layoutPages({
       source,
       settings,
-      theme: getTheme('moss-paper'),
+      theme: getTheme('warm-editor'),
       footerEnabled: true,
     })
     const splitBlocks = pages
@@ -163,7 +163,7 @@ describe('跨页切分不得丢字（行切分预切行 prefixedLines）', () =>
     const { pages } = layoutPages({
       source,
       settings,
-      theme: getTheme('moss-paper'),
+      theme: getTheme('warm-editor'),
       footerEnabled: true,
     })
     widthScale = 1.06

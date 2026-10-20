@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="flex items-center gap-1.5 flex-wrap">
     <label class="flex items-center gap-1.5 cursor-pointer">
       <input

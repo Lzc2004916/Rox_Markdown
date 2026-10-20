@@ -1,4 +1,4 @@
-// 图片 markdown 语法解析与改写工具。
+﻿// 图片 markdown 语法解析与改写工具。
 // 图片块语法（单行）：![alt](src){#img1}{height=200}
 //   - {#img1}  图片唯一标识 key（无则视为老图，不出现在滑块面板）
 //   - {height=200} 图片高度，px
@@ -82,3 +82,4 @@ export function nextImageKey(source: string): string {
   }
   return `img${max + 1}`
 }
+

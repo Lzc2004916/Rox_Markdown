@@ -15,6 +15,13 @@
       <div class="navbar-center"></div>
 
       <div class="navbar-end">
+        <!-- 离线模式常驻提示 -->
+        <span v-if="auth.offline" class="text-xs text-amber-500 mr-3">离线模式</span>
+        <!-- VIP剩余天数常驻显示 -->
+        <span v-if="auth.isVip" class="text-xs text-amber-400 mr-3">
+          {{ auth.vipType === 'LIFETIME' ? '永久VIP' : `剩余${auth.remainingDays}天` }}
+        </span>
+        <span v-else class="text-xs text-base-400 mr-3">未激活</span>
 
         <button
           class="btn btn-ghost btn-sm mr-2 text-xs"
@@ -411,9 +418,15 @@ async function selectTheme(newThemeId: string) {
     return
   }
 
-  // 付费主题：后端离线时直接切，不卡用户
+  // 离线时使用本地缓存的到期时间判断权限
   if (auth.offline) {
-    cardTheme.value = newThemeId
+    if (auth.isVip) {
+      cardTheme.value = newThemeId
+    } else {
+      auth.markExpired()
+      cardTheme.value = 'warm-editor'
+      showActivationDialog.value = true
+    }
     return
   }
 
@@ -427,7 +440,7 @@ async function selectTheme(newThemeId: string) {
     // 立刻重置VIP状态，UI马上同步
     auth.markExpired()
     // 自动切回免费主题
-    cardTheme.value = 'moss-paper'
+    cardTheme.value = 'warm-editor'
     // 自动弹激活窗
     setTimeout(() => {
       showActivationDialog.value = true
@@ -483,7 +496,7 @@ const canUndo = computed<boolean>(() => store.activeId ? store.canUndo(store.act
 
 const canRedo = computed<boolean>(() => store.activeId ? store.canRedo(store.activeId) : false)
 
-const cardTheme = ref<string>('moss-paper')
+const cardTheme = ref<string>('warm-editor')
 
 // ── 图片高度滑块相关状态 ──────────────────────────────────────────
 // CardPreview 每次排版后回填：key -> 该图所在页的可用高度上限

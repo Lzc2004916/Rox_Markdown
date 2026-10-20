@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+﻿import { describe, it, expect } from 'vitest'
 import {
   parseImageAttrs,
   parseImages,
@@ -84,3 +84,4 @@ describe('computeImageMaxHeights 动态上限', () => {
     expect(computeImageMaxHeights(pages, undefined, true)['img1']).toBe(IMAGE_HEIGHT_MIN) // 886-870-10=6 -> 50
   })
 })
+
