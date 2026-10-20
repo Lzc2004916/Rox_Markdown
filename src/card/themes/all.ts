@@ -7,13 +7,14 @@ import skyWatercolorBg from '../assets/sky-watercolor-bg.png'
 import iphoneNoteBg from '../assets/iphone-note-bg.png'
 import macaronSoftEdgeBg from '../assets/macaron-soft-edge-bg.png'
 import inkWashPaperBg from '../assets/ink-wash-paper-bg.png'
+import blueBinderBg from '../assets/blue-binder-bg.png'
 
 export const THEMES: ThemeDefinition[] = [
   
   
   
   {
-    id: 'warm-editor',
+    id: 'moss-paper',
     name: '苔绿纸书',
     mood: '深苔和纸青铜锈迹书卷气',
     preset: '苔痕',
@@ -1094,74 +1095,6 @@ export const THEMES: ThemeDefinition[] = [
     contentInset: { top: 30, bottom: 20 },
     gradient: { enabled: false, color1: '#f9f6ef', color2: '#fefefc' },
     backgroundImage: iphoneNoteBg,
-  },
-
-  
-  
-  
-  {
-    id: 'notebook-paper',
-    name: '笔记本',
-    mood: '横线笔记本蓝黑墨水手写涂鸦',
-    preset: '课业',
-    description: '真实横线纸白底、经典蓝黑墨水、角落涂鸦素描贴纸、活页孔氛围，适合学习笔记、课堂整理与随手速记',
-    tags: ['笔记', '学习', '墨水', '涂鸦'],
-    mode: 'paper',
-    palette: {
-      page: '#fdfdfa',          
-      pageAlt: '#eef0f6',       
-      text: '#1a1a30',          
-      muted: '#6b7d98',         
-      accent: '#3b5db8',        
-      accentSoft: 'rgba(59,93,184,0.16)',
-      border: 'rgba(59,93,184,0.12)',
-      shadow: 'rgba(35,55,110,0.08)',
-      glow: 'rgba(200,218,248,0.28)',
-    },
-    surface: {
-      grainAlpha: 0.022,        
-      vignetteAlpha: 0.024,
-      washStrength: 0.16,
-      innerFrameAlpha: 0.08,
-      innerFrameInset: 20,
-      titleAccentMix: 0.68,
-      footerLineAlpha: 0.18,
-      footerTextAlpha: 0.88,
-      previewShadow:
-        '0 20px 42px rgba(35,55,110,0.08), 0 1px 12px rgba(255,255,250,0.38) inset',
-    },
-    components: {
-      quoteFillAlpha: 0.038,
-      quoteStrokeAlpha: 0.066,
-      quoteBarAlpha: 0.66,
-      quoteRadius: 10,
-      quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.64,
-      highlightMarkerAlpha: 0.28,
-      highlightDashAlpha: 0.76,
-    },
-    editor: {
-      bodySize: 28,
-      lineHeight: 1.78,
-      bodyFontMode: 'kaiti',
-      bodyFontWeight: 400,
-      subheadingStyle: 'accent',
-      highlightStyle: 'underline',
-      heading: {
-        h1Scale: 3.0, h2Scale: 1.55, h3Scale: 1.25,
-        h1LineHeight: 1.25, h2LineHeight: 1.35, h3LineHeight: 1.45,
-        h1FontWeight: 600, h2FontWeight: 500, h3FontWeight: 400,
-        h1MarginTop: 20, h1MarginBottom: 10,
-      },
-      list: { bulletChar: '—', bulletSizeRatio: 0.78, indentPerLevel: 26, itemGap: 6 },
-    },
-    coverHeading: {
-      h1Scale: 3.8, h1LineHeight: 1.15, centered: false,
-    },
-    colorTag: 'neutral',
-    decor: { kind: 'cornerBracket', opacity: 0.22, color: '#3b5db8', scale: 1.0 },
-    gradient: { enabled: true, color1: '#eef0f6', color2: '#fdfdfa', angle: 135 },
   },
 
   
@@ -3406,6 +3339,74 @@ export const THEMES: ThemeDefinition[] = [
     contentInset: { top: 30, bottom: 30, left: 40, right: 40 },
     gradient: { enabled: true, color1: '#ffffff', color2: '#f8f5ff' },
     backgroundImage: macaronSoftEdgeBg,
+  },
+
+  {
+    id: 'blue-binder',
+    name: '蓝皮活页本',
+    mood: '蓝色封皮活页本黄色环扣手写笔记',
+    preset: '活页',
+    description: '蓝色封皮活页本质感，左侧四个黄色环扣，白色内页霞鹜文楷排版，像在真笔记本上写字，适合日常记录与学习笔记',
+    tags: ['笔记本', '活页', '蓝色', '手写'],
+    mode: 'paper',
+    palette: {
+      page: '#ffffff',
+      pageAlt: '#f5f8fc',
+      text: '#2c3e50',
+      muted: '#7a8a9a',
+      accent: '#ffd93d',
+      accentSoft: 'rgba(255,217,61,0.20)',
+      border: 'rgba(74,144,226,0.18)',
+      shadow: 'rgba(74,144,226,0.12)',
+      glow: 'rgba(255,217,61,0.25)',
+    },
+    surface: {
+      grainAlpha: 0.01,
+      vignetteAlpha: 0.01,
+      washStrength: 0.08,
+      innerFrameAlpha: 0,
+      innerFrameInset: 0,
+      titleAccentMix: 0.5,
+      footerLineAlpha: 0.12,
+      footerTextAlpha: 0.7,
+      previewShadow:
+        '0 20px 48px rgba(74,144,226,0.14), 0 2px 12px rgba(0,0,0,0.04) inset',
+    },
+    components: {
+      quoteFillAlpha: 0.04,
+      quoteStrokeAlpha: 0.06,
+      quoteBarAlpha: 0.7,
+      quoteRadius: 10,
+      quoteTreatment: 'paper',
+      highlightTreatment: 'softUnderline',
+      highlightUnderlineAlpha: 0.55,
+      highlightMarkerAlpha: 0.25,
+      highlightDashAlpha: 0.7,
+    },
+    editor: {
+      bodySize: 28,
+      lineHeight: 1.8,
+      bodyFontMode: 'wenkai',
+      bodyFontWeight: 400,
+      subheadingStyle: 'large',
+      highlightStyle: 'underline',
+      heading: {
+        h1Scale: 2.8, h2Scale: 1.55, h3Scale: 1.28,
+        h1LineHeight: 1.25, h2LineHeight: 1.35, h3LineHeight: 1.45,
+        h1FontWeight: 700, h2FontWeight: 600, h3FontWeight: 600,
+        h1MarginTop: 20, h1MarginBottom: 10,
+      },
+      list: { bulletChar: '•', bulletSizeRatio: 0.82, indentPerLevel: 28, itemGap: 7 },
+    },
+    coverHeading: {
+      h1Scale: 3.4, h1LineHeight: 1.2, centered: false,
+    },
+    colorTag: 'blue',
+    decor: { kind: 'none', opacity: 0 },
+    outerFrame: { kind: 'none' },
+    contentInset: { top: 20, bottom: 30, left: 65, right: 50 },
+    gradient: { enabled: false, color1: '#ffffff', color2: '#f5f8fc' },
+    backgroundImage: blueBinderBg,
   },
 ]
 
