@@ -175,7 +175,7 @@ function isPaidTheme(id: string): boolean {
 
 
 
-type CategoryKey = 'all' | 'free' | 'vip' | 'red' | 'orange' | 'yellow' | 'brown' | 'green' | 'blue' | 'pink' | 'neutral'
+type CategoryKey = 'all' | 'free' | 'vip' | 'red' | 'orange' | 'yellow' | 'brown' | 'green' | 'blue' | 'pink' | 'dark' | 'neutral'
 interface CategoryTab { key: CategoryKey; label: string; dot?: string }
 
 const activeCategory = ref<CategoryKey>('all')
@@ -190,8 +190,9 @@ const allCategories: CategoryTab[] = [
   { key: 'yellow', label: '黄', dot: '#f1c40f' },
   { key: 'brown', label: '棕', dot: '#8b5a2b' },
   { key: 'green', label: '绿', dot: '#27ae60' },
-  { key: 'blue', label: '蓝紫', dot: '#3b82f6' },
-  { key: 'pink', label: '粉', dot: '#e91e8c' },
+  { key: 'blue', label: '蓝/紫', dot: '#3b82f6' },
+  { key: 'pink', label: '粉红', dot: '#e91e8c' },
+  { key: 'dark', label: '暗色', dot: '#2c3e50' },
   { key: 'neutral', label: '黑白灰', dot: '#95a5a6' },
 ]
 

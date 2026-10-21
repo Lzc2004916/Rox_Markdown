@@ -24,7 +24,6 @@ import {
   PAGE_HEIGHT,
   CONTENT_LEFT,
   CONTENT_RIGHT,
-  CONTENT_WIDTH,
   CANVAS_SCALE,
   FOOTER_LINE_LEFT,
   FOOTER_LINE_RIGHT,
@@ -975,7 +974,7 @@ function drawColumnContainer(
   
   bodyTextColor?: string | null,
 ): number {
-  const halfWidth = (CONTENT_WIDTH - COLUMN_GAP) / 2
+  const halfWidth = Math.max(1, (metrics.bodyWidth - COLUMN_GAP) / 2)
   const leftX = x
   const rightX = x + halfWidth + COLUMN_GAP
 
@@ -1047,32 +1046,18 @@ function drawColumnBlocks(
       cursorY += height
       prevBlock = paraBlock
     } else if (block.kind === 'code') {
-      const m = measureCodeBlock(block, metrics.bodySize)
-      
-      const scaleFactor = Math.min(1, maxWidth / CONTENT_WIDTH)
-      ctx.save()
-      if (scaleFactor < 1) {
-        ctx.scale(scaleFactor, 1)
-        drawCodeBlock(ctx, block, x / scaleFactor, cursorY, metrics.bodySize, theme)
-      } else {
-        drawCodeBlock(ctx, block, x, cursorY, metrics.bodySize, theme)
-      }
-      ctx.restore()
+      const m = measureCodeBlock(block, metrics.bodySize, maxWidth)
+      drawCodeBlock(ctx, block, x, cursorY, metrics.bodySize, theme, maxWidth)
       cursorY += m.height
       prevBlock = { kind: 'body', raw: '' }
     } else if (block.kind === 'table') {
-      const { totalHeight } = measureTableBlock(block, metrics.bodySize, metrics.bodyLineHeight, metrics.bodyFontFamily)
-      const scaleFactor = Math.min(1, maxWidth / CONTENT_WIDTH)
-      ctx.save()
-      if (scaleFactor < 1) {
-        ctx.scale(scaleFactor, 1)
-        drawTableBlock(ctx, block, x / scaleFactor, cursorY,
-          metrics.bodySize, metrics.bodyLineHeight, theme, metrics.bodyFontFamily)
-      } else {
-        drawTableBlock(ctx, block, x, cursorY,
-          metrics.bodySize, metrics.bodyLineHeight, theme, metrics.bodyFontFamily)
-      }
-      ctx.restore()
+      const { totalHeight } = measureTableBlock(
+        block, metrics.bodySize, metrics.bodyLineHeight, metrics.bodyFontFamily, maxWidth,
+      )
+      drawTableBlock(
+        ctx, block, x, cursorY,
+        metrics.bodySize, metrics.bodyLineHeight, theme, metrics.bodyFontFamily, maxWidth,
+      )
       cursorY += totalHeight
       prevBlock = { kind: 'body', raw: '' }
     } else if (block.kind === 'image') {
@@ -1082,19 +1067,9 @@ function drawColumnBlocks(
       prevBlock = { kind: 'body', raw: '' }
     } else if (block.kind === 'orderedList' || block.kind === 'unorderedList') {
       const listBlock = block as ListBlock
-      const scaleFactor = Math.min(1, maxWidth / CONTENT_WIDTH)
-      ctx.save()
-      if (scaleFactor < 1) {
-        ctx.scale(scaleFactor, 1)
-        cursorY += drawListBlock(ctx, listBlock, x / scaleFactor, cursorY,
-          metrics.bodySize, metrics.bodyLineHeight, maxWidth / scaleFactor,
-          theme, metrics.bodyFontFamily, colBodyWeight, bodyTextColor)
-      } else {
-        cursorY += drawListBlock(ctx, listBlock, x, cursorY,
-          metrics.bodySize, metrics.bodyLineHeight, maxWidth,
-          theme, metrics.bodyFontFamily, colBodyWeight, bodyTextColor)
-      }
-      ctx.restore()
+      cursorY += drawListBlock(ctx, listBlock, x, cursorY,
+        metrics.bodySize, metrics.bodyLineHeight, maxWidth,
+        theme, metrics.bodyFontFamily, colBodyWeight, bodyTextColor)
       prevBlock = { kind: 'body', raw: '' }
     }
   }
@@ -1781,6 +1756,22 @@ function drawChineseTradDecor(ctx: CanvasRenderingContext2D): void {
   ctx.restore()
 }
 
+function drawInnerFrame(ctx: CanvasRenderingContext2D, theme: ThemeDefinition): void {
+  const alpha = Math.max(0, Math.min(1, theme.surface.innerFrameAlpha))
+  const inset = Math.max(0, theme.surface.innerFrameInset)
+  if (alpha === 0 || inset === 0) return
+
+  const width = PAGE_WIDTH - inset * 2
+  const height = PAGE_HEIGHT - inset * 2
+  if (width <= 0 || height <= 0) return
+
+  ctx.save()
+  ctx.strokeStyle = hexToRgba(theme.palette.border, alpha)
+  ctx.lineWidth = 1
+  ctx.strokeRect(inset + 0.5, inset + 0.5, width - 1, height - 1)
+  ctx.restore()
+}
+
 function drawOuterFrame(
   ctx: CanvasRenderingContext2D,
   theme: ThemeDefinition,
@@ -1995,6 +1986,7 @@ export async function renderCard(opts: RenderOptions): Promise<HTMLCanvasElement
 
   
   drawDecor(ctx, theme)
+  drawInnerFrame(ctx, theme)
 
   ctx.restore()
 
@@ -2062,11 +2054,13 @@ export async function renderCard(opts: RenderOptions): Promise<HTMLCanvasElement
 
     
     if (paragraph.kind === 'code') {
-      const { height } = measureCodeBlock(paragraph, metrics.bodySize)
+      const { height } = measureCodeBlock(paragraph, metrics.bodySize, metrics.bodyWidth)
       const blockBottom = blockTopWithGap + height
       if (blockBottom > metrics.bodyBottomY && page.blocks.indexOf(paragraph) > 0) break
       paragraphY = blockTopWithGap
-      const drawnH = drawCodeBlock(ctx, paragraph, metrics.bodyLeftX, paragraphY, metrics.bodySize, theme)
+      const drawnH = drawCodeBlock(
+        ctx, paragraph, metrics.bodyLeftX, paragraphY, metrics.bodySize, theme, metrics.bodyWidth,
+      )
       paragraphY += drawnH
       previousBlock = { kind: 'body', raw: '' }
       continue
@@ -2074,12 +2068,16 @@ export async function renderCard(opts: RenderOptions): Promise<HTMLCanvasElement
 
     
     if (paragraph.kind === 'table') {
-      const { totalHeight } = measureTableBlock(paragraph, metrics.bodySize, metrics.bodyLineHeight, metrics.bodyFontFamily)
+      const { totalHeight } = measureTableBlock(
+        paragraph, metrics.bodySize, metrics.bodyLineHeight, metrics.bodyFontFamily, metrics.bodyWidth,
+      )
       const blockBottom = blockTopWithGap + totalHeight
       if (blockBottom > metrics.bodyBottomY && page.blocks.indexOf(paragraph) > 0) break
       paragraphY = blockTopWithGap
-      const drawnH = drawTableBlock(ctx, paragraph, metrics.bodyLeftX, paragraphY,
-        metrics.bodySize, metrics.bodyLineHeight, theme, metrics.bodyFontFamily)
+      const drawnH = drawTableBlock(
+        ctx, paragraph, metrics.bodyLeftX, paragraphY,
+        metrics.bodySize, metrics.bodyLineHeight, theme, metrics.bodyFontFamily, metrics.bodyWidth,
+      )
       paragraphY += drawnH
       previousBlock = { kind: 'body', raw: '' }
       continue

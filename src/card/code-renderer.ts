@@ -186,7 +186,11 @@ function wrapTokenLine(
 }
 
 
-export function measureCodeBlock(block: CodeBlock, _bodySize: number): {
+export function measureCodeBlock(
+  block: CodeBlock,
+  _bodySize: number,
+  availableWidth = CONTENT_WIDTH,
+): {
   lineCount: number
   height: number
   codeWidth: number
@@ -194,14 +198,13 @@ export function measureCodeBlock(block: CodeBlock, _bodySize: number): {
   lineHeight: number
 } {
   const { fontSize, lineHeight, fontFamily } = getCodeMetrics(_bodySize)
-
-  
-  const maxTextWidth = CONTENT_WIDTH - PADDING_X * 2
+  const blockWidth = Math.max(PADDING_X * 2 + 1, availableWidth)
+  const maxTextWidth = blockWidth - PADDING_X * 2
 
   
   const tokenLines = tokenizeCode(block.code, block.language)
+  if (block.suppressTrailingEmptyLine && block.code.endsWith('\n')) tokenLines.pop()
 
-  
   const measureCanvas = document.createElement('canvas')
   const measureCtx = measureCanvas.getContext('2d')
   if (measureCtx) {
@@ -220,7 +223,7 @@ export function measureCodeBlock(block: CodeBlock, _bodySize: number): {
 
   const lineCount = totalVisualLines
   const height = PADDING_TOP + totalVisualLines * lineHeight + PADDING_BOTTOM
-  const codeWidth = CONTENT_WIDTH
+  const codeWidth = blockWidth
 
   block.lineCount = lineCount
   return { lineCount, height, codeWidth, fontSize, lineHeight }
@@ -238,12 +241,14 @@ export function drawCodeBlock(
   y: number,
   bodySize: number,
   theme: ThemeDefinition,
+  availableWidth = CONTENT_WIDTH,
 ): number {
   const { fontSize, lineHeight, fontFamily } = getCodeMetrics(bodySize)
   const colors = getCodeColors(theme)
   const tokenLines = tokenizeCode(block.code, block.language)
-  const blockWidth = CONTENT_WIDTH
-  const maxTextWidth = CONTENT_WIDTH - PADDING_X * 2
+  if (block.suppressTrailingEmptyLine && block.code.endsWith('\n')) tokenLines.pop()
+  const blockWidth = Math.max(PADDING_X * 2 + 1, availableWidth)
+  const maxTextWidth = blockWidth - PADDING_X * 2
 
   
   let totalVisualLines = 0

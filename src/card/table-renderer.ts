@@ -22,10 +22,12 @@ export function measureTableBlock(
   fontSize: number,
   lineHeight: number,
   fontFamily?: string,
+  availableWidth = CONTENT_WIDTH,
 ): { colWidths: number[]; rowHeights: number[]; totalWidth: number; totalHeight: number } {
+  const tableWidth = Math.max(1, availableWidth)
   const numCols = block.headers.length
   if (numCols === 0) {
-    return { colWidths: [], rowHeights: [], totalWidth: CONTENT_WIDTH, totalHeight: 40 }
+    return { colWidths: [], rowHeights: [], totalWidth: tableWidth, totalHeight: 40 }
   }
 
   
@@ -48,18 +50,17 @@ export function measureTableBlock(
   }
 
   
-  const naturalWidths = colTextWidths.map((widths) => Math.max(MIN_COL_WIDTH, ...widths))
+  const minColumnWidth = Math.max(CELL_PADDING_X * 2 + 1, Math.min(MIN_COL_WIDTH, tableWidth / numCols))
+  const naturalWidths = colTextWidths.map((widths) => Math.max(minColumnWidth, ...widths))
   const totalNatural = naturalWidths.reduce((a, b) => a + b, 0)
 
   let colWidths: number[]
-  if (totalNatural <= CONTENT_WIDTH) {
-    
-    const extra = CONTENT_WIDTH - totalNatural
+  if (totalNatural <= tableWidth) {
+    const extra = tableWidth - totalNatural
     colWidths = naturalWidths.map((w) => w + extra / numCols)
   } else {
-    
-    const scale = CONTENT_WIDTH / totalNatural
-    colWidths = naturalWidths.map((w) => Math.max(MIN_COL_WIDTH, w * scale))
+    const scale = tableWidth / totalNatural
+    colWidths = naturalWidths.map((w) => w * scale)
   }
 
   
@@ -75,7 +76,10 @@ export function measureTableBlock(
       
       try {
         const tokens = parseInlineMarkdown(cellText)
-        const lines = wrapInlineTokensByWidth(tokens, fontSize, availableWidth)
+        const lines = wrapInlineTokensByWidth(
+          tokens, fontSize, availableWidth, fontFamily ?? BODY_FONT_FAMILY,
+          ri === 0 ? BODY_BOLD_WEIGHT : BODY_TEXT_WEIGHT,
+        )
         if (lines.length > maxLines) maxLines = lines.length
       } catch {
         
@@ -109,19 +113,15 @@ export function drawTableBlock(
   lineHeight: number,
   theme: ThemeDefinition,
   fontFamily?: string,
+  availableWidth = CONTENT_WIDTH,
 ): number {
   const numCols = block.headers.length
   if (numCols === 0) return 0
 
   
-  const colWidths = block.colWidths ?? (() => {
-    const m = measureTableBlock(block, fontSize, lineHeight, fontFamily)
-    return m.colWidths
-  })()
-  const rowHeights = block.rowHeights ?? (() => {
-    const m = measureTableBlock(block, fontSize, lineHeight, fontFamily)
-    return m.rowHeights
-  })()
+  const measured = measureTableBlock(block, fontSize, lineHeight, fontFamily, availableWidth)
+  const colWidths = measured.colWidths
+  const rowHeights = measured.rowHeights
   const totalWidth = colWidths.reduce((a: number, b: number) => a + b, 0)
   const totalHeight = rowHeights.reduce((a: number, b: number) => a + b, 0) + HEADER_SEP_HEIGHT
   const allRows = [block.headers, ...block.rows]
@@ -142,8 +142,9 @@ export function drawTableBlock(
     if (availableWidth <= 0) return
 
     const tokens = parseInlineMarkdown(text)
-    const lines = wrapInlineTokensByWidth(tokens, fontSize, availableWidth)
     const fontWeight = isBold ? BODY_BOLD_WEIGHT : BODY_TEXT_WEIGHT
+    const activeFontFamily = fontFamily ?? BODY_FONT_FAMILY
+    const lines = wrapInlineTokensByWidth(tokens, fontSize, availableWidth, activeFontFamily, fontWeight)
 
     ctx.save()
     ctx.font = `${fontWeight} ${fontSize}px ${fontFamily ?? BODY_FONT_FAMILY}`
@@ -158,7 +159,7 @@ export function drawTableBlock(
       const line = lines[li]!
       let lineWidth = 0
       for (const token of line.tokens) {
-        lineWidth += getBodyTokenWidth(token, fontSize)
+        lineWidth += getBodyTokenWidth(token, fontSize, activeFontFamily, fontWeight)
       }
 
       
@@ -175,7 +176,7 @@ export function drawTableBlock(
 
       let cursorX = startX
       for (const token of line.tokens) {
-        const tw = getBodyTokenWidth(token, fontSize)
+        const tw = getBodyTokenWidth(token, fontSize, activeFontFamily, fontWeight)
         ctx.fillText(token.text, cursorX, cy + startYOffset + fontSize * 0.84 + li * lineHeight)
         cursorX += tw
       }

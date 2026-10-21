@@ -173,6 +173,9 @@ export interface FontOption {
   id: string
   label: string
   family: string
+  category: string
+  description: string
+  sample: string
 }
 
 /** 单张图片的高度滑块数据 */

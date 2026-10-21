@@ -1,4 +1,5 @@
 import { ref, watch } from 'vue'
+import { normalizeBodyFontMode, type BodyFontMode } from '@/card/types'
 
 
 
@@ -29,7 +30,7 @@ export interface AppSettings {
   
   cardCornerMode: 'rounded' | 'square'
   
-  bodyFontMode: 'wenkai' | 'yahei' | 'simsun' | 'kaiti' | 'dengxian' | 'fangsong' | 'simhei' | 'youyuan' | 'notosans' | 'notoserif'
+  bodyFontMode: BodyFontMode
   
   subheadingStyle: 'large' | 'accent'
 }
@@ -92,8 +93,8 @@ const cardCornerMode = ref<'rounded' | 'square'>(
 const subheadingStyle = ref<'large' | 'accent'>(
   (localStorage.getItem(STORAGE_PREFIX + 'subheadingStyle') as 'large' | 'accent') || 'large',
 )
-const bodyFontMode = ref<'wenkai' | 'yahei' | 'simsun' | 'kaiti' | 'dengxian' | 'fangsong' | 'simhei' | 'youyuan' | 'notosans' | 'notoserif'>(
-  (localStorage.getItem(STORAGE_PREFIX + 'bodyFontMode') as 'wenkai' | 'yahei' | 'simsun' | 'kaiti' | 'dengxian' | 'fangsong' | 'simhei' | 'youyuan' | 'notosans' | 'notoserif') || 'wenkai',
+const bodyFontMode = ref<BodyFontMode>(
+  normalizeBodyFontMode(localStorage.getItem(STORAGE_PREFIX + 'bodyFontMode')),
 )
 
 

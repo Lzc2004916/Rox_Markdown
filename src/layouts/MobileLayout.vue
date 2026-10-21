@@ -122,6 +122,7 @@ import EditorToolbar from '@/components/editor/EditorToolbar.vue'
 import type { ToolbarItem } from '@/components/editor/EditorToolbar.vue'
 import CardPreview from '@/components/preview/CardPreview.vue'
 import ControlPanel from '@/components/settings/ControlPanel.vue'
+import type { FontOption } from '@/components/settings/ControlPanel.vue'
 
 
 
@@ -144,7 +145,7 @@ interface Props {
   lineCount: number
   isExporting: boolean
   progress: number
-  fontOptions: { id: string; label: string; family: string }[]
+  fontOptions: FontOption[]
   bodyFontMode: string
   bodyFontSize: number
   bodyFontWeight: number

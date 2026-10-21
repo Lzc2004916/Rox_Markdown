@@ -374,7 +374,7 @@ import { useMarkdown } from '@/composables/useMarkdown'
 import { useExport } from '@/composables/useExport'
 import { useDocumentsStore } from '@/stores/documents'
 import { useDrafts, type AppSettings } from '@/composables/useDrafts'
-import { BODY_FONT_MODES, getTheme, type BodyFontMode, parseImages, setImageHeight, nextImageKey, IMAGE_HEIGHT_MAX } from '@/card'
+import { BODY_FONT_MODES, getTheme, normalizeBodyFontMode, type BodyFontMode, parseImages, setImageHeight, nextImageKey, IMAGE_HEIGHT_MAX } from '@/card'
 import { clearMeasureCaches } from '@/card/measure'
 import DraftRecoveryModal from '@/components/DraftRecoveryModal.vue'
 import type { GradientConfig } from '@/card'
@@ -588,6 +588,8 @@ const BODY_FONT_OPTIONS = Object.entries(BODY_FONT_MODES).map(([id, def]) => ({
   label: def.label,
   family: def.family,
   category: def.category,
+  description: def.description,
+  sample: def.sample,
 }))
 
 
@@ -866,7 +868,7 @@ function collectSettings(): AppSettings {
 
 function applySettings(s: AppSettings): void {
   cardTheme.value = s.cardTheme
-  bodyFontMode.value = (s.bodyFontMode as BodyFontMode) || 'wenkai'
+  bodyFontMode.value = normalizeBodyFontMode(s.bodyFontMode)
   bodyFontSize.value = s.bodyFontSize
   bodyFontWeight.value = s.bodyFontWeight ?? 400
   highlightStyle.value = s.highlightStyle as HighlightStyle

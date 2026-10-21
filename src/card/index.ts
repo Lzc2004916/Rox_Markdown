@@ -44,7 +44,13 @@ export type {
   HeadingStyleOverrides,
 } from './types'
 
-export { BODY_FONT_MODES, DEFAULT_BODY_FONT_MODE, getBodyFontFamily } from './types'
+export {
+  BODY_FONT_MODES,
+  BODY_FONT_CATEGORIES,
+  DEFAULT_BODY_FONT_MODE,
+  normalizeBodyFontMode,
+  getBodyFontFamily,
+} from './types'
 
 export {
   PAGE_WIDTH,

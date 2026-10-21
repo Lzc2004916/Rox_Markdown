@@ -90,7 +90,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
-import { renderAllPagesAsync, renderAllPages, renderCard, preloadImages, collectImageSrcs, PAGE_WIDTH, getTheme, extractTokens, applyTokensToElement, computeImageMaxHeights } from '@/card'
+import { renderAllPagesAsync, renderCard, preloadImages, collectImageSrcs, PAGE_WIDTH, getTheme, extractTokens, applyTokensToElement, computeImageMaxHeights } from '@/card'
+import { onMeasureCacheInvalidated } from '@/card/measure'
 import type { HighlightStyle, FooterRightMode, CardCornerMode, TypographySettings, GradientConfig, CardPage, HeadingStyleOverrides } from '@/card'
 import LoadingSpinner from '@/components/preview/LoadingSpinner.vue'
 import { useScrollSync } from '@/composables/useScrollSync'
@@ -222,17 +223,24 @@ let abortController: AbortController | null = null
 
 let lastLayoutKey = ''
 let cachedLayoutPages: CardPage[] = []
+let measureVersion = 0
+const stopMeasureInvalidation = onMeasureCacheInvalidated(() => {
+  measureVersion++
+  lastLayoutKey = ''
+  scheduleRender()
+})
 
 
 /**
- * 生成排版缓存 key
- * 排版只和内容、字号、行距、字体有关，和主题颜色无关
- * 切主题时 key 不变，只重画不重新分页，速度快很多
+ * 生成排版缓存 key。
+ * 主题会影响安全区、标题度量和块间距，因此必须参与缓存失效。
  */
 function buildLayoutKey(): string {
   const t = props.typography
   return JSON.stringify({
     source: props.source,
+    themeId: props.themeId,
+    measureVersion,
     bodySize: t?.bodySize,
     lineHeight: t?.lineHeight,
     bodyFontMode: t?.bodyFontMode,
@@ -306,6 +314,7 @@ async function doRender(): Promise<void> {
         highlightColor: props.highlightColor,
         bodyTextColor: props.bodyTextColor,
       }, signal)
+      if (signal.aborted || abortController?.signal !== signal) return
       // 释放旧 canvas 引用，帮助 GC
       canvases.value.forEach(c => { c.width = 0; c.height = 0 })
       canvases.value = result.canvases
@@ -330,6 +339,7 @@ async function doRender(): Promise<void> {
           highlightColor: props.highlightColor,
           bodyTextColor: props.bodyTextColor,
         }, signal)
+        if (signal.aborted || abortController?.signal !== signal) return
         canvases.value = result.canvases
         cachedLayoutPages = result.pages
         truncated.value = result.truncated
@@ -361,11 +371,13 @@ async function doRender(): Promise<void> {
               bodyTextColor: props.bodyTextColor,
             }),
           )
-          
+          if (signal.aborted || abortController?.signal !== signal) return
+
           if (i < cachedLayoutPages.length - 1) {
             await new Promise((resolve) => setTimeout(resolve, 0))
           }
         }
+        if (signal.aborted || abortController?.signal !== signal) return
         canvases.value = canvasesList
       }
     }
@@ -378,7 +390,7 @@ async function doRender(): Promise<void> {
     
     if (e instanceof DOMException && e.name === 'AbortError') return
     
-    if (signal.aborted) return
+    if (signal.aborted || abortController?.signal !== signal) return
 
     console.warn('[CardPreview] Render failed:', e)
     try {
@@ -395,13 +407,15 @@ async function doRender(): Promise<void> {
         headingOverrides: props.headingOverrides,
         highlightColor: props.highlightColor,
         bodyTextColor: props.bodyTextColor,
-      })
+      }, signal)
+      if (signal.aborted || abortController?.signal !== signal) return
       canvases.value = result.canvases
       cachedLayoutPages = result.pages
       truncated.value = result.truncated
       lastLayoutKey = buildLayoutKey()
     } catch {  }
   } finally {
+    if (signal.aborted || abortController?.signal !== signal) return
     rendering.value = false
     // 回填每张图片的动态高度上限（key → maxHeight）。
     // 上限依赖主题安全区与页脚，主题切换时即使排版缓存命中也要重算，故放在 finally 统一处理。
@@ -529,6 +543,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  stopMeasureInvalidation()
   if (abortController) abortController.abort()
   if (throttleTimer) clearTimeout(throttleTimer)
 })

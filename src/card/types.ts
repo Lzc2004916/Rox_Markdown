@@ -277,7 +277,7 @@ export interface ThemeDefinition {
   components: ThemeComponents
   editor: ThemeEditor
   
-  colorTag?: 'red' | 'orange' | 'yellow' | 'brown' | 'green' | 'blue' | 'pink' | 'neutral'
+  colorTag?: 'red' | 'orange' | 'yellow' | 'brown' | 'green' | 'blue' | 'pink' | 'dark' | 'neutral'
   
   decor?: ThemeDecor
   
@@ -370,6 +370,8 @@ export interface CodeBlock {
   language: string       
   code: string           
   lineCount?: number
+  /** 分页片段以换行结尾时，忽略 split 产生的末尾空视觉行。 */
+  suppressTrailingEmptyLine?: boolean
 }
 
 export interface TableDisplayBlock {
@@ -444,7 +446,10 @@ export interface PosterMetrics {
   separatorY: number
   bodyTopY: number
   bodyBottomY: number
+  bodyLeftX: number
+  bodyRightX: number
   bodyWidth: number
+  bodyHeight: number
 }
 
 
@@ -557,45 +562,73 @@ export const BODY_FONT_FAMILY =
 
 export type BodyFontMode =
   | 'wenkai' | 'simsun' | 'fangsong' | 'kaiti' | 'notoserif'
-  | 'yahei' | 'simhei' | 'notosans' | 'inter' | 'roboto' | 'manrope' | 'dmsans'
-  | 'spacegrotesk' | 'playfair'
-  | 'jetbrains' | 'fira' | 'consolas'
-  | 'youyuan'
-  | 'times' | 'garamond'
+  | 'yahei' | 'simhei' | 'notosans'
+  | 'mashanzheng' | 'longcang' | 'zcoolxiaowei' | 'zcoolqingke' | 'youyuan'
+  | 'inter' | 'spacegrotesk' | 'playfair' | 'garamond'
+  | 'jetbrains' | 'consolas'
 
-export const BODY_FONT_MODES: Record<BodyFontMode, { family: string; label: string; category: string }> = {
-  wenkai:    { family: '"LXGW WenKai","KaiTi","STKaiti",serif',                       label: '霞鹜文楷',     category: '宋体衬线' },
-  simsun:    { family: '"SimSun","Songti SC","Noto Serif SC",serif',                  label: '宋体',         category: '宋体衬线' },
-  fangsong:  { family: '"FangSong","STFangsong","Noto Serif SC",serif',               label: '仿宋',         category: '宋体衬线' },
-  kaiti:     { family: '"KaiTi","STKaiti","LXGW WenKai",serif',                       label: '楷体',         category: '宋体衬线' },
-  notoserif: { family: '"Noto Serif SC","Songti SC","SimSun",serif',                  label: '思源宋体',     category: '宋体衬线' },
+export interface BodyFontDefinition {
+  family: string
+  label: string
+  category: string
+  description: string
+  sample: string
+}
 
-  yahei:     { family: '"Microsoft YaHei","PingFang SC","Helvetica Neue",sans-serif', label: '微软雅黑',     category: '黑体无衬线' },
-  simhei:    { family: '"SimHei","PingFang SC","Microsoft YaHei",sans-serif',         label: '黑体',         category: '黑体无衬线' },
-  notosans:  { family: '"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif',   label: '思源黑体',     category: '黑体无衬线' },
-  inter:     { family: 'Inter,"Helvetica Neue",Arial,sans-serif',                     label: 'Inter',        category: '黑体无衬线' },
-  roboto:    { family: 'Roboto,"Segoe UI",Arial,sans-serif',                          label: 'Roboto',       category: '黑体无衬线' },
-  manrope:   { family: 'Manrope,Inter,"Helvetica Neue",sans-serif',                    label: 'Manrope',      category: '黑体无衬线' },
-  dmsans:    { family: '"DM Sans",Inter,"Helvetica Neue",sans-serif',                  label: 'DM Sans',      category: '黑体无衬线' },
+export const BODY_FONT_CATEGORIES = [
+  '中文衬线',
+  '中文无衬线',
+  '书法手写',
+  '展示装饰',
+  '等宽字体',
+  '西文字体',
+] as const
 
-  spacegrotesk: { family: '"Space Grotesk",Inter,sans-serif',                         label: 'Space Grotesk', category: '现代装饰' },
-  playfair:  { family: '"Playfair Display",Georgia,serif',                             label: 'Playfair',     category: '现代装饰' },
+export const BODY_FONT_MODES: Record<BodyFontMode, BodyFontDefinition> = {
+  wenkai:       { family: '"LXGW WenKai","KaiTi","STKaiti",serif',                     label: '霞鹜文楷',       category: '中文衬线',   description: '温润自然，适合长文阅读', sample: '山川入墨' },
+  simsun:       { family: '"SimSun","Songti SC","Noto Serif SC",serif',                label: '宋体',           category: '中文衬线',   description: '横细竖粗，传统书刊质感', sample: '山川入墨' },
+  fangsong:     { family: '"FangSong","STFangsong","Noto Serif SC",serif',             label: '仿宋',           category: '中文衬线',   description: '清秀挺拔，公文与诗文气质', sample: '山川入墨' },
+  kaiti:        { family: '"KaiTi","STKaiti","LXGW WenKai",serif',                     label: '楷体',           category: '中文衬线',   description: '笔画舒展，接近规范手写', sample: '山川入墨' },
+  notoserif:    { family: '"Noto Serif SC","Songti SC","SimSun",serif',                label: '思源宋体',       category: '中文衬线',   description: '现代宋体，端正且层次清楚', sample: '山川入墨' },
 
-  jetbrains: { family: '"JetBrains Mono",Consolas,Menlo,monospace',                    label: 'JetBrains Mono', category: '等宽' },
-  fira:      { family: '"Fira Code",Consolas,Menlo,monospace',                        label: 'Fira Code',    category: '等宽' },
-  consolas:  { family: 'Consolas,"JetBrains Mono",Menlo,monospace',                    label: 'Consolas',     category: '等宽' },
+  yahei:        { family: '"Microsoft YaHei","PingFang SC","Helvetica Neue",sans-serif', label: '微软雅黑',       category: '中文无衬线', description: '清晰稳健，适合信息型内容', sample: '清晰有序' },
+  simhei:       { family: '"SimHei","Microsoft YaHei","PingFang SC",sans-serif',         label: '黑体',           category: '中文无衬线', description: '笔画厚重，标题感更强', sample: '清晰有序' },
+  notosans:     { family: '"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif',   label: '思源黑体',       category: '中文无衬线', description: '中性现代，屏幕阅读稳定', sample: '清晰有序' },
 
-  youyuan:   { family: '"YouYuan","PingFang SC","Microsoft YaHei",sans-serif',        label: '幼圆',         category: '圆体装饰' },
+  mashanzheng:  { family: '"Ma Shan Zheng","STKaiti","KaiTi",cursive',                  label: '马善政毛笔体',   category: '书法手写',   description: '飞白明显，强烈毛笔书法感', sample: '笔墨生风' },
+  longcang:     { family: '"Long Cang","STKaiti","KaiTi",cursive',                      label: '龙藏体',         category: '书法手写',   description: '洒脱连笔，适合短句与题签', sample: '笔墨生风' },
 
-  times:     { family: '"Times New Roman",Times,serif',                                label: 'Times New Roman', category: '西文衬线' },
-  garamond:  { family: '"EB Garamond",Garamond,"Times New Roman",serif',               label: 'Garamond',     category: '西文衬线' },
+  zcoolxiaowei: { family: '"ZCOOL XiaoWei","Noto Serif SC","SimSun",serif',             label: '站酷小薇体',     category: '展示装饰',   description: '尖角纤细，文艺海报气质', sample: '风格标题' },
+  zcoolqingke:  { family: '"ZCOOL QingKe HuangYou","Noto Sans SC","SimHei",sans-serif', label: '站酷庆科黄油体', category: '展示装饰',   description: '方正几何，醒目的标题字体', sample: '风格标题' },
+  youyuan:      { family: '"YouYuan","Microsoft YaHei","PingFang SC",sans-serif',        label: '幼圆',           category: '展示装饰',   description: '圆润轻松，亲和力明显', sample: '风格标题' },
+
+  jetbrains:    { family: '"JetBrains Mono",Consolas,Menlo,monospace',                     label: 'JetBrains Mono', category: '等宽字体',   description: '字面紧凑，代码与技术内容', sample: 'Aa 0123' },
+  consolas:     { family: 'Consolas,"JetBrains Mono",Menlo,monospace',                     label: 'Consolas',       category: '等宽字体',   description: '经典 Windows 等宽字形', sample: 'Aa 0123' },
+
+  inter:        { family: 'Inter,"Helvetica Neue",Arial,sans-serif',                       label: 'Inter',          category: '西文字体',   description: '高可读性的现代西文无衬线', sample: 'Editorial' },
+  spacegrotesk: { family: '"Space Grotesk",Inter,sans-serif',                              label: 'Space Grotesk',  category: '西文字体',   description: '几何感鲜明的展示无衬线', sample: 'Editorial' },
+  playfair:     { family: '"Playfair Display",Georgia,serif',                              label: 'Playfair Display', category: '西文字体', description: '高反差衬线，杂志标题气质', sample: 'Editorial' },
+  garamond:     { family: '"EB Garamond",Garamond,"Times New Roman",serif',                label: 'EB Garamond',    category: '西文字体',   description: '古典优雅，适合文学正文', sample: 'Editorial' },
+}
+
+const LEGACY_BODY_FONT_MODES: Record<string, BodyFontMode> = {
+  roboto: 'inter',
+  manrope: 'spacegrotesk',
+  dmsans: 'inter',
+  fira: 'jetbrains',
+  times: 'garamond',
+  dengxian: 'notosans',
 }
 
 export const DEFAULT_BODY_FONT_MODE: BodyFontMode = 'wenkai'
 
+export function normalizeBodyFontMode(mode: string | null | undefined): BodyFontMode {
+  if (mode && mode in BODY_FONT_MODES) return mode as BodyFontMode
+  return (mode && LEGACY_BODY_FONT_MODES[mode]) || DEFAULT_BODY_FONT_MODE
+}
 
-export function getBodyFontFamily(mode: BodyFontMode): string {
-  return BODY_FONT_MODES[mode]?.family ?? BODY_FONT_MODES[DEFAULT_BODY_FONT_MODE].family
+export function getBodyFontFamily(mode: BodyFontMode | string): string {
+  return BODY_FONT_MODES[normalizeBodyFontMode(mode)].family
 }
 
 export const FOOTER_FONT_FAMILY =

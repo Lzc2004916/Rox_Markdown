@@ -23,6 +23,7 @@ import {
   CONTENT_LEFT,
   BODY_BOTTOM_WITH_FOOTER,
   BODY_BOTTOM_WITHOUT_FOOTER,
+  PAGE_HEIGHT,
   getBodyFontFamily,
   resolveHeadingLineHeight,
   resolveHeadingSize,
@@ -63,7 +64,12 @@ const _parseCache = new Map<string, InlineToken[]>()
 
 
 const _wrapCache = new Map<string, InlineLine[]>()
+const _cacheInvalidationListeners = new Set<() => void>()
 
+export function onMeasureCacheInvalidated(listener: () => void): () => void {
+  _cacheInvalidationListeners.add(listener)
+  return () => _cacheInvalidationListeners.delete(listener)
+}
 
 /**
  * 清空内联解析 / 折行缓存。
@@ -73,13 +79,43 @@ const _wrapCache = new Map<string, InlineLine[]>()
 export function clearMeasureCaches(): void {
   _wrapCache.clear()
   _parseCache.clear()
+  for (const listener of _cacheInvalidationListeners) listener()
 }
 
 
+export function splitGraphemes(text: string): string[] {
+  const Segmenter = (Intl as typeof Intl & {
+    Segmenter?: new (locale?: string, options?: { granularity: 'grapheme' }) => {
+      segment(input: string): Iterable<{ segment: string }>
+    }
+  }).Segmenter
+  if (Segmenter) {
+    return Array.from(
+      new Segmenter(undefined, { granularity: 'grapheme' }).segment(text),
+      part => part.segment,
+    )
+  }
+  return Array.from(text)
+}
+
 export function splitTextForWrapping(text: string): string[] {
-  return (
-    text.match(/[A-Za-z0-9]+(?:[._'’&/+:-][A-Za-z0-9]+)*|[ \t]+|\n|./gu) ?? []
-  )
+  const words = /[A-Za-z0-9]+(?:[._'’&/+:-][A-Za-z0-9]+)*|[ \t]+|\n/gy
+  const result: string[] = []
+  let cursor = 0
+  while (cursor < text.length) {
+    words.lastIndex = cursor
+    const match = words.exec(text)
+    if (match) {
+      result.push(match[0])
+      cursor = words.lastIndex
+      continue
+    }
+    const grapheme = splitGraphemes(text.slice(cursor))[0]
+    if (!grapheme) break
+    result.push(grapheme)
+    cursor += grapheme.length
+  }
+  return result
 }
 
 
@@ -124,7 +160,7 @@ function splitOversizedUnit(
 ): InlineToken[] {
   if (token.text.length <= 1 || getBodyTokenWidth(token, fontSize, fontFamily, bodyFontWeight) <= maxWidth)
     return [token]
-  return Array.from(token.text).map((char) => ({ ...token, text: char }))
+  return splitGraphemes(token.text).map((char) => ({ ...token, text: char }))
 }
 
 
@@ -586,6 +622,34 @@ export function getGapBetweenBlocks(
 
 
 
+const DEFAULT_INNER_FRAME_INSET = 20
+
+export interface ResolvedContentInsets {
+  top: number
+  right: number
+  bottom: number
+  left: number
+}
+
+/**
+ * Resolve the theme's content-safe area in one place.
+ * innerFrameInset is relative to the project's 20px baseline so existing
+ * themes keep their current layout. Insets below the baseline do not subtract
+ * from an explicit contentInset; larger frames only tighten the safe area.
+ */
+export function resolveContentInsets(theme?: ThemeDefinition): ResolvedContentInsets {
+  const frameInset = Math.max(0, theme?.surface.innerFrameInset ?? DEFAULT_INNER_FRAME_INSET)
+  const frameAdjustment = Math.max(0, frameInset - DEFAULT_INNER_FRAME_INSET)
+  const contentInset = theme?.contentInset ?? {}
+
+  return {
+    top: Math.max(0, frameAdjustment + (contentInset.top ?? 0)),
+    right: Math.max(0, frameAdjustment + (contentInset.right ?? 0)),
+    bottom: Math.max(0, frameAdjustment + (contentInset.bottom ?? 0)),
+    left: Math.max(0, frameAdjustment + (contentInset.left ?? 0)),
+  }
+}
+
 export function getPosterMetrics(
   _page: CardPage,
   settings: TypographySettings,
@@ -595,16 +659,18 @@ export function getPosterMetrics(
   const bodySize = Math.max(21, settings.bodySize - 4)
   const bodyLineHeight = bodySize * Math.max(1.58, settings.lineHeight - 0.06)
   const bodyParagraphGap = Math.max(30, bodySize * 1.25)
+  const inset = resolveContentInsets(theme)
 
-  const inset = theme?.contentInset ?? {}
-  const topPad = inset.top ?? 0
-  const bottomPad = inset.bottom ?? 0
-  const leftPad = inset.left ?? 0
-  const rightPad = inset.right ?? 0
-
-  const separatorY = 110 + topPad
+  const separatorY = 110 + inset.top
   const bodyTopY = separatorY + 10
-  const bodyBottomY = (footerEnabled ? BODY_BOTTOM_WITH_FOOTER : BODY_BOTTOM_WITHOUT_FOOTER) - bottomPad
+  const frameBottomLimit = theme?.surface.innerFrameAlpha
+    ? PAGE_HEIGHT - Math.max(0, theme.surface.innerFrameInset) - 10
+    : Number.POSITIVE_INFINITY
+  const configuredBottom = (footerEnabled ? BODY_BOTTOM_WITH_FOOTER : BODY_BOTTOM_WITHOUT_FOOTER) - inset.bottom
+  const bodyBottomY = Math.min(configuredBottom, frameBottomLimit)
+  const bodyLeftX = CONTENT_LEFT + inset.left
+  const bodyRightX = CONTENT_LEFT + CONTENT_WIDTH - inset.right
+  const bodyWidth = Math.max(1, bodyRightX - bodyLeftX)
 
   return {
     bodySize,
@@ -614,7 +680,9 @@ export function getPosterMetrics(
     separatorY,
     bodyTopY,
     bodyBottomY,
-    bodyWidth: CONTENT_WIDTH - leftPad - rightPad,
-    bodyLeftX: CONTENT_LEFT + leftPad,
+    bodyLeftX,
+    bodyRightX,
+    bodyWidth,
+    bodyHeight: Math.max(0, bodyBottomY - bodyTopY),
   }
 }

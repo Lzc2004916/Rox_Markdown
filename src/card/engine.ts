@@ -79,54 +79,24 @@ function ensureFontsReady(fontFamilyStack: string, fontSize: number): Promise<vo
       }
       loads.push(document.fonts.ready.then(() => undefined).catch(() => undefined))
     }
-    // 2 秒超时，字体加载慢就先渲染，不等了
+
+    const loaded = Promise.allSettled(loads).then(() => {
+      clearMeasureCaches()
+    })
     const timeout = new Promise<void>((resolve) => setTimeout(resolve, 2000))
-    cached = Promise.race([
-      Promise.allSettled(loads).then(() => {
-        clearMeasureCaches()
-      }),
-      timeout,
-    ])
+    cached = Promise.race([loaded, timeout])
     _fontLoadPromises.set(fontFamilyStack, cached)
   }
   return cached
 }
 
 
-export function renderAllPages(
+/** @deprecated Use renderAllPagesAsync; rendering has been asynchronous since renderCard became async. */
+export async function renderAllPages(
   opts: EngineOptions,
-): { pages: CardPage[]; canvases: HTMLCanvasElement[]; truncated: boolean } {
-  const theme: ThemeDefinition = getTheme(opts.themeId)
-  const settings: TypographySettings = opts.typography
-
-  const { pages, truncated } = layoutPages({
-    source: opts.source,
-    settings,
-    theme,
-    footerEnabled: opts.footerEnabled ?? true,
-    headingOverrides: opts.headingOverrides,
-  })
-
-  const canvases = pages.map((page, index) =>
-    renderCard({
-      page,
-      theme,
-      settings,
-      highlightStyle: opts.highlightStyle ?? theme.editor.highlightStyle,
-      pageIndex: index,
-      totalPages: pages.length,
-      footerLeft: opts.footerLeft ?? '',
-      footerRightMode: opts.footerRightMode ?? 'page',
-      footerEnabled: opts.footerEnabled ?? true,
-      cardCornerMode: opts.cardCornerMode ?? 'square',
-      gradientConfig: opts.gradientConfig,
-      headingOverrides: opts.headingOverrides,
-      highlightColor: opts.highlightColor ?? null,
-      bodyTextColor: opts.bodyTextColor ?? null,
-    }),
-  )
-
-  return { pages, canvases, truncated }
+  signal?: AbortSignal,
+): Promise<{ pages: CardPage[]; canvases: HTMLCanvasElement[]; truncated: boolean }> {
+  return renderAllPagesAsync(opts, signal)
 }
 
 
@@ -177,8 +147,8 @@ export async function renderAllPagesAsync(
         bodyTextColor: opts.bodyTextColor ?? null,
       }),
     )
+    if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
 
-    
     if (i < pages.length - 1) {
       await new Promise((resolve) => setTimeout(resolve, 0))
     }

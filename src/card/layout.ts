@@ -25,6 +25,9 @@ import {
   getParagraphMaxLines,
   measureListBlock,
   measureListItem,
+  resolveContentInsets,
+  parseInlineMarkdown,
+  splitGraphemes,
 } from './measure'
 import { measureCodeBlock } from './code-renderer'
 import { measureTableBlock } from './table-renderer'
@@ -34,6 +37,7 @@ import {
   BODY_BOTTOM_WITH_FOOTER,
   BODY_BOTTOM_WITHOUT_FOOTER,
   DEFAULT_LIST_STYLE,
+  COLUMN_GAP,
 } from './types'
 import type { ThemeDefinition } from './types'
 import { parseImageAttrs, DEFAULT_IMAGE_HEIGHT } from './imageMarkdown'
@@ -621,6 +625,9 @@ function estimateBlockHeight(
   maxWidth?: number,
   theme?: ThemeDefinition,
   fontFamily?: string,
+  settings?: LayoutOptions['settings'],
+  headingOverrides?: LayoutOptions['headingOverrides'],
+  bodyFontWeight?: number,
 ): number {
   switch (block.kind) {
     case 'code': {
@@ -628,7 +635,7 @@ function estimateBlockHeight(
       // 使用 measureCodeBlock，它现在会考虑行换行。
 // 这确保布局引擎和渲染器对高度达成一致。
       try {
-        const { height } = measureCodeBlock(cb, bodySize)
+        const { height } = measureCodeBlock(cb, bodySize, maxWidth)
         return height
       } catch {
         // 回退：测量失败时的粗略估算
@@ -645,7 +652,7 @@ function estimateBlockHeight(
       // 测量值缓存到 block 上，渲染器可直接复用。
       try {
         const { totalHeight } = measureTableBlock(
-          tb, bodySize, bodyLineHeight ?? bodySize * 1.8, fontFamily,
+          tb, bodySize, bodyLineHeight ?? bodySize * 1.8, fontFamily, maxWidth,
         )
         return totalHeight
       } catch {
@@ -654,12 +661,51 @@ function estimateBlockHeight(
       }
     }
     case 'columnContainer': {
+      if (!theme || !settings || bodyLineHeight === undefined || maxWidth === undefined) return 40
       const cc = block as ColumnContainerBlock
-      const leftH = cc.leftBlocks.reduce((h, b) =>
-        h + estimateBlockHeight(b, bodySize, bodyLineHeight, maxWidth, theme, fontFamily) + 10, 0)
-      const rightH = cc.rightBlocks.reduce((h, b) =>
-        h + estimateBlockHeight(b, bodySize, bodyLineHeight, maxWidth, theme, fontFamily) + 10, 0)
-      return Math.max(leftH, rightH) + 20
+      const columnWidth = Math.max(1, (maxWidth - COLUMN_GAP) / 2)
+      const measureColumn = (blocks: Block[]): number => {
+        let height = 0
+        let previous: ParagraphBlock | null = null
+        for (const child of blocks) {
+          const gap = previous
+            ? getGapBetweenBlocks(
+                previous, { kind: 'body', raw: '' },
+                {
+                  bodySize,
+                  bodyLineHeight,
+                  bodyParagraphGap: Math.max(30, bodySize * 1.25),
+                  bodyFontFamily: fontFamily ?? getBodyFontFamily(settings.bodyFontMode),
+                  separatorY: 0,
+                  bodyTopY: 0,
+                  bodyBottomY: Number.POSITIVE_INFINITY,
+                  bodyLeftX: 0,
+                  bodyRightX: columnWidth,
+                  bodyWidth: columnWidth,
+                  bodyHeight: Number.POSITIVE_INFINITY,
+                },
+                headingOverrides, theme, false,
+              ) * 0.7
+            : 0
+          height += gap
+
+          if (child.kind === 'body' || child.kind === 'quote' || child.kind === 'subheading' || child.kind === 'divider') {
+            height += measureParagraphBlock(
+              child, bodySize, bodyLineHeight, columnWidth, theme,
+              settings.subheadingStyle, fontFamily, false, headingOverrides, bodyFontWeight,
+            ).height
+            previous = child
+          } else {
+            height += estimateBlockHeight(
+              child, bodySize, bodyLineHeight, columnWidth, theme, fontFamily,
+              settings, headingOverrides, bodyFontWeight,
+            )
+            previous = { kind: 'body', raw: '' }
+          }
+        }
+        return height
+      }
+      return Math.max(measureColumn(cc.leftBlocks), measureColumn(cc.rightBlocks)) + 12
     }
     case 'orderedList':
     case 'unorderedList': {
@@ -669,7 +715,7 @@ function estimateBlockHeight(
       if (theme && bodyLineHeight !== undefined && maxWidth !== undefined) {
         try {
           const { totalHeight } = measureListBlock(
-            lb, bodySize, bodyLineHeight, maxWidth, theme, fontFamily,
+            lb, bodySize, bodyLineHeight, maxWidth, theme, fontFamily, bodyFontWeight,
           )
           return totalHeight
         } catch {
@@ -690,7 +736,253 @@ function estimateBlockHeight(
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
+interface BlockSplitResult {
+  head: Block
+  tail: Block | null
+}
+
+function clearTableMeasurements(block: TableDisplayBlock): TableDisplayBlock {
+  const { colWidths: _colWidths, rowHeights: _rowHeights, totalWidth: _totalWidth, ...source } = block
+  return source
+}
+
+function getGraphemeBoundaries(text: string): number[] {
+  const boundaries = [0]
+  let offset = 0
+  for (const grapheme of splitGraphemes(text)) {
+    offset += grapheme.length
+    boundaries.push(offset)
+  }
+  return boundaries
+}
+
+function splitCodeBlockToFit(
+  block: CodeBlock,
+  availableHeight: number,
+  bodySize: number,
+  availableWidth: number,
+): BlockSplitResult | null {
+  const boundaries = getGraphemeBoundaries(block.code)
+  if (availableHeight <= 0 || boundaries.length < 3) return null
+
+  let low = 1
+  let high = boundaries.length - 2
+  let bestBoundary = 0
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2)
+    const splitAt = boundaries[mid]!
+    const candidate: CodeBlock = {
+      ...block,
+      code: block.code.slice(0, splitAt),
+      lineCount: undefined,
+      suppressTrailingEmptyLine: block.code[splitAt - 1] === '\n',
+    }
+    if (measureCodeBlock(candidate, bodySize, availableWidth).height <= availableHeight) {
+      bestBoundary = splitAt
+      low = mid + 1
+    } else {
+      high = mid - 1
+    }
+  }
+  if (bestBoundary === 0) return null
+
+  const newline = block.code.lastIndexOf('\n', bestBoundary - 1)
+  const splitAt = newline >= 0 ? newline + 1 : bestBoundary
+  return {
+    head: {
+      ...block,
+      code: block.code.slice(0, splitAt),
+      lineCount: undefined,
+      suppressTrailingEmptyLine: block.code[splitAt - 1] === '\n',
+    },
+    tail: splitAt < block.code.length
+      ? {
+          ...block,
+          code: block.code.slice(splitAt),
+          lineCount: undefined,
+          suppressTrailingEmptyLine: false,
+        }
+      : null,
+  }
+}
+
+function serializeInlineToken(token: InlineToken, text: string): string {
+  if (token.bold) return `**${text}**`
+  if (token.mark) return `==${text}==`
+  if (token.underline) return `^${text}^`
+  if (token.italic) return `*${text}*`
+  return text
+}
+
+function splitInlineCell(text: string, count: number): { head: string; tail: string } {
+  let remaining = count
+  const head: string[] = []
+  const tail: string[] = []
+  for (const token of parseInlineMarkdown(text)) {
+    const graphemes = splitGraphemes(token.text)
+    const taken = graphemes.slice(0, remaining).join('')
+    const rest = graphemes.slice(remaining).join('')
+    if (taken) head.push(serializeInlineToken(token, taken))
+    if (rest) tail.push(serializeInlineToken(token, rest))
+    remaining = Math.max(0, remaining - graphemes.length)
+  }
+  return { head: head.join(''), tail: tail.join('') }
+}
+
+function splitTableRowToFit(
+  block: TableDisplayBlock,
+  row: string[],
+  availableHeight: number,
+  bodySize: number,
+  bodyLineHeight: number,
+  fontFamily: string,
+  availableWidth: number,
+): { head: string[]; tail: string[] } | null {
+  const graphemeCounts = row.map(cell =>
+    parseInlineMarkdown(cell).reduce((total, token) => total + splitGraphemes(token.text).length, 0),
+  )
+  const maxParts = Math.max(0, ...graphemeCounts)
+  if (maxParts < 2) return null
+
+  const makeParts = (count: number): { head: string[]; tail: string[] } => {
+    const head: string[] = []
+    const tail: string[] = []
+    for (const cell of row) {
+      const parts = splitInlineCell(cell ?? '', count)
+      head.push(parts.head)
+      tail.push(parts.tail)
+    }
+    return { head, tail }
+  }
+
+  let low = 1
+  let high = maxParts - 1
+  let best = 0
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2)
+    const parts = makeParts(mid)
+    const candidate = clearTableMeasurements({ ...block, rows: [parts.head] })
+    if (measureTableBlock(candidate, bodySize, bodyLineHeight, fontFamily, availableWidth).totalHeight <= availableHeight) {
+      best = mid
+      low = mid + 1
+    } else {
+      high = mid - 1
+    }
+  }
+
+  if (best === 0) return null
+  const parts = makeParts(best)
+  if (parts.tail.every(cell => cell.length === 0)) return null
+  return parts
+}
+
+function splitTableBlockToFit(
+  block: TableDisplayBlock,
+  availableHeight: number,
+  bodySize: number,
+  bodyLineHeight: number,
+  fontFamily: string,
+  availableWidth: number,
+): BlockSplitResult | null {
+  if (availableHeight <= 0 || block.rows.length === 0) return null
+
+  let low = 1
+  let high = block.rows.length
+  let best = 0
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2)
+    const candidate = clearTableMeasurements({ ...block, rows: block.rows.slice(0, mid) })
+    if (measureTableBlock(candidate, bodySize, bodyLineHeight, fontFamily, availableWidth).totalHeight <= availableHeight) {
+      best = mid
+      low = mid + 1
+    } else {
+      high = mid - 1
+    }
+  }
+
+  if (best > 0) {
+    if (best >= block.rows.length) return null
+    return {
+      head: clearTableMeasurements({ ...block, rows: block.rows.slice(0, best) }),
+      tail: clearTableMeasurements({ ...block, rows: block.rows.slice(best) }),
+    }
+  }
+
+  const splitRow = splitTableRowToFit(
+    block, block.rows[0]!, availableHeight,
+    bodySize, bodyLineHeight, fontFamily, availableWidth,
+  )
+  if (!splitRow) return null
+
+  return {
+    head: clearTableMeasurements({ ...block, rows: [splitRow.head] }),
+    tail: clearTableMeasurements({ ...block, rows: [splitRow.tail, ...block.rows.slice(1)] }),
+  }
+}
+
+function splitColumnContainerToFit(
+  block: ColumnContainerBlock,
+  availableHeight: number,
+  measure: (candidate: ColumnContainerBlock) => number,
+  measureSide: (side: 'leftBlocks' | 'rightBlocks', blocks: Block[]) => number,
+  splitChild: (child: Block, childAvailableHeight: number) => BlockSplitResult | null,
+): BlockSplitResult | null {
+  const head: ColumnContainerBlock = { kind: 'columnContainer', leftBlocks: [], rightBlocks: [] }
+  const leftBlocks = [...block.leftBlocks]
+  const rightBlocks = [...block.rightBlocks]
+  let leftIndex = 0
+  let rightIndex = 0
+
+  const appendOrSplit = (side: 'leftBlocks' | 'rightBlocks', index: number): { nextIndex: number; progressed: boolean } => {
+    const source = side === 'leftBlocks' ? leftBlocks : rightBlocks
+    const child = source[index]
+    if (!child) return { nextIndex: index, progressed: false }
+
+    const candidate = { ...head, [side]: [...head[side], child] }
+    if (measure(candidate) <= availableHeight) {
+      head[side] = candidate[side]
+      return { nextIndex: index + 1, progressed: true }
+    }
+
+    const usedHeight = measureSide(side, head[side])
+    const childSplit = splitChild(child, Math.max(0, availableHeight - usedHeight))
+    if (!childSplit) return { nextIndex: index, progressed: false }
+
+    const splitCandidate = { ...head, [side]: [...head[side], childSplit.head] }
+    if (measure(splitCandidate) > availableHeight) return { nextIndex: index, progressed: false }
+
+    head[side] = splitCandidate[side]
+    source[index] = childSplit.tail ?? child
+    return { nextIndex: childSplit.tail ? index : index + 1, progressed: true }
+  }
+
+  while (leftIndex < leftBlocks.length || rightIndex < rightBlocks.length) {
+    let progressed = false
+    if (leftIndex < leftBlocks.length) {
+      const result = appendOrSplit('leftBlocks', leftIndex)
+      leftIndex = result.nextIndex
+      progressed ||= result.progressed
+    }
+    if (rightIndex < rightBlocks.length) {
+      const result = appendOrSplit('rightBlocks', rightIndex)
+      rightIndex = result.nextIndex
+      progressed ||= result.progressed
+    }
+    if (!progressed) break
+  }
+
+  if (head.leftBlocks.length === 0 && head.rightBlocks.length === 0) return null
+  if (leftIndex === leftBlocks.length && rightIndex === rightBlocks.length) return null
+  return {
+    head,
+    tail: {
+      kind: 'columnContainer',
+      leftBlocks: leftBlocks.slice(leftIndex),
+      rightBlocks: rightBlocks.slice(rightIndex),
+    },
+  }
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // 主分页引擎
 // ═══════════════════════════════════════════════════════════════════════════
@@ -814,6 +1106,7 @@ export function layoutPages(opts: LayoutOptions): LayoutResult {
         const estHeight = estimateBlockHeight(
           block, metrics.bodySize, metrics.bodyLineHeight,
           metrics.bodyWidth, theme, bodyFontFamily,
+          settings, headingOverrides, bodyFontWeight,
         )
         const blockTop = cursorY + getGapBetweenBlocks(previousBlock, { kind: 'body', raw: '' }, metrics, headingOverrides, theme, pageKind === 'cover')
         const blockBottom = blockTop + estHeight
@@ -821,10 +1114,10 @@ export function layoutPages(opts: LayoutOptions): LayoutResult {
         // 记录图片块顶坐标，供动态高度上限计算（computeImageMaxHeights）
         if (block.kind === 'image') (block as ImageBlock).blockTop = blockTop
 
-        if (blockBottom <= metrics.bodyBottomY || page.blocks.length === 0) {
+        if (blockBottom <= metrics.bodyBottomY) {
           page.blocks.push(block)
           cursorY = blockBottom
-          previousBlock = { kind: 'body', raw: '' } // generic previous
+          previousBlock = { kind: 'body', raw: '' }
           if (nextIsCarried) {
             carryBlock = null
             carryParagraph = null
@@ -833,11 +1126,127 @@ export function layoutPages(opts: LayoutOptions): LayoutResult {
           }
           continue
         }
-        // 放不下 — 如果当前页有内容，移动到下一页
+
+        const availableHeight = Math.max(0, metrics.bodyBottomY - blockTop)
+        let split: BlockSplitResult | null = null
+        if (block.kind === 'code') {
+          split = splitCodeBlockToFit(block, availableHeight, metrics.bodySize, metrics.bodyWidth)
+        } else if (block.kind === 'table') {
+          split = splitTableBlockToFit(
+            block, availableHeight, metrics.bodySize, metrics.bodyLineHeight,
+            bodyFontFamily, metrics.bodyWidth,
+          )
+        } else if (block.kind === 'columnContainer') {
+          const columnWidth = Math.max(1, (metrics.bodyWidth - COLUMN_GAP) / 2)
+          const measureColumnCandidate = (candidate: ColumnContainerBlock): number =>
+            estimateBlockHeight(
+              candidate, metrics.bodySize, metrics.bodyLineHeight,
+              metrics.bodyWidth, theme, bodyFontFamily,
+              settings, headingOverrides, bodyFontWeight,
+            )
+          const measureColumnSide = (
+            side: 'leftBlocks' | 'rightBlocks',
+            blocks: Block[],
+          ): number => measureColumnCandidate({
+            kind: 'columnContainer',
+            leftBlocks: side === 'leftBlocks' ? blocks : [],
+            rightBlocks: side === 'rightBlocks' ? blocks : [],
+          })
+          const splitColumnChild = (child: Block, childAvailableHeight: number): BlockSplitResult | null => {
+            if (child.kind === 'code') {
+              return splitCodeBlockToFit(child, childAvailableHeight, metrics.bodySize, columnWidth)
+            }
+            if (child.kind === 'table') {
+              return splitTableBlockToFit(
+                child, childAvailableHeight, metrics.bodySize, metrics.bodyLineHeight,
+                bodyFontFamily, columnWidth,
+              )
+            }
+            if (child.kind === 'image') {
+              if (childAvailableHeight <= 10 || child.height + 10 <= childAvailableHeight) return null
+              return {
+                head: { ...child, height: Math.max(1, childAvailableHeight - 10) },
+                tail: null,
+              }
+            }
+            if (child.kind === 'orderedList' || child.kind === 'unorderedList') {
+              let low = 1
+              let high = child.items.length - 1
+              let best = 0
+              while (low <= high) {
+                const mid = Math.floor((low + high) / 2)
+                const candidate: ListBlock = { ...child, items: child.items.slice(0, mid) }
+                const height = measureListBlock(
+                  candidate, metrics.bodySize, metrics.bodyLineHeight,
+                  columnWidth, theme, bodyFontFamily, bodyFontWeight,
+                ).totalHeight
+                if (height <= childAvailableHeight) {
+                  best = mid
+                  low = mid + 1
+                } else {
+                  high = mid - 1
+                }
+              }
+              if (best === 0 || best >= child.items.length) return null
+              return {
+                head: { ...child, items: child.items.slice(0, best) },
+                tail: {
+                  ...child,
+                  items: child.items.slice(best),
+                  start: (child.start ?? 1) + best,
+                },
+              }
+            }
+            if (child.kind === 'body' || child.kind === 'quote' || child.kind === 'subheading') {
+              const measured = measureParagraphBlock(
+                child, metrics.bodySize, metrics.bodyLineHeight, columnWidth,
+                theme, settings.subheadingStyle, bodyFontFamily,
+                false, headingOverrides, bodyFontWeight,
+              )
+              const maxLines = getParagraphMaxLines(
+                child, childAvailableHeight, metrics.bodySize, metrics.bodyLineHeight,
+                theme, settings.subheadingStyle, false, headingOverrides,
+              )
+              if (maxLines <= 0 || maxLines >= measured.lines.length) return null
+              const parts = splitInlineLines(measured.lines, maxLines)
+              const head = makeLineSplitBlock(parts.takenLines, child.kind, child.headingLevel)
+              const tailLines = measured.lines.slice(maxLines)
+              const tail = makeLineSplitBlock(tailLines, child.kind, child.headingLevel)
+              return head.raw && tail.raw ? { head, tail } : null
+            }
+            return null
+          }
+          split = splitColumnContainerToFit(
+            block, availableHeight, measureColumnCandidate, measureColumnSide, splitColumnChild,
+          )
+        }
+
+        if (split) {
+          page.blocks.push(split.head)
+          carryBlock = split.tail
+          carryParagraph = null
+          if (!nextIsCarried) currentParagraph++
+          break
+        }
+
+        // 不可拆分的图片仅在空页约束到正文高度；非空页先移动到下一页。
+        if (block.kind === 'image' && page.blocks.length === 0) {
+          const fittedHeight = Math.max(1, availableHeight - 10)
+          const fittedImage: ImageBlock = { ...block, height: Math.min(block.height, fittedHeight), blockTop }
+          page.blocks.push(fittedImage)
+          cursorY = blockTop + fittedImage.height + 10
+          if (nextIsCarried) carryBlock = null
+          else currentParagraph++
+          continue
+        }
+
         if (page.blocks.length > 0) break
-        // 空页 — 无论如何都要放进去（块比页面高）
+
+        // 单个子块本身超过整页且无法再拆时，保留该块并由渲染裁剪兜底，确保分页能继续推进。
         page.blocks.push(block)
-        if (!nextIsCarried) currentParagraph++
+        cursorY = blockBottom
+        if (nextIsCarried) carryBlock = null
+        else currentParagraph++
         continue
       }
 
@@ -859,14 +1268,14 @@ export function layoutPages(opts: LayoutOptions): LayoutResult {
         }
 
         const leadingGap = getGapBetweenBlocks(previousBlock, { kind: 'body', raw: '' } as any, metrics, headingOverrides, theme, pageKind === 'cover')
-        let y = cursorY + leadingGap
+        const listPadding = 12
+        let y = cursorY + leadingGap + listPadding
         let count = 0
 
-        // 一页能放几项就放几项
+        // 与 measureListBlock 使用相同盒模型：上下各 12px，项间使用 itemGap。
         for (let i = 0; i < listBlock.items.length; i++) {
           const itemBottom = y + itemHeights[i]! + (i > 0 ? listStyle.itemGap : 0)
-          // 放不下就停（空页也一样）；「空页且第一项超高」由下方保护分支兜底
-          if (itemBottom > metrics.bodyBottomY) break
+          if (itemBottom + listPadding > metrics.bodyBottomY) break
           y = itemBottom
           count++
         }
@@ -875,7 +1284,7 @@ export function layoutPages(opts: LayoutOptions): LayoutResult {
         if (count === 0) {
           if (page.blocks.length === 0) {
             count = 1
-            y = cursorY + leadingGap + itemHeights[0]!
+            y = cursorY + leadingGap + listPadding + itemHeights[0]!
           } else {
             break
           }
@@ -887,7 +1296,7 @@ export function layoutPages(opts: LayoutOptions): LayoutResult {
             ...listBlock,
             items: listBlock.items.slice(0, count),
           })
-          cursorY = y
+          cursorY = y + listPadding
           previousBlock = { kind: 'body', raw: '' } as any
 
           // 剩下的项带到下一页：结束当前页，由外层开新页继续排剩余项
@@ -1083,7 +1492,7 @@ export function computeImageMaxHeights(
   theme: ThemeDefinition | undefined,
   footerEnabled: boolean,
 ): Record<string, number> {
-  const bottomPad = theme?.contentInset?.bottom ?? 0
+  const bottomPad = resolveContentInsets(theme).bottom
   const bodyBottomY = (footerEnabled ? BODY_BOTTOM_WITH_FOOTER : BODY_BOTTOM_WITHOUT_FOOTER) - bottomPad
   const map: Record<string, number> = {}
   for (const page of pages) {
