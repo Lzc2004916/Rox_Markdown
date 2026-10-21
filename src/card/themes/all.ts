@@ -12,76 +12,9 @@ import frostedGlassBg from '../assets/frosted-glass-bg.png'
 import violetGridBg from '../assets/violet-grid-bg.png'
 import springFestivalBg from '../assets/spring-festival-bg.png'
 import mintForestBg from '../assets/mint-forest-bg.png'
+import vintageMossBg from '../assets/vintage-moss-bg.png'
 
 export const THEMES: ThemeDefinition[] = [
-  
-  
-  
-  {
-    id: 'moss-paper',
-    name: '苔绿纸书',
-    mood: '深苔和纸青铜锈迹书卷气',
-    preset: '苔痕',
-    description: '深苔绿和纸纹理、青铜锈绿点缀、古墨书卷气，经典的安静阅读质感',
-    tags: ['和纸', '书卷', '经典'],
-    mode: 'paper',
-    palette: {
-      page: '#f2f0e8',          
-      pageAlt: '#dfe5d6',       
-      text: '#1c281e',          
-      muted: '#5d7060',         
-      accent: '#5a8a62',        
-      accentSoft: 'rgba(90,138,98,0.16)',
-      border: 'rgba(70,85,72,0.12)',
-      shadow: 'rgba(55,70,58,0.10)',
-      glow: 'rgba(195,210,190,0.30)',
-    },
-    surface: {
-      grainAlpha: 0.044,         
-      vignetteAlpha: 0.048,
-      washStrength: 0.28,
-      innerFrameAlpha: 0.08,
-      innerFrameInset: 28,
-      titleAccentMix: 0.78,
-      footerLineAlpha: 0.18,
-      footerTextAlpha: 0.88,
-      previewShadow:
-        '0 24px 52px rgba(55,70,58,0.10), 0 2px 16px rgba(240,235,225,0.44) inset',
-    },
-    components: {
-      quoteFillAlpha: 0.044,
-      quoteStrokeAlpha: 0.068,
-      quoteBarAlpha: 0.76,
-      quoteRadius: 20,
-      quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.66,
-      highlightMarkerAlpha: 0.28,
-      highlightDashAlpha: 0.80,
-    },
-    editor: {
-      bodySize: 30,
-      lineHeight: 1.84,
-      bodyFontMode: 'wenkai',
-      bodyFontWeight: 400,
-      subheadingStyle: 'large',
-      highlightStyle: 'underline',
-      heading: {
-        h1Scale: 3.3, h2Scale: 1.65, h3Scale: 1.35,
-        h1LineHeight: 1.25, h2LineHeight: 1.35, h3LineHeight: 1.45,
-        h1FontWeight: 700, h2FontWeight: 600, h3FontWeight: 500,
-        h1MarginTop: 24, h1MarginBottom: 10,
-      },
-      list: { bulletChar: '•', bulletSizeRatio: 0.82, indentPerLevel: 28, itemGap: 7 },
-    },
-    colorTag: 'green',
-    decor: { kind: 'leafMotif', opacity: 0.10, color: '#5a8a62', scale: 0.95 },
-    gradient: { enabled: false, color1: '#dfe5d6', color2: '#f2f0e8' },
-  },
-
-  
-  
-  
   {
     id: 'warm-editor',
     name: '暖灰编辑',
@@ -3560,6 +3493,74 @@ export const THEMES: ThemeDefinition[] = [
     contentInset: { top: 35, bottom: 90, left: 35, right: 35 },
     gradient: { enabled: false, color1: '#ffffff', color2: '#f0f8f2' },
     backgroundImage: mintForestBg,
+  },
+
+  {
+    id: 'vintage-moss',
+    name: '古苔旧纸',
+    mood: '苔绿和纸纤维书页堆叠古墨书卷',
+    preset: '古苔',
+    description: '真实照片质感苔绿色旧书页，纸纤维纹理清晰，右侧多层纸边堆叠，左下角淡色篆印，四角做旧磨损，厚重古纸书卷气',
+    tags: ['和纸', '苔绿', '复古', '书页'],
+    mode: 'paper',
+    palette: {
+      page: '#c8d4c0',
+      pageAlt: '#b8c4b0',
+      text: '#1c281e',
+      muted: '#5d7060',
+      accent: '#5a8a62',
+      accentSoft: 'rgba(90,138,98,0.16)',
+      border: 'rgba(90,138,98,0.20)',
+      shadow: 'rgba(40,60,45,0.20)',
+      glow: 'rgba(180,200,175,0.25)',
+    },
+    surface: {
+      grainAlpha: 0,
+      vignetteAlpha: 0.04,
+      washStrength: 0.15,
+      innerFrameAlpha: 0,
+      innerFrameInset: 0,
+      titleAccentMix: 0.4,
+      footerLineAlpha: 0.25,
+      footerTextAlpha: 0.75,
+      previewShadow:
+        '0 20px 48px rgba(40,60,45,0.25), 0 2px 12px rgba(255,255,255,0.2) inset',
+    },
+    components: {
+      quoteFillAlpha: 0.06,
+      quoteStrokeAlpha: 0.10,
+      quoteBarAlpha: 0.70,
+      quoteRadius: 4,
+      quoteTreatment: 'paper',
+      highlightTreatment: 'softUnderline',
+      highlightUnderlineAlpha: 0.55,
+      highlightMarkerAlpha: 0.25,
+      highlightDashAlpha: 0.75,
+    },
+    editor: {
+      bodySize: 28,
+      lineHeight: 1.84,
+      bodyFontMode: 'wenkai',
+      bodyFontWeight: 400,
+      subheadingStyle: 'large',
+      highlightStyle: 'underline',
+      heading: {
+        h1Scale: 2.8, h2Scale: 1.55, h3Scale: 1.28,
+        h1LineHeight: 1.3, h2LineHeight: 1.4, h3LineHeight: 1.5,
+        h1FontWeight: 700, h2FontWeight: 600, h3FontWeight: 600,
+        h1MarginTop: 20, h1MarginBottom: 10,
+      },
+      list: { bulletChar: '◦', bulletSizeRatio: 0.80, indentPerLevel: 28, itemGap: 8 },
+    },
+    coverHeading: {
+      h1Scale: 3.2, h1LineHeight: 1.25, centered: false,
+    },
+    colorTag: 'green',
+    decor: { kind: 'none', opacity: 0 },
+    outerFrame: { kind: 'none' },
+    contentInset: { top: 20, bottom: 20, left: 20, right: 35 },
+    gradient: { enabled: false, color1: '#c8d4c0', color2: '#b8c4b0' },
+    backgroundImage: vintageMossBg,
   },
 ]
 
