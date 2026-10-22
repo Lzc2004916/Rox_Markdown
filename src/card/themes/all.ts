@@ -13,6 +13,7 @@ import violetGridBg from '../assets/violet-grid-bg.png'
 import springFestivalBg from '../assets/spring-festival-bg.png'
 import mintForestBg from '../assets/mint-forest-bg.png'
 import vintageMossBg from '../assets/vintage-moss-bg.png'
+import vintageLetterBg from '../assets/vintage-letter-bg.png'
 
 export const THEMES: ThemeDefinition[] = [
   {
@@ -47,8 +48,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 24px 50px rgba(80,75,65,0.08), 0 1px 12px rgba(250,245,235,0.40) inset',
     },
     components: {
-      quoteFillAlpha: 0.048,
-      quoteStrokeAlpha: 0.070,
+      quoteFillAlpha: 0.07,
+      quoteStrokeAlpha: 0.11,
       quoteBarAlpha: 0.78,
       quoteRadius: 14,
       quoteTreatment: 'callout',
@@ -105,7 +106,7 @@ export const THEMES: ThemeDefinition[] = [
     },
     components: {
       quoteFillAlpha: 0.05,
-      quoteStrokeAlpha: 0.08,
+      quoteStrokeAlpha: 0.1,
       quoteBarAlpha: 0.7,
       quoteRadius: 20,
       quoteTreatment: 'paper',
@@ -163,8 +164,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 24px 48px rgba(150,130,60,0.10), 0 2px 14px rgba(255,248,210,0.44) inset',
     },
     components: {
-      quoteFillAlpha: 0.048,
-      quoteStrokeAlpha: 0.074,
+      quoteFillAlpha: 0.07,
+      quoteStrokeAlpha: 0.1,
       quoteBarAlpha: 0.76,
       quoteRadius: 16,
       quoteTreatment: 'paper',
@@ -220,8 +221,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 24px 50px rgba(70,110,90,0.1), 0 2px 16px rgba(240,250,245,0.4) inset',
     },
     components: {
-      quoteFillAlpha: 0.042,
-      quoteStrokeAlpha: 0.068,
+      quoteFillAlpha: 0.07,
+      quoteStrokeAlpha: 0.11,
       quoteBarAlpha: 0.68,
       quoteRadius: 20,
       quoteTreatment: 'paper',
@@ -279,7 +280,7 @@ export const THEMES: ThemeDefinition[] = [
         '0 16px 36px rgba(25,30,45,0.08), 0 1px 6px rgba(0,0,0,0.03) inset',
     },
     components: {
-      quoteFillAlpha: 0.044,
+      quoteFillAlpha: 0.07,
       quoteStrokeAlpha: 0.12,
       quoteBarAlpha: 0.90,
       quoteRadius: 2,
@@ -343,8 +344,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 30px 60px rgba(10,20,12,0.36), 0 2px 20px rgba(0,0,0,0.2) inset',
     },
     components: {
-      quoteFillAlpha: 0.06,
-      quoteStrokeAlpha: 0.1,
+      quoteFillAlpha: 0.1,
+      quoteStrokeAlpha: 0.15,
       quoteBarAlpha: 0.78,
       quoteRadius: 24,
       quoteTreatment: 'paper',
@@ -400,8 +401,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 32px 64px rgba(8,6,4,0.44), 0 2px 22px rgba(0,0,0,0.24) inset',
     },
     components: {
-      quoteFillAlpha: 0.07,
-      quoteStrokeAlpha: 0.12,
+      quoteFillAlpha: 0.1,
+      quoteStrokeAlpha: 0.15,
       quoteBarAlpha: 0.8,
       quoteRadius: 24,
       quoteTreatment: 'paper',
@@ -463,8 +464,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 20px 44px rgba(0,0,0,0.06), 0 1px 10px rgba(255,255,255,0.3) inset',
     },
     components: {
-      quoteFillAlpha: 0.034,
-      quoteStrokeAlpha: 0.056,
+      quoteFillAlpha: 0.07,
+      quoteStrokeAlpha: 0.11,
       quoteBarAlpha: 0.66,
       quoteRadius: 2,
       quoteTreatment: 'paper',
@@ -527,8 +528,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 0 40px rgba(0,240,255,0.1), 0 0 80px rgba(180,0,255,0.06), 0 2px 16px rgba(0,0,0,0.4) inset',
     },
     components: {
-      quoteFillAlpha: 0.04,
-      quoteStrokeAlpha: 0.1,
+      quoteFillAlpha: 0.1,
+      quoteStrokeAlpha: 0.15,
       quoteBarAlpha: 0.78,
       quoteRadius: 4,
       quoteTreatment: 'callout',
@@ -659,7 +660,7 @@ export const THEMES: ThemeDefinition[] = [
         '0 28px 60px rgba(120,100,50,0.12), 0 2px 20px rgba(255,250,235,0.55) inset, 0 0 0 1px rgba(200,164,78,0.18) inset',
     },
     components: {
-      quoteFillAlpha: 0.044,
+      quoteFillAlpha: 0.07,
       quoteStrokeAlpha: 0.088,
       quoteBarAlpha: 0.84,
       quoteRadius: 16,
@@ -728,8 +729,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 22px 48px rgba(90,105,55,0.08), 0 2px 14px rgba(250,242,225,0.4) inset',
     },
     components: {
-      quoteFillAlpha: 0.044,
-      quoteStrokeAlpha: 0.072,
+      quoteFillAlpha: 0.07,
+      quoteStrokeAlpha: 0.11,
       quoteBarAlpha: 0.70,
       quoteRadius: 14,
       quoteTreatment: 'paper',
@@ -796,8 +797,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 18px 42px rgba(30,90,130,0.08), 0 2px 14px rgba(240,248,255,0.46) inset',
     },
     components: {
-      quoteFillAlpha: 0.042,
-      quoteStrokeAlpha: 0.068,
+      quoteFillAlpha: 0.07,
+      quoteStrokeAlpha: 0.11,
       quoteBarAlpha: 0.70,
       quoteRadius: 10,
       quoteTreatment: 'callout',
@@ -863,8 +864,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 28px 60px rgba(4,8,14,0.5), 0 2px 20px rgba(0,0,0,0.3) inset',
     },
     components: {
-      quoteFillAlpha: 0.05,
-      quoteStrokeAlpha: 0.1,
+      quoteFillAlpha: 0.1,
+      quoteStrokeAlpha: 0.15,
       quoteBarAlpha: 0.72,
       quoteRadius: 18,
       quoteTreatment: 'paper',
@@ -938,8 +939,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 6px 24px rgba(95,90,80,0.06), 0 1px 4px rgba(0,0,0,0.01), 0 1px 0 rgba(255,255,255,0.7) inset',
     },
     components: {
-      quoteFillAlpha: 0.034,    
-      quoteStrokeAlpha: 0.056,
+      quoteFillAlpha: 0.07,    
+      quoteStrokeAlpha: 0.11,
       quoteBarAlpha: 0.66,
       quoteRadius: 18,          
       quoteTreatment: 'paper',
@@ -1008,8 +1009,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 20px 44px rgba(35,25,15,0.06), 0 1px 10px rgba(250,242,225,0.38) inset, 0 0 0 1px rgba(200,160,100,0.06) inset',
     },
     components: {
-      quoteFillAlpha: 0.038,    
-      quoteStrokeAlpha: 0.060,
+      quoteFillAlpha: 0.1,    
+      quoteStrokeAlpha: 0.14,
       quoteBarAlpha: 0.66,      
       quoteRadius: 2,           
       quoteTreatment: 'paper',
@@ -1081,8 +1082,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 20px 44px rgba(180,100,50,0.08), 0 2px 12px rgba(255,245,235,0.40) inset',
     },
     components: {
-      quoteFillAlpha: 0.048,
-      quoteStrokeAlpha: 0.070,
+      quoteFillAlpha: 0.07,
+      quoteStrokeAlpha: 0.11,
       quoteBarAlpha: 0.78,
       quoteRadius: 12,
       quoteTreatment: 'callout',
@@ -1150,8 +1151,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 16px 36px rgba(20,18,14,0.04), 0 1px 8px rgba(250,248,243,0.32) inset',
     },
     components: {
-      quoteFillAlpha: 0.040,
-      quoteStrokeAlpha: 0.064,
+      quoteFillAlpha: 0.07,
+      quoteStrokeAlpha: 0.11,
       quoteBarAlpha: 0.66,
       quoteRadius: 2,
       quoteTreatment: 'callout',
@@ -1184,80 +1185,6 @@ export const THEMES: ThemeDefinition[] = [
     gradient: { enabled: false, color1: '#f2ece0', color2: '#faf8f3' },
   },
 
-  
-  
-
-  
-  
-  
-  {
-    id: 'vintage-typewriter',
-    name: '复古打字机',
-    mood: '海明威书房烟叶熏纸墨带涂鸦',
-    preset: '烟稿',
-    description: '烟叶熏黄打字纸、深褐墨带色、角落编辑涂鸦贴纸、墨迹压痕，海明威式的粗粝文学质感',
-    tags: ['烟熏', '墨带', '海明威', '涂鸦'],
-    mode: 'vintage',
-    palette: {
-      page: '#f2ebe0',          
-      pageAlt: '#e8dcca',       
-      text: '#261e15',          
-      muted: '#8a7862',         
-      accent: '#6b4423',        
-      accentSoft: 'rgba(107,68,35,0.18)',
-      border: 'rgba(140,110,80,0.14)',
-      shadow: 'rgba(100,70,40,0.12)',
-      glow: 'rgba(225,200,165,0.22)',
-    },
-    surface: {
-      grainAlpha: 0.062,        
-      vignetteAlpha: 0.068,     
-      washStrength: 0.44,       
-      innerFrameAlpha: 0.14,    
-      innerFrameInset: 24,
-      titleAccentMix: 0.86,
-      footerLineAlpha: 0.24,
-      footerTextAlpha: 0.90,
-      previewShadow:
-        '0 28px 56px rgba(100,70,40,0.14), 0 2px 20px rgba(242,235,224,0.44) inset',
-    },
-    components: {
-      quoteFillAlpha: 0.058,
-      quoteStrokeAlpha: 0.086,
-      quoteBarAlpha: 0.80,
-      quoteRadius: 6,
-      quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.62,
-      highlightMarkerAlpha: 0.34,
-      highlightDashAlpha: 0.76,
-    },
-    editor: {
-      bodySize: 28,
-      lineHeight: 1.84,
-      bodyFontMode: 'simsun',
-      bodyFontWeight: 400,
-      subheadingStyle: 'large',
-      highlightStyle: 'underline',
-      heading: {
-        h1Scale: 3.2, h2Scale: 1.6, h3Scale: 1.3,
-        h1LineHeight: 1.22, h2LineHeight: 1.32, h3LineHeight: 1.42,
-        h1FontWeight: 700, h2FontWeight: 600, h3FontWeight: 500,
-        h1MarginTop: 22, h1MarginBottom: 12,
-        h1Color: '#6b4423',
-      },
-      list: { bulletChar: '—', bulletSizeRatio: 0.78, indentPerLevel: 26, itemGap: 7 },
-    },
-    coverHeading: {
-      h1Scale: 4.2, h1LineHeight: 1.12, centered: false,
-    },
-    colorTag: 'brown',
-    decor: { kind: 'fanBurst', opacity: 0.22, color: '#6b4423', scale: 1.02 },
-    outerFrame: { kind: 'thick', color: '#4a2f18', padding: 6, radius: 36, opacity: 0.45 },
-    gradient: { enabled: true, color1: '#e8dcca', color2: '#f2ebe0', angle: 135 },
-  },
-
-  
   {
     id: 'kraft-paper',
     name: '复古牛皮纸',
@@ -1291,7 +1218,7 @@ export const THEMES: ThemeDefinition[] = [
     },
     components: {
       quoteFillAlpha: 0.058,
-      quoteStrokeAlpha: 0.090,
+      quoteStrokeAlpha: 0.1,
       quoteBarAlpha: 0.76,
       quoteRadius: 14,
       quoteTreatment: 'paper',
@@ -1363,8 +1290,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 18px 40px rgba(20,30,45,0.06), 0 1px 6px rgba(0,0,0,0.03) inset',
     },
     components: {
-      quoteFillAlpha: 0.040,
-      quoteStrokeAlpha: 0.09,
+      quoteFillAlpha: 0.07,
+      quoteStrokeAlpha: 0.11,
       quoteBarAlpha: 0.84,
       quoteRadius: 4,
       quoteTreatment: 'callout',
@@ -1432,8 +1359,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 14px 34px rgba(30,60,140,0.06), 0 1px 8px rgba(79,110,246,0.04) inset',
     },
     components: {
-      quoteFillAlpha: 0.040,
-      quoteStrokeAlpha: 0.080,
+      quoteFillAlpha: 0.07,
+      quoteStrokeAlpha: 0.1,
       quoteBarAlpha: 0.78,
       quoteRadius: 6,
       quoteTreatment: 'callout',
@@ -1492,8 +1419,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 28px 58px rgba(6,6,24,0.50), 0 2px 18px rgba(0,0,0,0.26) inset',
     },
     components: {
-      quoteFillAlpha: 0.050,
-      quoteStrokeAlpha: 0.092,
+      quoteFillAlpha: 0.1,
+      quoteStrokeAlpha: 0.15,
       quoteBarAlpha: 0.72,
       quoteRadius: 12,
       quoteTreatment: 'paper',
@@ -1561,8 +1488,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 0 36px rgba(0,255,65,0.08), 0 0 72px rgba(0,200,50,0.04), 0 2px 14px rgba(0,0,0,0.40) inset',
     },
     components: {
-      quoteFillAlpha: 0.040,
-      quoteStrokeAlpha: 0.090,
+      quoteFillAlpha: 0.1,
+      quoteStrokeAlpha: 0.15,
       quoteBarAlpha: 0.76,
       quoteRadius: 2,
       quoteTreatment: 'callout',
@@ -1633,8 +1560,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 12px 36px rgba(130,70,100,0.12), 0 2px 14px rgba(255,250,252,0.50) inset, 0 0 0 1px rgba(220,170,195,0.12) inset',
     },
     components: {
-      quoteFillAlpha: 0.046,
-      quoteStrokeAlpha: 0.074,
+      quoteFillAlpha: 0.07,
+      quoteStrokeAlpha: 0.11,
       quoteBarAlpha: 0.68,
       quoteRadius: 16,
       quoteTreatment: 'callout',
@@ -1695,8 +1622,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 16px 38px rgba(225,48,108,0.14), 0 2px 12px rgba(255,255,255,0.48) inset, 0 0 0 1px rgba(255,255,255,0.28) inset',
     },
     components: {
-      quoteFillAlpha: 0.048,
-      quoteStrokeAlpha: 0.080,
+      quoteFillAlpha: 0.07,
+      quoteStrokeAlpha: 0.1,
       quoteBarAlpha: 0.70,
       quoteRadius: 16,
       quoteTreatment: 'callout',
@@ -1857,8 +1784,8 @@ export const THEMES: ThemeDefinition[] = [
     },
     components: {
       
-      quoteFillAlpha: 0.034,
-      quoteStrokeAlpha: 0.050,
+      quoteFillAlpha: 0.07,
+      quoteStrokeAlpha: 0.11,
       quoteBarAlpha: 0.60,
       quoteRadius: 14,
       quoteTreatment: 'paper',
@@ -1924,8 +1851,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 28px 56px rgba(120,70,40,0.11), 0 2px 18px rgba(248,237,224,0.44) inset',
     },
     components: {
-      quoteFillAlpha: 0.052,
-      quoteStrokeAlpha: 0.080,
+      quoteFillAlpha: 0.13,
+      quoteStrokeAlpha: 0.14,
       quoteBarAlpha: 0.76,
       quoteRadius: 16,
       quoteTreatment: 'paper',
@@ -1989,8 +1916,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 30px 62px rgba(4,10,24,0.55), 0 0 40px rgba(255,107,107,0.06), 0 2px 20px rgba(0,0,0,0.30) inset',
     },
     components: {
-      quoteFillAlpha: 0.048,
-      quoteStrokeAlpha: 0.090,
+      quoteFillAlpha: 0.1,
+      quoteStrokeAlpha: 0.15,
       quoteBarAlpha: 0.78,
       quoteRadius: 12,
       quoteTreatment: 'paper',
@@ -2056,8 +1983,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 28px 60px rgba(12,4,24,0.55), 0 0 50px rgba(155,109,255,0.08), 0 2px 18px rgba(0,0,0,0.28) inset',
     },
     components: {
-      quoteFillAlpha: 0.044,
-      quoteStrokeAlpha: 0.086,
+      quoteFillAlpha: 0.1,
+      quoteStrokeAlpha: 0.15,
       quoteBarAlpha: 0.76,
       quoteRadius: 8,
       quoteTreatment: 'paper',
@@ -2125,8 +2052,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 20px 42px rgba(50,45,40,0.08), 0 2px 12px rgba(243,239,232,0.36) inset',
     },
     components: {
-      quoteFillAlpha: 0.034,
-      quoteStrokeAlpha: 0.060,
+      quoteFillAlpha: 0.07,
+      quoteStrokeAlpha: 0.11,
       quoteBarAlpha: 0.66,
       quoteRadius: 6,
       quoteTreatment: 'paper',
@@ -2191,8 +2118,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 20px 44px rgba(90,110,70,0.07), 0 2px 14px rgba(250,247,240,0.40) inset',
     },
     components: {
-      quoteFillAlpha: 0.040,
-      quoteStrokeAlpha: 0.064,
+      quoteFillAlpha: 0.07,
+      quoteStrokeAlpha: 0.11,
       quoteBarAlpha: 0.66,
       quoteRadius: 14,
       quoteTreatment: 'paper',
@@ -2264,8 +2191,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 24px 50px rgba(60,120,90,0.08), 0 2px 16px rgba(240,252,245,0.42) inset',
     },
     components: {
-      quoteFillAlpha: 0.044,
-      quoteStrokeAlpha: 0.070,
+      quoteFillAlpha: 0.07,
+      quoteStrokeAlpha: 0.11,
       quoteBarAlpha: 0.72,
       quoteRadius: 20,
       quoteTreatment: 'paper',
@@ -2331,8 +2258,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 28px 56px rgba(0,0,0,0.42), 0 2px 18px rgba(60,45,20,0.30) inset',
     },
     components: {
-      quoteFillAlpha: 0.060,
-      quoteStrokeAlpha: 0.090,
+      quoteFillAlpha: 0.1,
+      quoteStrokeAlpha: 0.15,
       quoteBarAlpha: 0.80,
       quoteRadius: 6,
       quoteTreatment: 'paper',
@@ -2400,8 +2327,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 0 38px rgba(142,255,61,0.10), 0 0 76px rgba(60,180,40,0.05), 0 2px 16px rgba(0,0,0,0.42) inset',
     },
     components: {
-      quoteFillAlpha: 0.040,
-      quoteStrokeAlpha: 0.090,
+      quoteFillAlpha: 0.1,
+      quoteStrokeAlpha: 0.15,
       quoteBarAlpha: 0.78,
       quoteRadius: 4,
       quoteTreatment: 'callout',
@@ -2468,8 +2395,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 0 0 3px rgba(255,176,0,0.55), 0 24px 48px rgba(0,0,0,0.60)',
     },
     components: {
-      quoteFillAlpha: 0.0,
-      quoteStrokeAlpha: 0.0,
+      quoteFillAlpha: 0.1,
+      quoteStrokeAlpha: 0.15,
       quoteBarAlpha: 0.95,      
       quoteRadius: 0,           
       quoteTreatment: 'callout',
@@ -2536,8 +2463,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 24px 52px rgba(150,110,40,0.12), 0 2px 16px rgba(255,250,235,0.46) inset',
     },
     components: {
-      quoteFillAlpha: 0.046,
-      quoteStrokeAlpha: 0.072,
+      quoteFillAlpha: 0.07,
+      quoteStrokeAlpha: 0.11,
       quoteBarAlpha: 0.74,
       quoteRadius: 16,
       quoteTreatment: 'callout',  
@@ -2591,7 +2518,7 @@ export const THEMES: ThemeDefinition[] = [
       previewShadow: '0 4px 24px rgba(0,0,0,0.06)',
     },
     components: {
-      quoteFillAlpha: 0.02, quoteStrokeAlpha: 0.08, quoteBarAlpha: 0.8,
+      quoteFillAlpha: 0.07, quoteStrokeAlpha: 0.11, quoteBarAlpha: 0.8,
       quoteRadius: 8, quoteTreatment: 'paper',
       highlightTreatment: 'softUnderline', highlightUnderlineAlpha: 0.7,
       highlightMarkerAlpha: 0.22, highlightDashAlpha: 0.8,
@@ -2634,7 +2561,7 @@ export const THEMES: ThemeDefinition[] = [
       previewShadow: '0 16px 48px rgba(0,0,0,0.5)',
     },
     components: {
-      quoteFillAlpha: 0.06, quoteStrokeAlpha: 0.15, quoteBarAlpha: 0.9,
+      quoteFillAlpha: 0.1, quoteStrokeAlpha: 0.15, quoteBarAlpha: 0.9,
       quoteRadius: 6, quoteTreatment: 'paper',
       highlightTreatment: 'softUnderline', highlightUnderlineAlpha: 0.8,
       highlightMarkerAlpha: 0.3, highlightDashAlpha: 0.9,
@@ -2677,7 +2604,7 @@ export const THEMES: ThemeDefinition[] = [
       previewShadow: '0 8px 28px rgba(60,90,110,0.10)',
     },
     components: {
-      quoteFillAlpha: 0.04, quoteStrokeAlpha: 0.08, quoteBarAlpha: 0.75,
+      quoteFillAlpha: 0.07, quoteStrokeAlpha: 0.1, quoteBarAlpha: 0.75,
       quoteRadius: 12, quoteTreatment: 'paper',
       highlightTreatment: 'softUnderline', highlightUnderlineAlpha: 0.6,
       highlightMarkerAlpha: 0.2, highlightDashAlpha: 0.7,
@@ -2720,7 +2647,7 @@ export const THEMES: ThemeDefinition[] = [
       previewShadow: '0 16px 40px rgba(90,90,90,0.12)',
     },
     components: {
-      quoteFillAlpha: 0.06, quoteStrokeAlpha: 0.08, quoteBarAlpha: 0.6,
+      quoteFillAlpha: 0.14, quoteStrokeAlpha: 0.15, quoteBarAlpha: 0.6,
       quoteRadius: 12, quoteTreatment: 'paper',
       highlightTreatment: 'softUnderline', highlightUnderlineAlpha: 0.6,
       highlightMarkerAlpha: 0.25, highlightDashAlpha: 0.8,
@@ -2765,7 +2692,7 @@ export const THEMES: ThemeDefinition[] = [
       previewShadow: '0 8px 28px rgba(200,120,150,0.15)',
     },
     components: {
-      quoteFillAlpha: 0.05, quoteStrokeAlpha: 0.08, quoteBarAlpha: 0.75,
+      quoteFillAlpha: 0.05, quoteStrokeAlpha: 0.1, quoteBarAlpha: 0.75,
       quoteRadius: 18, quoteTreatment: 'paper',
       highlightTreatment: 'softUnderline', highlightUnderlineAlpha: 0.65,
       highlightMarkerAlpha: 0.22, highlightDashAlpha: 0.75,
@@ -2851,7 +2778,7 @@ export const THEMES: ThemeDefinition[] = [
       previewShadow: '0 16px 48px rgba(0,0,0,0.5)',
     },
     components: {
-      quoteFillAlpha: 0.05, quoteStrokeAlpha: 0.12, quoteBarAlpha: 0.8,
+      quoteFillAlpha: 0.1, quoteStrokeAlpha: 0.15, quoteBarAlpha: 0.8,
       quoteRadius: 12, quoteTreatment: 'paper',
       highlightTreatment: 'softUnderline', highlightUnderlineAlpha: 0.7,
       highlightMarkerAlpha: 0.25, highlightDashAlpha: 0.8,
@@ -2935,7 +2862,7 @@ export const THEMES: ThemeDefinition[] = [
       previewShadow: '0 16px 40px rgba(155,127,212,0.2)',
     },
     components: {
-      quoteFillAlpha: 0.08, quoteStrokeAlpha: 0.15, quoteBarAlpha: 0.6,
+      quoteFillAlpha: 0.12, quoteStrokeAlpha: 0.15, quoteBarAlpha: 0.6,
       quoteRadius: 6, quoteTreatment: 'paper',
       highlightTreatment: 'softUnderline', highlightUnderlineAlpha: 0.6,
       highlightMarkerAlpha: 0.2, highlightDashAlpha: 0.8,
@@ -2990,8 +2917,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 24px 52px rgba(201,122,140,0.12), 0 2px 16px rgba(253,248,248,0.44) inset',
     },
     components: {
-      quoteFillAlpha: 0.06,
-      quoteStrokeAlpha: 0.08,
+      quoteFillAlpha: 0.14,
+      quoteStrokeAlpha: 0.15,
       quoteBarAlpha: 0.6,
       quoteRadius: 12,
       quoteTreatment: 'paper',
@@ -3055,8 +2982,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 24px 52px rgba(106,154,201,0.12), 0 2px 16px rgba(255,255,255,0.44) inset',
     },
     components: {
-      quoteFillAlpha: 0.06,
-      quoteStrokeAlpha: 0.08,
+      quoteFillAlpha: 0.14,
+      quoteStrokeAlpha: 0.15,
       quoteBarAlpha: 0.6,
       quoteRadius: 12,
       quoteTreatment: 'paper',
@@ -3121,7 +3048,7 @@ export const THEMES: ThemeDefinition[] = [
     },
     components: {
       quoteFillAlpha: 0.06,
-      quoteStrokeAlpha: 0.08,
+      quoteStrokeAlpha: 0.1,
       quoteBarAlpha: 0.6,
       quoteRadius: 12,
       quoteTreatment: 'paper',
@@ -3185,8 +3112,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 20px 48px rgba(74,144,226,0.14), 0 2px 12px rgba(0,0,0,0.04) inset',
     },
     components: {
-      quoteFillAlpha: 0.04,
-      quoteStrokeAlpha: 0.06,
+      quoteFillAlpha: 0.07,
+      quoteStrokeAlpha: 0.11,
       quoteBarAlpha: 0.7,
       quoteRadius: 10,
       quoteTreatment: 'paper',
@@ -3253,8 +3180,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 20px 48px rgba(106,183,214,0.14), 0 2px 12px rgba(255,255,255,0.4) inset',
     },
     components: {
-      quoteFillAlpha: 0.05,
-      quoteStrokeAlpha: 0.08,
+      quoteFillAlpha: 0.14,
+      quoteStrokeAlpha: 0.17,
       quoteBarAlpha: 0.65,
       quoteRadius: 14,
       quoteTreatment: 'paper',
@@ -3321,8 +3248,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 20px 48px rgba(155,126,220,0.16), 0 2px 12px rgba(255,255,255,0.4) inset',
     },
     components: {
-      quoteFillAlpha: 0.05,
-      quoteStrokeAlpha: 0.08,
+      quoteFillAlpha: 0.14,
+      quoteStrokeAlpha: 0.15,
       quoteBarAlpha: 0.65,
       quoteRadius: 12,
       quoteTreatment: 'paper',
@@ -3390,7 +3317,7 @@ export const THEMES: ThemeDefinition[] = [
     },
     components: {
       quoteFillAlpha: 0.05,
-      quoteStrokeAlpha: 0.08,
+      quoteStrokeAlpha: 0.1,
       quoteBarAlpha: 0.70,
       quoteRadius: 8,
       quoteTreatment: 'paper',
@@ -3458,8 +3385,8 @@ export const THEMES: ThemeDefinition[] = [
         '0 20px 48px rgba(126,200,160,0.16), 0 2px 12px rgba(255,255,255,0.4) inset',
     },
     components: {
-      quoteFillAlpha: 0.05,
-      quoteStrokeAlpha: 0.08,
+      quoteFillAlpha: 0.14,
+      quoteStrokeAlpha: 0.17,
       quoteBarAlpha: 0.65,
       quoteRadius: 14,
       quoteTreatment: 'paper',
@@ -3527,9 +3454,9 @@ export const THEMES: ThemeDefinition[] = [
         '0 20px 48px rgba(40,60,45,0.25), 0 2px 12px rgba(255,255,255,0.2) inset',
     },
     components: {
-      quoteFillAlpha: 0.06,
-      quoteStrokeAlpha: 0.10,
-      quoteBarAlpha: 0.70,
+      quoteFillAlpha: 0.25,
+      quoteStrokeAlpha: 0.3,
+      quoteBarAlpha: 0.9,
       quoteRadius: 4,
       quoteTreatment: 'paper',
       highlightTreatment: 'softUnderline',
@@ -3561,6 +3488,75 @@ export const THEMES: ThemeDefinition[] = [
     contentInset: { top: 20, bottom: 20, left: 20, right: 35 },
     gradient: { enabled: false, color1: '#c8d4c0', color2: '#b8c4b0' },
     backgroundImage: vintageMossBg,
+  },
+
+  {
+    id: 'vintage-letter',
+    name: '旧信札',
+    mood: '深墨绿外底米黄信纸邮戳邮票打字机回形针复古手札',
+    preset: '旧信',
+    description: '深墨绿外底衬米黄做旧信纸，左上角黄铜打字机与牛皮纸碎片，右上圆形邮戳与人物邮票，金回形针、棕枝叶藤蔓点缀，西洋旧书信手帐拼贴风',
+    tags: ['书信', '复古', '邮票', '手帐'],
+    mode: 'paper',
+    palette: {
+      page: '#f5ecd9',
+      pageAlt: '#e8dcc0',
+      text: '#2b2118',
+      muted: '#7a6a55',
+      accent: '#8a5a34',
+      accentSoft: 'rgba(138,90,52,0.18)',
+      border: 'rgba(138,90,52,0.18)',
+      shadow: 'rgba(80,55,30,0.18)',
+      glow: 'rgba(210,180,140,0.25)',
+    },
+    surface: {
+      grainAlpha: 0,
+      vignetteAlpha: 0.04,
+      washStrength: 0.15,
+      innerFrameAlpha: 0,
+      innerFrameInset: 0,
+      titleAccentMix: 0.4,
+      footerLineAlpha: 0.25,
+      footerTextAlpha: 0.75,
+      previewShadow:
+        '0 20px 48px rgba(80,55,30,0.22), 0 2px 12px rgba(255,255,255,0.2) inset',
+    },
+    components: {
+      quoteFillAlpha: 0.06,
+      quoteStrokeAlpha: 0.10,
+      quoteBarAlpha: 0.70,
+      quoteRadius: 6,
+      quoteTreatment: 'paper',
+      highlightTreatment: 'softUnderline',
+      highlightUnderlineAlpha: 0.55,
+      highlightMarkerAlpha: 0.25,
+      highlightDashAlpha: 0.75,
+    },
+    editor: {
+      bodySize: 28,
+      lineHeight: 1.84,
+      bodyFontMode: 'fangsong',
+      bodyFontWeight: 400,
+      subheadingStyle: 'large',
+      highlightStyle: 'underline',
+      heading: {
+        h1Scale: 2.8, h2Scale: 1.55, h3Scale: 1.28,
+        h1LineHeight: 1.3, h2LineHeight: 1.4, h3LineHeight: 1.5,
+        h1FontWeight: 700, h2FontWeight: 600, h3FontWeight: 600,
+        h1MarginTop: 20, h1MarginBottom: 10,
+        h1Color: '#8a5a34',
+      },
+      list: { bulletChar: '—', bulletSizeRatio: 0.78, indentPerLevel: 28, itemGap: 7 },
+    },
+    coverHeading: {
+      h1Scale: 3.2, h1LineHeight: 1.25, centered: false,
+    },
+    colorTag: 'brown',
+    decor: { kind: 'none', opacity: 0 },
+    outerFrame: { kind: 'none' },
+    contentInset: { top: 100, bottom: 100, left: 35, right: 35 },
+    gradient: { enabled: false, color1: '#f5ecd9', color2: '#e8dcc0' },
+    backgroundImage: vintageLetterBg,
   },
 ]
 

@@ -10,6 +10,8 @@ export interface Document {
   savedAt: string
   
   tags: string[]
+  /** The card theme selected for this document. */
+  cardTheme: string
 }
 
 
@@ -111,13 +113,16 @@ function uid(): string {
   return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8)
 }
 
-function defaultDoc(): Document {
+export const DEFAULT_DOCUMENT_THEME = 'warm-editor'
+
+function defaultDoc(cardTheme = DEFAULT_DOCUMENT_THEME): Document {
   return {
     id: uid(),
     title: '',
     content: '',
     savedAt: new Date().toISOString(),
     tags: [],
+    cardTheme,
   }
 }
 
@@ -196,7 +201,7 @@ export const useDocumentsStore = defineStore('documents', () => {
 
   
   function addDocument(content: string = ''): string {
-    const doc = defaultDoc()
+    const doc = defaultDoc(activeDocument.value?.cardTheme ?? DEFAULT_DOCUMENT_THEME)
     doc.content = content
     doc.title = extractTitle(content)
     doc.tags = extractTags(content)
@@ -212,7 +217,7 @@ export const useDocumentsStore = defineStore('documents', () => {
 
     if (documents.value.length <= 1) {
       
-      const doc = defaultDoc()
+      const doc = defaultDoc(activeDocument.value?.cardTheme ?? DEFAULT_DOCUMENT_THEME)
       documents.value = [doc]
       activeId.value = doc.id
       return
@@ -235,6 +240,12 @@ export const useDocumentsStore = defineStore('documents', () => {
     if (documents.value.some((d) => d.id === id)) {
       activeId.value = id
     }
+  }
+
+  function updateTheme(id: string, cardTheme: string): void {
+    const doc = documents.value.find((d) => d.id === id)
+    if (!doc || !cardTheme || doc.cardTheme === cardTheme) return
+    doc.cardTheme = cardTheme
   }
 
   
@@ -378,6 +389,7 @@ export const useDocumentsStore = defineStore('documents', () => {
     addDocument,
     removeDocument,
     setActive,
+    updateTheme,
     updateContent,
     pushUndo,
     undo,

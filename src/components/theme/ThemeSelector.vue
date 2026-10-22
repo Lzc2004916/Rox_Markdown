@@ -48,7 +48,7 @@
         v-for="(theme, idx) in filteredThemes"
         :key="theme.id"
         :ref="(el: unknown) => setRadioRef(el, idx)"
-        class="flex flex-col items-center gap-2 shrink-0 w-[146px] p-1.5 rounded-lg border-1.5 bg-transparent cursor-pointer transition-all duration-200"
+        class="flex flex-col items-center gap-2 shrink-0 w-[146px] p-1.5 rounded-lg border-1.5 bg-transparent cursor-pointer transition-[background-color,border-color,box-shadow,transform] duration-200"
         :class="theme.id === modelValue
           ? 'border-primary/50 bg-primary/5'
           : 'border-transparent hover:bg-base-200/40 hover:-translate-y-px'"

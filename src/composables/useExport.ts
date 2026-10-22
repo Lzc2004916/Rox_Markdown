@@ -1,5 +1,4 @@
 import { ref, type Ref } from 'vue'
-import { jsPDF } from 'jspdf'
 import { toast } from '@/utils/toast'
 
 
@@ -171,6 +170,9 @@ export function useExport(): {
       isExporting.value = true
       progress.value = 30
 
+      // PDF generation is an opt-in path; keep jsPDF out of the initial renderer bundle.
+      const { jsPDF } = await import('jspdf')
+
       const imgData = canvas.toDataURL('image/png')
       const wMm = opts.w * PX_TO_MM
       const hMm = opts.h * PX_TO_MM
@@ -202,6 +204,9 @@ export function useExport(): {
     try {
       isExporting.value = true
       progress.value = 10
+
+      // Share the lazy-loaded module with the single-page export path.
+      const { jsPDF } = await import('jspdf')
 
       const wMm = opts.w * PX_TO_MM
       const hMm = opts.h * PX_TO_MM
@@ -278,20 +283,29 @@ export function useExport(): {
       }
 
       const startTime = Date.now()
-      const progressInterval = setInterval(() => {
+      let progressInterval: ReturnType<typeof setInterval> | null = setInterval(() => {
         const elapsed = Date.now() - startTime
         progress.value = 50 + Math.round((elapsed / durationMs) * 45)
       }, 100)
 
-      recorder.start()
-      await new Promise<void>((resolve) => {
-        recorder.onstop = () => resolve()
-        setTimeout(() => {
-          if (recorder.state === 'recording') recorder.stop()
-        }, durationMs)
-      })
-
-      clearInterval(progressInterval)
+      let stopTimer: ReturnType<typeof setTimeout> | null = null
+      try {
+        recorder.start()
+        await new Promise<void>((resolve) => {
+          recorder.onstop = () => resolve()
+          stopTimer = setTimeout(() => {
+            if (recorder.state === 'recording') recorder.stop()
+            else resolve()
+          }, durationMs)
+        })
+      } finally {
+        if (stopTimer) clearTimeout(stopTimer)
+        if (progressInterval) clearInterval(progressInterval)
+        progressInterval = null
+        for (const track of stream.getTracks()) track.stop()
+        recorder.ondataavailable = null
+        recorder.onstop = null
+      }
 
       const blob = new Blob(chunks, { type: mimeType })
       progress.value = 100

@@ -72,7 +72,8 @@ export const highlightDecorations = ViewPlugin.fromClass(
     }
 
     update(update: ViewUpdate): void {
-      if (update.docChanged || update.viewportChanged) {
+      // Decorations cover document ranges, so scrolling does not require a full re-scan.
+      if (update.docChanged) {
         this.decorations = buildDecorations(update.view)
       }
     }

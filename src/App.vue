@@ -287,7 +287,7 @@
       @toolbar-insert="onToolbarInsert"
       @toolbar-command="onToolbarCommand"
       @update:app-theme="(v: 'light' | 'dark') => { appTheme = v; applyAppTheme() }"
-      @update:card-theme="(v: string) => cardTheme = v"
+      @update:card-theme="selectTheme"
       @update:body-font-mode="(v: string) => bodyFontMode = v as BodyFontMode"
       @update:body-font-size="(v: number) => bodyFontSize = v"
       @update:body-font-weight="(v: number) => bodyFontWeight = v"
@@ -374,7 +374,7 @@ import { useMarkdown } from '@/composables/useMarkdown'
 import { useExport } from '@/composables/useExport'
 import { useDocumentsStore } from '@/stores/documents'
 import { useDrafts, type AppSettings } from '@/composables/useDrafts'
-import { BODY_FONT_MODES, getTheme, normalizeBodyFontMode, type BodyFontMode, parseImages, setImageHeight, nextImageKey, IMAGE_HEIGHT_MAX } from '@/card'
+import { BODY_FONT_MODES, THEMES, getTheme, normalizeBodyFontMode, type BodyFontMode, parseImages, setImageHeight, nextImageKey, IMAGE_HEIGHT_MAX } from '@/card'
 import { clearMeasureCaches } from '@/card/measure'
 import DraftRecoveryModal from '@/components/DraftRecoveryModal.vue'
 import type { GradientConfig } from '@/card'
@@ -404,27 +404,51 @@ function applyAppTheme(): void {
   document.documentElement.setAttribute('data-theme', appTheme.value)
 }
 
-onMounted(() => {
+onMounted(async () => {
   applyAppTheme()
   // 校验登录状态，不主动弹激活窗，用户点VIP主题时再弹
-  auth.initFromStorage()
+  await auth.initFromStorage()
+
+  // Drafts created before per-document themes may contain an unavailable or
+  // deleted theme. Normalize those values after the paid-theme list is known.
+  const knownThemeIds = new Set(THEMES.map((theme) => theme.id))
+  let activeThemeWasReset = false
+  for (const document of store.documents) {
+    const unavailable = !knownThemeIds.has(document.cardTheme) ||
+      (auth.isPaidTheme(document.cardTheme) && !auth.isVip)
+    if (!unavailable) continue
+    store.updateTheme(document.id, 'warm-editor')
+    activeThemeWasReset ||= document.id === store.activeId
+  }
+  if (activeThemeWasReset) applyThemePreset('warm-editor')
 })
 
 // 切换主题：付费主题先调后端校验，防止前端以为还是VIP但实际已过期
-async function selectTheme(newThemeId: string) {
+async function selectTheme(newThemeId: string): Promise<void> {
+  const targetDocumentId = store.activeId
+  if (!targetDocumentId) return
+
+  const applyToTargetDocument = (themeId: string): void => {
+    if (!store.documents.some((document) => document.id === targetDocumentId)) return
+    store.updateTheme(targetDocumentId, themeId)
+    // Theme presets are global editor defaults; only apply them while the
+    // original document is still active.
+    if (store.activeId === targetDocumentId) applyThemePreset(themeId)
+  }
+
   // 免费主题直接切
   if (!auth.isPaidTheme(newThemeId)) {
-    cardTheme.value = newThemeId
+    applyToTargetDocument(newThemeId)
     return
   }
 
   // 离线时使用本地缓存的到期时间判断权限
   if (auth.offline) {
     if (auth.isVip) {
-      cardTheme.value = newThemeId
+      applyToTargetDocument(newThemeId)
     } else {
       auth.markExpired()
-      cardTheme.value = 'warm-editor'
+      applyToTargetDocument('warm-editor')
       showActivationDialog.value = true
     }
     return
@@ -433,14 +457,14 @@ async function selectTheme(newThemeId: string) {
   try {
     // 调后端校验权限
     await checkThemeAccess(newThemeId)
-    cardTheme.value = newThemeId
+    applyToTargetDocument(newThemeId)
   } catch (e: any) {
     // 校验失败（过期/无权限）：直接在当前上下文处理，保证UI响应式更新
     console.debug('主题校验失败', e)
     // 立刻重置VIP状态，UI马上同步
     auth.markExpired()
     // 自动切回免费主题
-    cardTheme.value = 'warm-editor'
+    applyToTargetDocument('warm-editor')
     // 自动弹激活窗
     setTimeout(() => {
       showActivationDialog.value = true
@@ -496,7 +520,12 @@ const canUndo = computed<boolean>(() => store.activeId ? store.canUndo(store.act
 
 const canRedo = computed<boolean>(() => store.activeId ? store.canRedo(store.activeId) : false)
 
-const cardTheme = ref<string>('warm-editor')
+const cardTheme = computed<string>({
+  get: () => store.activeDocument?.cardTheme ?? 'warm-editor',
+  set: (themeId: string) => {
+    if (store.activeId) store.updateTheme(store.activeId, themeId)
+  },
+})
 
 // ── 图片高度滑块相关状态 ──────────────────────────────────────────
 // CardPreview 每次排版后回填：key -> 该图所在页的可用高度上限
@@ -559,7 +588,7 @@ const editorTheme = computed<string>(() => {
 })
 
 
-watch(cardTheme, (newThemeId) => {
+function applyThemePreset(newThemeId: string): void {
   const theme = getTheme(newThemeId)
   if (theme.editor.bodyFontMode) {
     bodyFontMode.value = theme.editor.bodyFontMode
@@ -581,7 +610,7 @@ watch(cardTheme, (newThemeId) => {
       angle: theme.gradient.angle ?? 135,
     }
   }
-})
+}
 
 const BODY_FONT_OPTIONS = Object.entries(BODY_FONT_MODES).map(([id, def]) => ({
   id,
@@ -723,7 +752,11 @@ function onCloseDialogDismiss(): void {
 function onActivateSuccess(): void {
   // 激活成功后，如果用户之前点了某个 VIP 主题，自动切过去
   if (auth.pendingTheme) {
-    cardTheme.value = auth.pendingTheme
+    const themeId = auth.pendingTheme
+    if (store.activeId) {
+      store.updateTheme(store.activeId, themeId)
+      applyThemePreset(themeId)
+    }
     auth.pendingTheme = null
   }
 }
@@ -867,7 +900,6 @@ function collectSettings(): AppSettings {
 
 
 function applySettings(s: AppSettings): void {
-  cardTheme.value = s.cardTheme
   bodyFontMode.value = normalizeBodyFontMode(s.bodyFontMode)
   bodyFontSize.value = s.bodyFontSize
   bodyFontWeight.value = s.bodyFontWeight ?? 400

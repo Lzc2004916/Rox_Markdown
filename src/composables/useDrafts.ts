@@ -1,5 +1,5 @@
-import { watch } from 'vue'
-import { useDocumentsStore, type Document } from '@/stores/documents'
+import { watch, onBeforeUnmount } from 'vue'
+import { useDocumentsStore, DEFAULT_DOCUMENT_THEME, type Document } from '@/stores/documents'
 
 const STORAGE_KEY = 'md2card:drafts'
 
@@ -115,6 +115,10 @@ export function useDrafts(): {
   let timer: ReturnType<typeof setTimeout> | null = null
   let latestSettings: AppSettings | null = null
 
+  const persistBeforeUnload = (): void => {
+    if (store.documents.length > 0) persist(store.documents, latestSettings)
+  }
+
   function schedulePersist(): void {
     if (timer) clearTimeout(timer)
     timer = setTimeout(() => {
@@ -128,6 +132,12 @@ export function useDrafts(): {
     () => schedulePersist(),
   )
 
+  watch(
+    () => store.documents.map((document) => [document.id, document.cardTheme] as const),
+    () => schedulePersist(),
+    { deep: false },
+  )
+
   
   watch(
     () => store.activeDocument?.content,
@@ -136,8 +146,15 @@ export function useDrafts(): {
 
   
 
-  window.addEventListener('beforeunload', () => {
-    if (store.documents.length > 0) persist(store.documents, latestSettings)
+  window.addEventListener('beforeunload', persistBeforeUnload)
+
+  onBeforeUnmount(() => {
+    if (timer) {
+      clearTimeout(timer)
+      timer = null
+    }
+    window.removeEventListener('beforeunload', persistBeforeUnload)
+    persistBeforeUnload()
   })
 
   
@@ -157,12 +174,20 @@ export function useDrafts(): {
 
     
     const seen = new Set<string>()
+    const legacyTheme = typeof payload.settings?.cardTheme === 'string' && payload.settings.cardTheme
+      ? payload.settings.cardTheme
+      : DEFAULT_DOCUMENT_THEME
     const valid = (payload.documents ?? []).filter((d) => {
       if (!isValidDocument(d)) return false
       if (seen.has(d.id)) return false
       seen.add(d.id)
       return true
-    })
+    }).map((document) => ({
+      ...document,
+      // Version-1 drafts stored one global theme in settings. Copy it to each
+      // document so restoring an old draft preserves the previous appearance.
+      cardTheme: document.cardTheme || legacyTheme,
+    }))
 
     if (valid.length === 0) {
       

@@ -16,9 +16,32 @@ export type ImageStatus = 'loading' | 'loaded' | 'error'
 interface CacheEntry {
   status: ImageStatus
   img: HTMLImageElement | null
+  /** Reuse an in-flight load instead of allowing concurrent duplicate work. */
+  promise?: Promise<HTMLImageElement>
+  lastUsed: number
 }
 
 const cache = new Map<string, CacheEntry>()
+const MAX_IMAGE_CACHE_ENTRIES = 64
+let imageUseClock = 0
+
+function touch(entry: CacheEntry): void {
+  entry.lastUsed = ++imageUseClock
+}
+
+function evictIfNeeded(): void {
+  if (cache.size <= MAX_IMAGE_CACHE_ENTRIES) return
+  let oldestKey: string | undefined
+  let oldestUse = Number.POSITIVE_INFINITY
+  for (const [key, entry] of cache) {
+    if (entry.status === 'loading') continue
+    if (entry.lastUsed < oldestUse) {
+      oldestKey = key
+      oldestUse = entry.lastUsed
+    }
+  }
+  if (oldestKey !== undefined) cache.delete(oldestKey)
+}
 
 /** 把 markdown 里的图片地址转成渲染可用的 URL */
 export function toRenderableUrl(src: string): string {
@@ -31,7 +54,9 @@ export function toRenderableUrl(src: string): string {
 /** 同步取已加载完成的图片；未就绪返回 null */
 export function getLoadedImage(src: string): HTMLImageElement | null {
   const entry = cache.get(src)
-  return entry?.status === 'loaded' ? entry.img : null
+  if (entry?.status !== 'loaded') return null
+  touch(entry)
+  return entry.img
 }
 
 /** 查询加载状态（未开始返回 'idle'） */
@@ -47,15 +72,29 @@ export async function preloadImages(srcs: string[], timeoutMs = 10_000): Promise
   await Promise.all(
     unique.map(async (src) => {
       const existing = cache.get(src)
-      // 已加载或加载中：跳过；失败的允许重试一次（文件可能刚保存好）
-      if (existing && existing.status !== 'error') return
-      const entry: CacheEntry = { status: 'loading', img: null }
+      // 已加载直接复用；加载中等待同一个 Promise，避免重复网络/解码工作。
+      if (existing?.status === 'loaded') {
+        touch(existing)
+        return
+      }
+      if (existing?.status === 'loading' && existing.promise) {
+        try { await existing.promise } catch { /* handled by the original loader */ }
+        return
+      }
+      // 失败的允许重试一次（文件可能刚保存好）。
+      const entry: CacheEntry = { status: 'loading', img: null, lastUsed: ++imageUseClock }
       cache.set(src, entry)
+      entry.promise = loadOne(src, timeoutMs)
       try {
-        entry.img = await loadOne(src, timeoutMs)
+        entry.img = await entry.promise
         entry.status = 'loaded'
+        touch(entry)
       } catch {
         entry.status = 'error'
+        entry.img = null
+      } finally {
+        entry.promise = undefined
+        evictIfNeeded()
       }
     }),
   )
@@ -96,12 +135,17 @@ async function loadOne(src: string, timeoutMs: number): Promise<HTMLImageElement
     }
   })()
 
-  return Promise.race([
-    task,
-    new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error('image load timeout')), timeoutMs),
-    ),
-  ])
+  let timeoutId: ReturnType<typeof setTimeout> | undefined
+  try {
+    return await Promise.race([
+      task,
+      new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => reject(new Error('image load timeout')), timeoutMs)
+      }),
+    ])
+  } finally {
+    if (timeoutId !== undefined) clearTimeout(timeoutId)
+  }
 }
 
 function loadImageElement(url: string): Promise<HTMLImageElement> {
