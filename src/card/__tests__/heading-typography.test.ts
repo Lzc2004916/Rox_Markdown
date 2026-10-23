@@ -1,4 +1,4 @@
-﻿
+
 
 
 import { describe, it, expect } from 'vitest'
@@ -46,13 +46,11 @@ function makeTheme(overrides?: Partial<ThemeDefinition['editor']> & {
     },
     components: {
       quoteFillAlpha: 0.05, quoteStrokeAlpha: 0.08, quoteBarAlpha: 0.7, quoteRadius: 8,
-      quoteTreatment: 'paper', highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.7, highlightMarkerAlpha: 0.3, highlightDashAlpha: 0.8,
+      quoteTreatment: 'paper',
     },
     editor: {
       bodySize: 30,
       lineHeight: 1.8,
-      highlightStyle: 'underline',
       ...overrides,
     },
     coverHeading: overrides?.coverHeading,

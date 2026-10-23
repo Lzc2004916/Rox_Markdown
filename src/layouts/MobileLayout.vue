@@ -16,6 +16,7 @@
             :model-value="source"
             @update:model-value="(v: string) => emit('update:source', v)"
             :theme="editorTheme"
+            :format-colors="formatColors"
           />
         </div>
         
@@ -37,9 +38,16 @@
             :source="source"
             :theme-id="cardTheme"
             :typography="typography"
-            :highlight-style="highlightStyle"
+            :format-colors="formatColors"
             :footer-enabled="footerEnabled"
+            :footer-left="footerLeft"
+            :footer-background-enabled="footerBackgroundEnabled"
+            :footer-background-color="footerBackgroundColor"
+            :footer-text-color="footerTextColor"
+            :footer-font-size="footerFontSize"
+            :footer-font-weight="footerFontWeight"
             :gradient-config="gradientConfig"
+            :card-corner-mode="cardCornerMode"
             :preview-scale="previewScale"
             :heading-overrides="headingOverrides"
             :body-text-color="bodyTextColor"
@@ -60,14 +68,26 @@
           @update:body-font-size="(v: number) => emit('update:body-font-size', v)"
           :body-font-weight="bodyFontWeight"
           @update:body-font-weight="(v: number) => emit('update:body-font-weight', v)"
-          :highlight-style="highlightStyle"
-          @update:highlight-style="(v: string) => emit('update:highlight-style', v)"
-          :highlight-color="highlightColor"
-          @update:highlight-color="(v: string | null) => emit('update:highlight-color', v)"
+          :format-colors="formatColors"
+          @update:format-colors="(v: InlineFormatColors) => emit('update:format-colors', v)"
           :footer-enabled="footerEnabled"
+          :footer-left="footerLeft"
+          :footer-background-enabled="footerBackgroundEnabled"
+          :footer-background-color="footerBackgroundColor"
+          :footer-text-color="footerTextColor"
+          :footer-font-size="footerFontSize"
+          :footer-font-weight="footerFontWeight"
           @update:footer-enabled="(v: boolean) => emit('update:footer-enabled', v)"
+          @update:footer-left="(v: string) => emit('update:footer-left', v)"
+          @update:footer-background-enabled="(v: boolean) => emit('update:footer-background-enabled', v)"
+          @update:footer-background-color="(v: string | null) => emit('update:footer-background-color', v)"
+          @update:footer-text-color="(v: string | null) => emit('update:footer-text-color', v)"
+          @update:footer-font-size="(v: number) => emit('update:footer-font-size', v)"
+          @update:footer-font-weight="(v: number) => emit('update:footer-font-weight', v)"
           :gradient-config="gradientConfig"
           @update:gradient-config="(v: GradientConfig) => emit('update:gradient-config', v)"
+          :card-corner-mode="cardCornerMode"
+          @update:card-corner-mode="(v: CardCornerMode) => emit('update:card-corner-mode', v)"
           :preview-scale="previewScale"
           @update:preview-scale="(v: number) => emit('update:preview-scale', v)"
           :font-options="fontOptions"
@@ -75,9 +95,12 @@
           :progress="progress"
           :body-text-color="bodyTextColor"
           @update:body-text-color="(v: string | null) => emit('update:body-text-color', v)"
+          :images="images"
+          @update:imageHeight="(key: string, height: number) => emit('update:imageHeight', key, height)"
           @export-png="emit('export-png')"
           @export-jpg="emit('export-jpg')"
           @export-pdf="emit('export-pdf')"
+          @need-activate="emit('need-activate')"
         />
       </div>
     </div>
@@ -116,13 +139,13 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { TypographySettings, HighlightStyle, GradientConfig, HeadingStyleOverrides } from '@/card'
+import type { CardCornerMode, TypographySettings, GradientConfig, HeadingStyleOverrides, InlineFormatColors } from '@/card'
 import MarkdownEditor from '@/components/editor/MarkdownEditor.vue'
 import EditorToolbar from '@/components/editor/EditorToolbar.vue'
 import type { ToolbarItem } from '@/components/editor/EditorToolbar.vue'
 import CardPreview from '@/components/preview/CardPreview.vue'
 import ControlPanel from '@/components/settings/ControlPanel.vue'
-import type { FontOption } from '@/components/settings/ControlPanel.vue'
+import type { FontOption, ImageItem } from '@/components/settings/ControlPanel.vue'
 
 
 
@@ -134,10 +157,16 @@ interface Props {
   cardTheme: string
   appTheme: 'light' | 'dark'
   typography: TypographySettings
-  highlightStyle: HighlightStyle
-  highlightColor: string | null
+  formatColors: InlineFormatColors
   footerEnabled: boolean
+  footerLeft: string
+  footerBackgroundEnabled: boolean
+  footerBackgroundColor: string | null
+  footerTextColor: string | null
+  footerFontSize: number
+  footerFontWeight: number
   gradientConfig: GradientConfig
+  cardCornerMode: CardCornerMode
   previewScale: number
   headingOverrides: HeadingStyleOverrides
   activeTags: string[]
@@ -150,6 +179,7 @@ interface Props {
   bodyFontSize: number
   bodyFontWeight: number
   bodyTextColor: string | null
+  images: ImageItem[]
 }
 
 defineProps<Props>()
@@ -165,15 +195,23 @@ const emit = defineEmits<{
   'update:body-font-mode': [value: string]
   'update:body-font-size': [value: number]
   'update:body-font-weight': [value: number]
-  'update:highlight-style': [value: string]
-  'update:highlight-color': [value: string | null]
+  'update:format-colors': [value: InlineFormatColors]
   'update:footer-enabled': [value: boolean]
+  'update:footer-left': [value: string]
+  'update:footer-background-enabled': [value: boolean]
+  'update:footer-background-color': [value: string | null]
+  'update:footer-text-color': [value: string | null]
+  'update:footer-font-size': [value: number]
+  'update:footer-font-weight': [value: number]
   'update:gradient-config': [value: GradientConfig]
+  'update:card-corner-mode': [value: CardCornerMode]
   'update:preview-scale': [value: number]
   'update:body-text-color': [value: string | null]
+  'update:imageHeight': [key: string, height: number]
   'export-png': []
   'export-jpg': []
   'export-pdf': []
+  'need-activate': []
 }>()
 
 

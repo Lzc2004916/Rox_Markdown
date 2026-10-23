@@ -34,4 +34,20 @@ describe('document card themes', () => {
 
     expect(store.documents.find((document) => document.id === newId)?.cardTheme).toBe('peach-cloud')
   })
+
+  it('keeps format colors with their own document after switching tabs', () => {
+    const store = useDocumentsStore()
+    store.init()
+    const firstId = store.activeId
+    const secondId = store.addDocument()
+
+    store.updateFormatColors(firstId, { bold: '#ef4444', underline: '#2563eb' })
+    store.updateFormatColors(secondId, { italic: '#16a34a' })
+
+    store.setActive(firstId)
+    expect(store.activeDocument?.formatColors).toEqual({ bold: '#ef4444', underline: '#2563eb' })
+
+    store.setActive(secondId)
+    expect(store.activeDocument?.formatColors).toEqual({ italic: '#16a34a' })
+  })
 })

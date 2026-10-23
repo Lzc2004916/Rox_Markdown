@@ -156,18 +156,6 @@ export function buildContentView(source: string): ContentViewResult {
   }
 
   
-  const markRe = /==([^\n]+?)==/g
-  for (const m of source.matchAll(markRe)) {
-    if (m.index !== undefined && !isMasked(m.index)) {
-      const full = m[0]
-      const inner = m[1]
-      const innerStart = full.indexOf(inner)
-      maskRange(m.index, m.index + innerStart)
-      maskRange(m.index + innerStart + inner.length, m.index + full.length)
-    }
-  }
-
-  
   const underlineRe = /\^([^^\n]+?)\^/g
   for (const m of source.matchAll(underlineRe)) {
     if (m.index !== undefined && !isMasked(m.index)) {

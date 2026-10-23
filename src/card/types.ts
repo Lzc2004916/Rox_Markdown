@@ -20,14 +20,17 @@ export type ThemeMode = 'paper' | 'sage' | 'vintage' | 'obsidian' | 'archive' | 
 
 export type SubheadingStyle = 'large' | 'accent'
 
+/** Per-document overrides for Markdown inline-format colors. */
+export interface InlineFormatColors {
+  bold?: string | null
+  italic?: string | null
+  underline?: string | null
+  strike?: string | null
+  superscript?: string | null
+  subscript?: string | null
+  formula?: string | null
+}
 
-
-export type HighlightStyle = 'underline' | 'border' | 'highlight'
-
-export type HighlightTreatment =
-  | 'softUnderline'
-  | 'swissRule'
-  | 'boldAccent'
 
 
 
@@ -97,13 +100,6 @@ export interface ThemeComponents {
   
   quoteTreatment: QuoteTreatment
   
-  highlightTreatment: HighlightTreatment
-  
-  highlightUnderlineAlpha: number
-  
-  highlightMarkerAlpha: number
-  
-  highlightDashAlpha: number
 }
 
 
@@ -225,8 +221,6 @@ export interface ThemeEditor {
   
   subheadingStyle?: SubheadingStyle
   
-  highlightStyle: HighlightStyle
-  
   heading?: HeadingTypography
   
   list?: ListStyleConfig
@@ -329,8 +323,10 @@ export interface InlineToken {
   text: string
   bold: boolean
   italic: boolean
-  mark: boolean
   underline: boolean
+  strike?: boolean
+  script?: 'sup' | 'sub'
+  formula?: { latex: string; display: boolean }
 }
 
 
@@ -474,20 +470,23 @@ export interface RenderOptions {
   page: CardPage
   theme: ThemeDefinition
   settings: TypographySettings
-  highlightStyle: HighlightStyle
+  formatColors?: InlineFormatColors
   pageIndex: number
   totalPages: number
   footerLeft: string
   footerRightMode: FooterRightMode
   footerEnabled: boolean
+  footerBackgroundEnabled: boolean
+  footerBackgroundColor?: string | null
+  footerTextColor?: string | null
+  footerFontSize: number
+  footerFontWeight: number
   cardCornerMode: CardCornerMode
   
   gradientConfig?: GradientConfig
   
   headingOverrides?: HeadingStyleOverrides | null
   
-  highlightColor?: string | null
-
   bodyTextColor?: string | null
 }
 
@@ -538,7 +537,7 @@ export const BODY_BOTTOM_WITHOUT_FOOTER = 940
 export const FOOTER_LINE_Y = 892
 
 
-export const FOOTER_TEXT_Y = 918
+export const FOOTER_TEXT_Y = 924
 
 
 export const FOOTER_LINE_LEFT = 56
@@ -921,7 +920,8 @@ export function resolveHeadingStroke(
 }
 
 
-export const DEFAULT_STROKE_WIDTH = 1
+// 2px remains visibly solid after the 2x Canvas render is downsampled in the preview.
+export const DEFAULT_STROKE_WIDTH = 2
 
 
 export function resolveHeadingStrokeWidth(

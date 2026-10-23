@@ -1,4 +1,4 @@
-﻿
+
 
 import { describe, it, expect, beforeEach } from 'vitest'
 import {
@@ -89,10 +89,9 @@ describe('CSS variable atomic reset on theme switch', () => {
         innerFrameInset: 24, titleAccentMix: 0.5, footerLineAlpha: 0.2, footerTextAlpha: 0.9,
         previewShadow: 'none' },
       components: { quoteFillAlpha: 0, quoteStrokeAlpha: 0, quoteBarAlpha: 0, quoteRadius: 0,
-        quoteTreatment: 'paper', highlightTreatment: 'softUnderline',
-        highlightUnderlineAlpha: 0, highlightMarkerAlpha: 0, highlightDashAlpha: 0 },
+        quoteTreatment: 'paper' },
       editor: {
-        bodySize: 30, lineHeight: 1.8, highlightStyle: 'underline',
+        bodySize: 30, lineHeight: 1.8,
         heading: { h1Color: '#ff0000', h2Color: '#00ff00' },
       },
     }
@@ -100,7 +99,7 @@ describe('CSS variable atomic reset on theme switch', () => {
     const themeB: ThemeDefinition = {
       ...themeA,
       id: 'theme-b', name: 'B',
-      editor: { bodySize: 30, lineHeight: 1.8, highlightStyle: 'underline' },
+      editor: { bodySize: 30, lineHeight: 1.8 },
     }
 
     
@@ -124,10 +123,9 @@ describe('CSS variable atomic reset on theme switch', () => {
         innerFrameInset: 24, titleAccentMix: 0.5, footerLineAlpha: 0.2, footerTextAlpha: 0.9,
         previewShadow: 'none' },
       components: { quoteFillAlpha: 0, quoteStrokeAlpha: 0, quoteBarAlpha: 0, quoteRadius: 0,
-        quoteTreatment: 'paper', highlightTreatment: 'softUnderline',
-        highlightUnderlineAlpha: 0, highlightMarkerAlpha: 0, highlightDashAlpha: 0 },
+        quoteTreatment: 'paper' },
       editor: {
-        bodySize: 30, lineHeight: 1.8, highlightStyle: 'underline',
+        bodySize: 30, lineHeight: 1.8,
         heading: { h1Color: '#ff0000' },
       },
     }
@@ -136,7 +134,7 @@ describe('CSS variable atomic reset on theme switch', () => {
       ...themeA,
       id: 'theme-b', name: 'B',
       editor: {
-        bodySize: 30, lineHeight: 1.8, highlightStyle: 'underline',
+        bodySize: 30, lineHeight: 1.8,
         heading: { h1Color: '#0000ff' },
       },
     }
@@ -159,9 +157,8 @@ describe('CSS variable atomic reset on theme switch', () => {
         innerFrameInset: 12, titleAccentMix: 0, footerLineAlpha: 0.9, footerTextAlpha: 1,
         previewShadow: 'none' },
       components: { quoteFillAlpha: 0, quoteStrokeAlpha: 0.9, quoteBarAlpha: 1, quoteRadius: 0,
-        quoteTreatment: 'code', highlightTreatment: 'swissRule',
-        highlightUnderlineAlpha: 0, highlightMarkerAlpha: 0, highlightDashAlpha: 0 },
-      editor: { bodySize: 28, lineHeight: 1.65, highlightStyle: 'border' },
+        quoteTreatment: 'code' },
+      editor: { bodySize: 28, lineHeight: 1.65 },
       coverHeading: { h1Scale: 5.5, h1LineHeight: 1.05, centered: true },
     }
 
@@ -190,10 +187,9 @@ describe('CSS variable atomic reset on theme switch', () => {
         innerFrameInset: 24, titleAccentMix: 0.5, footerLineAlpha: 0.2, footerTextAlpha: 0.9,
         previewShadow: 'none' },
       components: { quoteFillAlpha: 0, quoteStrokeAlpha: 0, quoteBarAlpha: 0, quoteRadius: 0,
-        quoteTreatment: 'paper', highlightTreatment: 'softUnderline',
-        highlightUnderlineAlpha: 0, highlightMarkerAlpha: 0, highlightDashAlpha: 0 },
+        quoteTreatment: 'paper' },
       editor: {
-        bodySize: 30, lineHeight: 1.8, highlightStyle: 'underline',
+        bodySize: 30, lineHeight: 1.8,
         heading: { h1Scale: 4.5, h2Scale: 2.0 },
       },
     }
@@ -201,7 +197,7 @@ describe('CSS variable atomic reset on theme switch', () => {
     const themeB: ThemeDefinition = {
       ...themeA,
       id: 'theme-b', name: 'B',
-      editor: { bodySize: 24, lineHeight: 1.6, highlightStyle: 'underline' },
+      editor: { bodySize: 24, lineHeight: 1.6 },
     }
 
     

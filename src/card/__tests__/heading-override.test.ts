@@ -1,4 +1,4 @@
-﻿
+
 
 
 import { describe, it, expect } from 'vitest'
@@ -8,6 +8,7 @@ import {
   DEFAULT_COVER_H1_SCALE,
   DEFAULT_HEADING_OVERRIDES,
   HEADING_SIZE_RANGES,
+  DEFAULT_STROKE_WIDTH,
 } from '../types'
 import type { HeadingStyleOverrides, ThemeDefinition } from '../types'
 import { getTheme } from '../themes'
@@ -37,13 +38,11 @@ function makeTheme(overrides?: Partial<ThemeDefinition['editor']> & {
     },
     components: {
       quoteFillAlpha: 0.05, quoteStrokeAlpha: 0.08, quoteBarAlpha: 0.7, quoteRadius: 8,
-      quoteTreatment: 'paper', highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.7, highlightMarkerAlpha: 0.3, highlightDashAlpha: 0.8,
+      quoteTreatment: 'paper',
     },
     editor: {
       bodySize: 30,
       lineHeight: 1.8,
-      highlightStyle: 'underline',
       ...overrides,
     },
     coverHeading: overrides?.coverHeading,
@@ -57,6 +56,10 @@ function noOverrides(): HeadingStyleOverrides {
 
 
 describe('DEFAULT_HEADING_OVERRIDES', () => {
+  it('uses a solid default heading stroke width', () => {
+    expect(DEFAULT_STROKE_WIDTH).toBe(2)
+  })
+
   it('all size overrides are null (use theme defaults)', () => {
     expect(DEFAULT_HEADING_OVERRIDES.h1Size).toBeNull()
     expect(DEFAULT_HEADING_OVERRIDES.h2Size).toBeNull()

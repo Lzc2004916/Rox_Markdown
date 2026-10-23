@@ -36,6 +36,7 @@
 
     
     <div
+      v-show="filteredThemes.length > 0"
       ref="scrollRef"
       class="flex gap-3 overflow-x-auto overflow-y-hidden pt-1 pb-1.5 px-0.5 scrollbar-none"
       role="radiogroup"
@@ -132,9 +133,26 @@
       </button>
     </div>
 
+    <div
+      v-if="filteredThemes.length === 0 && keyword.trim()"
+      class="flex min-h-[132px] flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-base-content/15 bg-base-200/25 px-4 text-center"
+      role="status"
+      aria-live="polite"
+    >
+      <svg class="h-5 w-5 text-base-content/35" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <circle cx="11" cy="11" r="6" />
+        <path d="m16 16 4 4" stroke-linecap="round" />
+      </svg>
+      <div>
+        <p class="text-xs font-semibold text-base-content/70">在“{{ activeCategoryLabel }}”中未找到“{{ keyword.trim() }}”</p>
+        <p class="mt-0.5 text-[11px] text-base-content/45">可尝试更换关键词或清除搜索。</p>
+      </div>
+      <button class="btn btn-xs btn-outline h-7 min-h-0 px-3 text-xs" @click="clearSearch">清除搜索</button>
+    </div>
+
     
     <div
-      v-if="scrollViewW > 0 && scrollContentW > scrollViewW"
+      v-if="filteredThemes.length > 0 && scrollViewW > 0 && scrollContentW > scrollViewW"
       ref="scrollbarRef"
       class="relative h-[5px] bg-base-content/5 rounded-full cursor-pointer shrink-0"
       @mousedown="onScrollbarClick"
@@ -197,6 +215,9 @@ const allCategories: CategoryTab[] = [
 ]
 
 const categories = computed<CategoryTab[]>(() => allCategories)
+const activeCategoryLabel = computed(() =>
+  allCategories.find((category) => category.key === activeCategory.value)?.label ?? '当前分类',
+)
 
 const filteredThemes = computed<ThemeDefinition[]>(() => {
   let list = props.themes
@@ -217,6 +238,10 @@ const filteredThemes = computed<ThemeDefinition[]>(() => {
   }
   return list
 })
+
+function clearSearch(): void {
+  keyword.value = ''
+}
 
 
 
@@ -257,6 +282,28 @@ function readMetrics(): void {
   scrollContentW.value = el.scrollWidth
   scrollViewW.value = el.clientWidth
   scrollPos.value = el.scrollLeft
+}
+
+/**
+ * 搜索无结果时主题轨道会被暂时隐藏，但不能销毁它：销毁后 wheel 处理器和
+ * ResizeObserver 仍指向旧节点，恢复列表后横向滚动就会失效。每次筛选结果变化
+ * 后同步新尺寸与滚动目标，避免沿用已过期的 scrollWidth。
+ */
+function syncScrollMetrics(): void {
+  nextTick(() => {
+    const el = scrollRef.value
+    if (!el) return
+
+    if (scrollRaf !== null) {
+      cancelAnimationFrame(scrollRaf)
+      scrollRaf = null
+    }
+
+    readMetrics()
+    const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth)
+    targetScrollLeft = Math.max(0, Math.min(maxScroll, el.scrollLeft))
+    scrollPos.value = targetScrollLeft
+  })
 }
 
 function animateScroll(): void {
@@ -474,7 +521,11 @@ watch(() => props.modelValue, (val) => {
 watch(activeCategory, () => {
   const idx = filteredThemes.value.findIndex((t) => t.id === props.modelValue)
   focusedIdx.value = idx >= 0 ? idx : 0
-  nextTick(() => readMetrics())
+  syncScrollMetrics()
+})
+
+watch(filteredThemes, () => {
+  syncScrollMetrics()
 })
 </script>
 

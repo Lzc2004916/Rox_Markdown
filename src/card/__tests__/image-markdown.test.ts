@@ -6,7 +6,7 @@ import {
   nextImageKey,
   DEFAULT_IMAGE_HEIGHT,
 } from '../imageMarkdown'
-import { computeImageMaxHeights, IMAGE_HEIGHT_MIN, IMAGE_HEIGHT_MAX } from '../layout'
+import { computeImageMaxHeights, IMAGE_HEIGHT_MIN, IMAGE_HEIGHT_MAX, parseInputBlocks } from '../layout'
 import type { CardPage } from '../types'
 
 describe('图片 markdown 工具', () => {
@@ -37,6 +37,27 @@ describe('图片 markdown 工具', () => {
     expect(out).toContain('![b](b.png){#img2}{height=480}')
     expect(out).toContain('  ![a](a.png){#img1}{height=200}')
     expect(setImageHeight(src, 'img99', 1)).toBe(src)
+  })
+
+  it('支持中文、空格与半角括号的本地图片路径', () => {
+    const path = 'C:/Users/12181/Downloads/青春期孩子沉迷手机荒废学业（电影写真风格） (5).png'
+    const source = `![青春期孩子沉迷手机荒废学业（电影写真风格） (5).png](${path}){#img1}{height=200}`
+
+    expect(parseImages(source)).toMatchObject([{
+      key: 'img1',
+      src: path,
+      height: 200,
+    }])
+    expect(setImageHeight(source, 'img1', 320)).toContain(`](${path}){#img1}{height=320}`)
+
+    const blocks = parseInputBlocks(source)
+    expect(blocks).toMatchObject([{ kind: 'image', src: path, height: 200, key: 'img1' }])
+  })
+
+  it('支持两行图片语法中的半角括号路径', () => {
+    const path = 'C:/Users/12181/Downloads/photo (5).png'
+    const blocks = parseInputBlocks(`![图片]\n(${path}){#img1}{height=200}`)
+    expect(blocks).toMatchObject([{ kind: 'image', src: path, height: 200, key: 'img1' }])
   })
 
   it('nextImageKey 按现有最大编号 +1 生成', () => {

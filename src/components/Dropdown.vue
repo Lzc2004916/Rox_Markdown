@@ -4,16 +4,20 @@
       <slot name="trigger" :open="open" />
     </div>
 
-    <Transition name="dropdown-fade">
-      <div
-        v-if="open"
-        ref="panelRef"
-        class="fixed z-[9999] rounded-lg shadow-xl bg-base-100 border border-base-300 overflow-hidden"
-        :style="panelStyle"
-      >
-        <slot :close="close" />
-      </div>
-    </Transition>
+    <!-- Render the floating panel at document level. This avoids transformed,
+         sticky, or blurred ancestors turning `fixed` into a local layer. -->
+    <Teleport to="body">
+      <Transition name="dropdown-fade">
+        <div
+          v-if="open"
+          ref="panelRef"
+          class="fixed z-[9999] rounded-lg shadow-xl bg-base-100 border border-base-300 overflow-hidden"
+          :style="panelStyle"
+        >
+          <slot :close="close" />
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 

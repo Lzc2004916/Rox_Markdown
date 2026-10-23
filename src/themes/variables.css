@@ -94,12 +94,6 @@
   /* ── 分割线 ───────────────────────────────────────────────────────── */
   --card-divider-color: rgba(63, 77, 66, 0.12);
 
-  /* ── 高亮样式 ─────────────────────────────────────────────────────── */
-  --card-highlight-underline-color: rgba(63, 143, 88, 0.72);
-  --card-highlight-marker-bg: rgba(63, 143, 88, 0.48);
-  --card-highlight-border-color: rgba(63, 143, 88, 0.84);
-  --card-highlight-bold-accent-color: #3f8f58;
-
   /* ── 通用 ─────────────────────────────────────────────────────────── */
   --card-list-marker-color: #3f8f58;
   --card-link-color: #3f8f58;

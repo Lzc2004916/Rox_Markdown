@@ -47,11 +47,7 @@
         @click="item.id === 'image' ? emit('select-image') : emit('insert', item)"
       >
         
-        <svg v-if="item.id === 'highlight'" class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="m9 11 3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-        </svg>
-        
-        <svg v-else-if="item.id === 'link'" class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg v-if="item.id === 'link'" class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
         </svg>
         
@@ -146,6 +142,8 @@ export interface ToolbarItem {
     
     placeholder: string
   }
+  /** Insert this template as a standalone block rather than inline text. */
+  block?: boolean
 }
 
 
@@ -184,9 +182,21 @@ function makeHeadingItem(level: number): ToolbarItem {
 
 
 const toolbarItems: readonly ToolbarItem[] = [
-  
-  { id: 'highlight',   icon: '🖍',                   label: '高亮', template: '==高亮文本==',
-    wrap: { prefix: '==', suffix: '==', placeholder: '高亮文本' } },
+  { id: 'bold',        icon: '<strong>B</strong>', label: '加粗', template: '**加粗文本**',
+    wrap: { prefix: '**', suffix: '**', placeholder: '加粗文本' } },
+  { id: 'italic',      icon: '<em>I</em>',          label: '斜体', template: '*斜体文本*',
+    wrap: { prefix: '*', suffix: '*', placeholder: '斜体文本' } },
+  { id: 'underline',   icon: '<u>U</u>',            label: '下划线', template: '^下划线文本^',
+    wrap: { prefix: '^', suffix: '^', placeholder: '下划线文本' } },
+  { id: 'strike',      icon: '<s>S</s>',            label: '删除线', template: '~~删除文本~~',
+    wrap: { prefix: '~~', suffix: '~~', placeholder: '删除文本' } },
+  { id: 'superscript', icon: 'x<sup>2</sup>',       label: '上标', template: '<sup>上标文本</sup>',
+    wrap: { prefix: '<sup>', suffix: '</sup>', placeholder: '上标文本' } },
+  { id: 'subscript',   icon: 'x<sub>2</sub>',       label: '下标', template: '<sub>下标文本</sub>',
+    wrap: { prefix: '<sub>', suffix: '</sub>', placeholder: '下标文本' } },
+  { id: 'inline-math', icon: '∑',                   label: '行内公式（LaTeX）', template: '$E = mc^2$',
+    wrap: { prefix: '$', suffix: '$', placeholder: 'E = mc^2' } },
+  { id: 'block-math',  icon: '∫',                   label: '块级公式（LaTeX）', template: '$$\n\\frac{a}{b}\n$$', block: true },
 
   
   { id: 'link',        icon: '🔗',                   label: '链接', template: '[链接文本](url)' },

@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import type { InlineFormatColors } from '@/card'
 
 
 
@@ -12,6 +13,16 @@ export interface Document {
   tags: string[]
   /** The card theme selected for this document. */
   cardTheme: string
+  /** Per-document colors for inline Markdown formats. */
+  formatColors?: InlineFormatColors
+  /** Per-document footer presentation settings. */
+  footerLeft?: string
+  footerEnabled?: boolean
+  footerBackgroundEnabled?: boolean
+  footerBackgroundColor?: string | null
+  footerTextColor?: string | null
+  footerFontSize?: number
+  footerFontWeight?: number
 }
 
 
@@ -123,6 +134,14 @@ function defaultDoc(cardTheme = DEFAULT_DOCUMENT_THEME): Document {
     savedAt: new Date().toISOString(),
     tags: [],
     cardTheme,
+    formatColors: {},
+    footerLeft: '',
+    footerEnabled: false,
+    footerBackgroundEnabled: true,
+    footerBackgroundColor: null,
+    footerTextColor: null,
+    footerFontSize: 14,
+    footerFontWeight: 600,
   }
 }
 
@@ -246,6 +265,18 @@ export const useDocumentsStore = defineStore('documents', () => {
     const doc = documents.value.find((d) => d.id === id)
     if (!doc || !cardTheme || doc.cardTheme === cardTheme) return
     doc.cardTheme = cardTheme
+  }
+
+  function updateFormatColors(id: string, formatColors: InlineFormatColors): void {
+    const doc = documents.value.find((d) => d.id === id)
+    if (!doc) return
+    doc.formatColors = { ...formatColors }
+  }
+
+  function updateFooterSettings(id: string, settings: Partial<Pick<Document, 'footerLeft' | 'footerEnabled' | 'footerBackgroundEnabled' | 'footerBackgroundColor' | 'footerTextColor' | 'footerFontSize' | 'footerFontWeight'>>): void {
+    const doc = documents.value.find((d) => d.id === id)
+    if (!doc) return
+    Object.assign(doc, settings)
   }
 
   
@@ -390,6 +421,8 @@ export const useDocumentsStore = defineStore('documents', () => {
     removeDocument,
     setActive,
     updateTheme,
+    updateFormatColors,
+    updateFooterSettings,
     updateContent,
     pushUndo,
     undo,

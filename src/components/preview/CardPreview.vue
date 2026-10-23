@@ -21,7 +21,8 @@
         v-for="(_, idx) in canvases"
         :key="idx"
         :ref="(el: unknown) => setCanvasRef(el, idx)"
-        class="card-canvas block w-auto shrink-0 shadow-lg rounded-md"
+        class="card-canvas block w-auto shrink-0 shadow-lg"
+        :class="cardCornerMode === 'rounded' ? 'rounded-[18px]' : 'rounded-none'"
         :style="canvasDisplayStyle"
       ></canvas>
     </div>
@@ -33,7 +34,8 @@
     >
       <canvas
         ref="singleCanvasRef"
-        class="card-canvas block h-auto shrink-0 shadow-lg rounded-md"
+        class="card-canvas block h-auto shrink-0 shadow-lg"
+        :class="cardCornerMode === 'rounded' ? 'rounded-[18px]' : 'rounded-none'"
         :style="canvasDisplayStyle"
       ></canvas>
     </div>
@@ -92,7 +94,7 @@
 import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { renderAllPagesAsync, renderCard, preloadImages, collectImageSrcs, PAGE_WIDTH, getTheme, extractTokens, applyTokensToElement, computeImageMaxHeights } from '@/card'
 import { onMeasureCacheInvalidated } from '@/card/measure'
-import type { HighlightStyle, FooterRightMode, CardCornerMode, TypographySettings, GradientConfig, CardPage, HeadingStyleOverrides } from '@/card'
+import type { FooterRightMode, CardCornerMode, TypographySettings, GradientConfig, CardPage, HeadingStyleOverrides, InlineFormatColors } from '@/card'
 import LoadingSpinner from '@/components/preview/LoadingSpinner.vue'
 import { useScrollSync } from '@/composables/useScrollSync'
 
@@ -107,24 +109,26 @@ interface Props {
   themeId?: string
   
   typography?: TypographySettings
+  formatColors?: InlineFormatColors
   
   gradientConfig?: GradientConfig
-  
-  highlightStyle?: HighlightStyle
   
   footerLeft?: string
   
   footerRightMode?: FooterRightMode
   
   footerEnabled?: boolean
+  footerBackgroundEnabled?: boolean
+  footerBackgroundColor?: string | null
+  footerTextColor?: string | null
+  footerFontSize?: number
+  footerFontWeight?: number
   
   cardCornerMode?: CardCornerMode
   
   previewScale?: number
   
   headingOverrides?: HeadingStyleOverrides | null
-  
-  highlightColor?: string | null
   
   bodyTextColor?: string | null
 }
@@ -138,16 +142,20 @@ const props = withDefaults(defineProps<Props>(), {
     bodyFontMode: 'wenkai' as const,
     subheadingStyle: 'large' as const,
   }),
-  highlightColor: null,
-  highlightStyle: 'underline' as HighlightStyle,
   footerLeft: '',
   footerRightMode: 'page' as FooterRightMode,
   footerEnabled: false,
+  footerBackgroundEnabled: true,
+  footerBackgroundColor: null,
+  footerTextColor: null,
+  footerFontSize: 14,
+  footerFontWeight: 600,
   cardCornerMode: 'square' as CardCornerMode,
   previewScale: 1.0,
   gradientConfig: () => ({ enabled: false, color1: '#6c5ce7', color2: '#a29bfe', angle: 135 }),
   headingOverrides: null,
   bodyTextColor: null,
+  formatColors: () => ({}),
 })
 
 
@@ -246,7 +254,13 @@ function buildLayoutKey(): string {
     bodyFontMode: t?.bodyFontMode,
     bodyFontWeight: t?.bodyFontWeight,
     subheadingStyle: t?.subheadingStyle,
+    formatColors: props.formatColors,
     footerEnabled: props.footerEnabled,
+    footerBackgroundEnabled: props.footerBackgroundEnabled,
+    footerBackgroundColor: props.footerBackgroundColor,
+    footerTextColor: props.footerTextColor,
+    footerFontSize: props.footerFontSize,
+    footerFontWeight: props.footerFontWeight,
     headingOverrides: props.headingOverrides,
   })
 }
@@ -304,14 +318,18 @@ async function doRender(): Promise<void> {
         source: props.source,
         themeId: props.themeId,
         typography: props.typography,
-        highlightStyle: props.highlightStyle,
+        formatColors: props.formatColors,
         footerLeft: props.footerLeft,
         footerRightMode: props.footerRightMode,
         footerEnabled: props.footerEnabled,
+        footerBackgroundEnabled: props.footerBackgroundEnabled,
+        footerBackgroundColor: props.footerBackgroundColor,
+        footerTextColor: props.footerTextColor,
+        footerFontSize: props.footerFontSize,
+        footerFontWeight: props.footerFontWeight,
         cardCornerMode: props.cardCornerMode,
         gradientConfig: props.gradientConfig,
         headingOverrides: props.headingOverrides,
-        highlightColor: props.highlightColor,
         bodyTextColor: props.bodyTextColor,
       }, signal)
       if (signal.aborted || abortController?.signal !== signal) return
@@ -329,14 +347,18 @@ async function doRender(): Promise<void> {
           source: props.source,
           themeId: props.themeId,
           typography: props.typography,
-          highlightStyle: props.highlightStyle,
+          formatColors: props.formatColors,
           footerLeft: props.footerLeft,
           footerRightMode: props.footerRightMode,
           footerEnabled: props.footerEnabled,
+          footerBackgroundEnabled: props.footerBackgroundEnabled,
+          footerBackgroundColor: props.footerBackgroundColor,
+          footerTextColor: props.footerTextColor,
+          footerFontSize: props.footerFontSize,
+          footerFontWeight: props.footerFontWeight,
           cardCornerMode: props.cardCornerMode,
           gradientConfig: props.gradientConfig,
           headingOverrides: props.headingOverrides,
-          highlightColor: props.highlightColor,
           bodyTextColor: props.bodyTextColor,
         }, signal)
         if (signal.aborted || abortController?.signal !== signal) return
@@ -358,16 +380,20 @@ async function doRender(): Promise<void> {
               page: cachedLayoutPages[i]!,
               theme,
               settings: props.typography,
-              highlightStyle: props.highlightStyle ?? theme.editor.highlightStyle,
+              formatColors: props.formatColors,
               pageIndex: i,
               totalPages: cachedLayoutPages.length,
               footerLeft: props.footerLeft ?? '',
               footerRightMode: props.footerRightMode ?? 'page',
               footerEnabled: props.footerEnabled ?? true,
+              footerBackgroundEnabled: props.footerBackgroundEnabled ?? true,
+              footerBackgroundColor: props.footerBackgroundColor ?? null,
+              footerTextColor: props.footerTextColor ?? null,
+              footerFontSize: props.footerFontSize ?? 14,
+              footerFontWeight: props.footerFontWeight ?? 600,
               cardCornerMode: props.cardCornerMode ?? 'square',
               gradientConfig: props.gradientConfig,
               headingOverrides: props.headingOverrides,
-              highlightColor: props.highlightColor,
               bodyTextColor: props.bodyTextColor,
             }),
           )
@@ -398,14 +424,18 @@ async function doRender(): Promise<void> {
         source: props.source,
         themeId: props.themeId,
         typography: props.typography,
-        highlightStyle: props.highlightStyle,
+        formatColors: props.formatColors,
         footerLeft: props.footerLeft,
         footerRightMode: props.footerRightMode,
         footerEnabled: props.footerEnabled,
+        footerBackgroundEnabled: props.footerBackgroundEnabled,
+        footerBackgroundColor: props.footerBackgroundColor,
+        footerTextColor: props.footerTextColor,
+        footerFontSize: props.footerFontSize,
+        footerFontWeight: props.footerFontWeight,
         cardCornerMode: props.cardCornerMode,
         gradientConfig: props.gradientConfig,
         headingOverrides: props.headingOverrides,
-        highlightColor: props.highlightColor,
         bodyTextColor: props.bodyTextColor,
       }, signal)
       if (signal.aborted || abortController?.signal !== signal) return
@@ -447,14 +477,18 @@ watch(
     props.source,
     props.themeId,
     props.typography,
-    props.highlightStyle,
+    props.formatColors,
     props.footerLeft,
     props.footerRightMode,
     props.footerEnabled,
+    props.footerBackgroundEnabled,
+    props.footerBackgroundColor,
+    props.footerTextColor,
+    props.footerFontSize,
+    props.footerFontWeight,
     props.cardCornerMode,
     props.gradientConfig,
     props.headingOverrides,
-    props.highlightColor,
     props.bodyTextColor,
   ] as const,
   scheduleRender,

@@ -1,5 +1,5 @@
 <template>
-  <ThemeProvider :theme-id="cardTheme" :highlight-color="highlightColor">
+  <ThemeProvider :theme-id="cardTheme">
 
   <!-- 下载页模式 -->
   <DownloadPage v-if="showDownloadPage" @back="showDownloadPage = false" />
@@ -19,7 +19,7 @@
         <span v-if="auth.offline" class="text-xs text-amber-500 mr-3">离线模式</span>
         <!-- VIP剩余天数常驻显示 -->
         <span v-if="auth.isVip" class="text-xs text-amber-400 mr-3">
-          {{ auth.vipType === 'LIFETIME' ? '永久VIP' : `剩余${auth.remainingDays}天` }}
+          {{ auth.vipType === 'LIFETIME' ? '永久VIP' : `剩余${auth.remainingTimeText}` }}
         </span>
         <span v-else class="text-xs text-base-400 mr-3">未激活</span>
 
@@ -99,6 +99,7 @@
             :modelValue="source"
             @update:modelValue="onSourceUpdate"
             :theme="editorTheme"
+            :format-colors="formatColors"
             @ready="onEditorReady"
           />
         </div>
@@ -168,10 +169,16 @@
             :source="source"
             :theme-id="cardTheme"
             :typography="typography"
-            :highlight-style="highlightStyle"
-            :highlight-color="highlightColor"
+            :format-colors="formatColors"
             :footer-enabled="footerEnabled"
+            :footer-left="footerLeft"
+            :footer-background-enabled="footerBackgroundEnabled"
+            :footer-background-color="footerBackgroundColor"
+            :footer-text-color="footerTextColor"
+            :footer-font-size="footerFontSize"
+            :footer-font-weight="footerFontWeight"
             :gradient-config="gradientConfig"
+            :card-corner-mode="cardCornerMode"
             :preview-scale="previewScale"
             :heading-overrides="headingOverrides"
             :body-text-color="bodyTextColor"
@@ -216,14 +223,26 @@
           @update:body-font-size="bodyFontSize = $event"
           :body-font-weight="bodyFontWeight"
           @update:body-font-weight="bodyFontWeight = $event"
-          :highlight-style="highlightStyle"
-          @update:highlight-style="(v: string) => highlightStyle = v as HighlightStyle"
-          :highlight-color="highlightColor"
-          @update:highlight-color="highlightColor = $event"
+          :format-colors="formatColors"
+          @update:format-colors="formatColors = $event"
           :footer-enabled="footerEnabled"
+          :footer-left="footerLeft"
+          :footer-background-enabled="footerBackgroundEnabled"
+          :footer-background-color="footerBackgroundColor"
+          :footer-text-color="footerTextColor"
+          :footer-font-size="footerFontSize"
+          :footer-font-weight="footerFontWeight"
           @update:footer-enabled="footerEnabled = $event"
+          @update:footer-left="footerLeft = $event"
+          @update:footer-background-enabled="footerBackgroundEnabled = $event"
+          @update:footer-background-color="footerBackgroundColor = $event"
+          @update:footer-text-color="footerTextColor = $event"
+          @update:footer-font-size="footerFontSize = $event"
+          @update:footer-font-weight="footerFontWeight = $event"
           :gradient-config="gradientConfig"
           @update:gradient-config="gradientConfig = $event"
+          :card-corner-mode="cardCornerMode"
+          @update:card-corner-mode="cardCornerMode = $event"
           :preview-scale="previewScale"
           @update:preview-scale="previewScale = $event"
           :font-options="BODY_FONT_OPTIONS"
@@ -262,15 +281,21 @@
       ref="mobileLayoutRef"
       :source="source"
       :editor-theme="editorTheme"
+      :format-colors="formatColors"
       :can-undo="canUndo"
       :can-redo="canRedo"
       :card-theme="cardTheme"
       :app-theme="appTheme"
       :typography="typography"
-      :highlight-style="highlightStyle"
-      :highlight-color="highlightColor"
       :footer-enabled="footerEnabled"
+      :footer-left="footerLeft"
+      :footer-background-enabled="footerBackgroundEnabled"
+      :footer-background-color="footerBackgroundColor"
+      :footer-text-color="footerTextColor"
+      :footer-font-size="footerFontSize"
+      :footer-font-weight="footerFontWeight"
       :gradient-config="gradientConfig"
+      :card-corner-mode="cardCornerMode"
       :preview-scale="previewScale"
       :heading-overrides="headingOverrides"
       :active-tags="activeTags"
@@ -283,6 +308,7 @@
       :body-font-size="bodyFontSize"
       :body-font-weight="bodyFontWeight"
       :body-text-color="bodyTextColor"
+      :images="imageItems"
       @update:source="onSourceUpdate"
       @toolbar-insert="onToolbarInsert"
       @toolbar-command="onToolbarCommand"
@@ -291,15 +317,23 @@
       @update:body-font-mode="(v: string) => bodyFontMode = v as BodyFontMode"
       @update:body-font-size="(v: number) => bodyFontSize = v"
       @update:body-font-weight="(v: number) => bodyFontWeight = v"
-      @update:highlight-style="(v: string) => highlightStyle = v as HighlightStyle"
-      @update:highlight-color="(v: string | null) => highlightColor = v"
+      @update:format-colors="(v) => formatColors = v"
       @update:footer-enabled="(v: boolean) => footerEnabled = v"
+      @update:footer-left="(v: string) => footerLeft = v"
+      @update:footer-background-enabled="(v: boolean) => footerBackgroundEnabled = v"
+      @update:footer-background-color="(v: string | null) => footerBackgroundColor = v"
+      @update:footer-text-color="(v: string | null) => footerTextColor = v"
+      @update:footer-font-size="(v: number) => footerFontSize = v"
+      @update:footer-font-weight="(v: number) => footerFontWeight = v"
       @update:gradient-config="(v: GradientConfig) => gradientConfig = v"
+      @update:card-corner-mode="cardCornerMode = $event"
       @update:preview-scale="(v: number) => previewScale = v"
       @update:body-text-color="(v: string | null) => bodyTextColor = v"
+      @update:imageHeight="onImageHeightChange"
       @export-png="handleBatchExportPNG"
       @export-jpg="handleBatchExportJPG"
       @export-pdf="handleExportPDF"
+      @need-activate="showActivationDialog = true"
     />
 
     
@@ -378,7 +412,7 @@ import { BODY_FONT_MODES, THEMES, getTheme, normalizeBodyFontMode, type BodyFont
 import { clearMeasureCaches } from '@/card/measure'
 import DraftRecoveryModal from '@/components/DraftRecoveryModal.vue'
 import type { GradientConfig } from '@/card'
-import type { TypographySettings, HighlightStyle, SubheadingStyle, HeadingStyleOverrides } from '@/card'
+import type { TypographySettings, SubheadingStyle, HeadingStyleOverrides, InlineFormatColors } from '@/card'
 import { useSettings } from '@/composables/useSettings'
 import { useSearch, type SearchMatch } from '@/composables/useSearch'
 import SearchDialog from '@/components/editor/SearchDialog.vue'
@@ -404,8 +438,13 @@ function applyAppTheme(): void {
   document.documentElement.setAttribute('data-theme', appTheme.value)
 }
 
+function refreshVipCountdown(): void {
+  if (document.visibilityState === 'visible') auth.refreshCountdown()
+}
+
 onMounted(async () => {
   applyAppTheme()
+  document.addEventListener('visibilitychange', refreshVipCountdown)
   // 校验登录状态，不主动弹激活窗，用户点VIP主题时再弹
   await auth.initFromStorage()
 
@@ -527,6 +566,38 @@ const cardTheme = computed<string>({
   },
 })
 
+const formatColors = computed<InlineFormatColors>({
+  get: () => store.activeDocument?.formatColors ?? {},
+  set: (colors) => {
+    if (store.activeId) store.updateFormatColors(store.activeId, colors)
+  },
+})
+
+const footerLeft = computed<string>({
+  get: () => store.activeDocument?.footerLeft ?? '',
+  set: (value) => { if (store.activeId) store.updateFooterSettings(store.activeId, { footerLeft: value }) },
+})
+const footerBackgroundEnabled = computed<boolean>({
+  get: () => store.activeDocument?.footerBackgroundEnabled ?? true,
+  set: (value) => { if (store.activeId) store.updateFooterSettings(store.activeId, { footerBackgroundEnabled: value }) },
+})
+const footerBackgroundColor = computed<string | null>({
+  get: () => store.activeDocument?.footerBackgroundColor ?? null,
+  set: (value) => { if (store.activeId) store.updateFooterSettings(store.activeId, { footerBackgroundColor: value }) },
+})
+const footerTextColor = computed<string | null>({
+  get: () => store.activeDocument?.footerTextColor ?? null,
+  set: (value) => { if (store.activeId) store.updateFooterSettings(store.activeId, { footerTextColor: value }) },
+})
+const footerFontSize = computed<number>({
+  get: () => Math.min(32, Math.max(10, store.activeDocument?.footerFontSize ?? 14)),
+  set: (value) => { if (store.activeId) store.updateFooterSettings(store.activeId, { footerFontSize: Math.min(32, Math.max(10, value)) }) },
+})
+const footerFontWeight = computed<number>({
+  get: () => store.activeDocument?.footerFontWeight ?? 600,
+  set: (value) => { if (store.activeId) store.updateFooterSettings(store.activeId, { footerFontWeight: [400, 500, 600, 700, 800].includes(value) ? value : 600 }) },
+})
+
 // ── 图片高度滑块相关状态 ──────────────────────────────────────────
 // CardPreview 每次排版后回填：key -> 该图所在页的可用高度上限
 const imageMaxHeights = ref<Record<string, number>>({})
@@ -593,8 +664,6 @@ function applyThemePreset(newThemeId: string): void {
   if (theme.editor.bodyFontMode) {
     bodyFontMode.value = theme.editor.bodyFontMode
   }
-  highlightStyle.value = theme.editor.highlightStyle
-  
   settings.clearHeadingColors()
   settings.headingH1Size.value = null
   settings.headingH2Size.value = null
@@ -626,11 +695,13 @@ const BODY_FONT_OPTIONS = Object.entries(BODY_FONT_MODES).map(([id, def]) => ({
 
 
 const settings = useSettings()
+const cardCornerMode = settings.cardCornerMode
 const bodyFontSize = ref<number>(30)
 const bodyFontWeight = ref<number>(400)
-const highlightStyle = ref<HighlightStyle>('underline' as HighlightStyle)
-const highlightColor = ref<string | null>(null)
-const footerEnabled = ref<boolean>(false)
+const footerEnabled = computed<boolean>({
+  get: () => store.activeDocument?.footerEnabled ?? false,
+  set: (value) => { if (store.activeId) store.updateFooterSettings(store.activeId, { footerEnabled: value }) },
+})
 const gradientConfig = ref<GradientConfig>({
   enabled: false,
   color1: '#6c5ce7',
@@ -887,8 +958,6 @@ function collectSettings(): AppSettings {
     bodyFontMode: bodyFontMode.value,
     bodyFontSize: bodyFontSize.value,
     bodyFontWeight: bodyFontWeight.value,
-    highlightStyle: highlightStyle.value,
-    highlightColor: highlightColor.value,
     footerEnabled: footerEnabled.value,
     split: split.value,
     rightSplit: rightSplit.value,
@@ -903,8 +972,6 @@ function applySettings(s: AppSettings): void {
   bodyFontMode.value = normalizeBodyFontMode(s.bodyFontMode)
   bodyFontSize.value = s.bodyFontSize
   bodyFontWeight.value = s.bodyFontWeight ?? 400
-  highlightStyle.value = s.highlightStyle as HighlightStyle
-  highlightColor.value = s.highlightColor ?? null
   footerEnabled.value = s.footerEnabled
   split.value = s.split
   rightSplit.value = s.rightSplit ?? 22
@@ -921,7 +988,7 @@ function applySettings(s: AppSettings): void {
 watch(
   [
     cardTheme, bodyFontMode, bodyFontSize, bodyFontWeight,
-    highlightStyle, highlightColor, footerEnabled, split, rightSplit, previewScale, gradientConfig, bodyTextColor,
+    footerEnabled, split, rightSplit, previewScale, gradientConfig, bodyTextColor,
   ],
   () => saveSettings(collectSettings()),
   { deep: false },
@@ -976,7 +1043,9 @@ function onEditorReady(_view: EditorView): void {}
 
 
 function onToolbarInsert(item: ToolbarItem): void {
-  if (item.wrap) {
+  if (item.block) {
+    activeEditor.value?.insertStandaloneBlock(item.template)
+  } else if (item.wrap) {
     activeEditor.value?.wrapSelectionOrInsert(item.wrap.prefix, item.wrap.suffix, item.wrap.placeholder)
   } else {
     activeEditor.value?.insertAtCursor(item.template)
@@ -1049,8 +1118,6 @@ function onToolbarCommand(action: 'undo' | 'redo'): void {
   }
   activeEditor.value?.focus()
 }
-
-
 
 interface CardPreviewAPI {
   getActiveCanvas: () => HTMLCanvasElement | null
@@ -1181,6 +1248,7 @@ onBeforeUnmount(() => {
   dragging.value = false
   draggingRight.value = false
   if (statsDebounceTimer) clearTimeout(statsDebounceTimer)
+  document.removeEventListener('visibilitychange', refreshVipCountdown)
   window.removeEventListener('keydown', onKeydown)
   windowControlCleanups.forEach((fn) => fn())
 })

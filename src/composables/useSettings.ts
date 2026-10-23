@@ -20,8 +20,6 @@ export interface AppSettings {
   
   cardTheme: CardThemeId
   
-  highlightStyle: 'underline' | 'border' | 'highlight'
-  
   footerLeft: string
   
   footerRightMode: 'blank' | 'page' | 'date'
@@ -75,9 +73,6 @@ const splitMode = ref<SplitMode>(
 const cardTheme = ref<CardThemeId>(
   (localStorage.getItem(STORAGE_PREFIX + 'cardTheme') as CardThemeId) || 'moss-paper',
 )
-const highlightStyle = ref<'underline' | 'border' | 'highlight'>(
-  (localStorage.getItem(STORAGE_PREFIX + 'highlightStyle') as 'underline' | 'border' | 'highlight') || 'underline',
-)
 const footerLeft = ref<string>(
   localStorage.getItem(STORAGE_PREFIX + 'footerLeft') || '',
 )
@@ -96,13 +91,6 @@ const subheadingStyle = ref<'large' | 'accent'>(
 const bodyFontMode = ref<BodyFontMode>(
   normalizeBodyFontMode(localStorage.getItem(STORAGE_PREFIX + 'bodyFontMode')),
 )
-
-
-const highlightColor = ref<string | null>(
-  localStorage.getItem(STORAGE_PREFIX + 'highlightColor') || null,
-)
-
-
 
 
 const bodyTextColor = ref<string | null>(
@@ -174,14 +162,12 @@ watch(bodyFontSize, (v) => localStorage.setItem(STORAGE_PREFIX + 'bodyFontSize',
 watch(exportFormat, (v) => localStorage.setItem(STORAGE_PREFIX + 'exportFormat', v))
 watch(splitMode, (v) => localStorage.setItem(STORAGE_PREFIX + 'splitMode', v))
 watch(cardTheme, (v) => localStorage.setItem(STORAGE_PREFIX + 'cardTheme', v))
-watch(highlightStyle, (v) => localStorage.setItem(STORAGE_PREFIX + 'highlightStyle', v))
 watch(footerLeft, (v) => localStorage.setItem(STORAGE_PREFIX + 'footerLeft', v))
 watch(footerRightMode, (v) => localStorage.setItem(STORAGE_PREFIX + 'footerRightMode', v))
 watch(footerEnabled, (v) => localStorage.setItem(STORAGE_PREFIX + 'footerEnabled', String(v)))
 watch(cardCornerMode, (v) => localStorage.setItem(STORAGE_PREFIX + 'cardCornerMode', v))
 watch(subheadingStyle, (v) => localStorage.setItem(STORAGE_PREFIX + 'subheadingStyle', v))
 watch(bodyFontMode, (v) => localStorage.setItem(STORAGE_PREFIX + 'bodyFontMode', v))
-watch(highlightColor, (v) => localStorage.setItem(STORAGE_PREFIX + 'highlightColor', v ?? ''))
 watch(bodyTextColor, (v) => localStorage.setItem(STORAGE_PREFIX + 'bodyTextColor', v ?? ''))
 
 
@@ -225,14 +211,12 @@ export function useSettings(): {
   exportFormat: typeof exportFormat
   splitMode: typeof splitMode
   cardTheme: typeof cardTheme
-  highlightStyle: typeof highlightStyle
   footerLeft: typeof footerLeft
   footerRightMode: typeof footerRightMode
   footerEnabled: typeof footerEnabled
   cardCornerMode: typeof cardCornerMode
   subheadingStyle: typeof subheadingStyle
   bodyFontMode: typeof bodyFontMode
-  highlightColor: typeof highlightColor
   bodyTextColor: typeof bodyTextColor
   headingH1Size: typeof headingH1Size
   headingH2Size: typeof headingH2Size
@@ -277,14 +261,12 @@ export function useSettings(): {
     exportFormat,
     splitMode,
     cardTheme,
-    highlightStyle,
     footerLeft,
     footerRightMode,
     footerEnabled,
     cardCornerMode,
     subheadingStyle,
     bodyFontMode,
-    highlightColor,
     bodyTextColor,
     headingH1Size,
     headingH2Size,

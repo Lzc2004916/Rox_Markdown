@@ -18,6 +18,7 @@ export const useAuthStore = defineStore('auth', () => {
   const active = ref(false)
   const vipType = ref<string>('FREE')
   const expireAtMs = ref<number>(0)
+  const countdownNow = ref(Date.now())
   const paidThemes = ref<string[]>([])
   /** 用户点了 VIP 主题但还没激活，激活成功后自动切过去 */
   const pendingTheme = ref<string | null>(null)
@@ -27,6 +28,7 @@ export const useAuthStore = defineStore('auth', () => {
   /** 到期前3天提示过的标记 */
   const tipShown3Days = ref<boolean>(decrypt(localStorage.getItem('rox_tip_shown') || '') === '1')
   let expiryTimer: ReturnType<typeof setTimeout> | null = null
+  let countdownTimer: ReturnType<typeof setInterval> | null = null
 
   const isLoggedIn = computed(() => !!token.value)
   const isVip = computed(() => {
@@ -39,6 +41,33 @@ export const useAuthStore = defineStore('auth', () => {
     if (vipType.value === 'LIFETIME') return -1
     return Math.max(0, Math.ceil((expireAtMs.value - Date.now()) / 86400000))
   })
+  const remainingTimeText = computed(() => {
+    const totalSeconds = Math.max(0, Math.ceil((expireAtMs.value - countdownNow.value) / 1000))
+    const days = Math.floor(totalSeconds / 86400)
+    const hours = Math.floor((totalSeconds % 86400) / 3600)
+    const minutes = Math.floor((totalSeconds % 3600) / 60)
+    const seconds = totalSeconds % 60
+    const clock = [hours, minutes, seconds].map((part) => String(part).padStart(2, '0')).join(':')
+    return days > 0 ? `${days}天 ${clock}` : clock
+  })
+
+  function refreshCountdown(): void {
+    countdownNow.value = Date.now()
+  }
+
+  function stopCountdown(): void {
+    if (countdownTimer) clearInterval(countdownTimer)
+    countdownTimer = null
+  }
+
+  function startCountdown(): void {
+    stopCountdown()
+    refreshCountdown()
+    countdownTimer = setInterval(() => {
+      refreshCountdown()
+      if (expireAtMs.value <= countdownNow.value) markExpired()
+    }, 1000)
+  }
 
   function isPaidTheme(themeId: string): boolean {
     return paidThemes.value.includes(themeId)
@@ -47,13 +76,18 @@ export const useAuthStore = defineStore('auth', () => {
   function scheduleExpiry(): void {
     if (expiryTimer) clearTimeout(expiryTimer)
     expiryTimer = null
-    if (vipType.value === 'FREE' || vipType.value === 'EXPIRED' || vipType.value === 'LIFETIME') return
+    if (vipType.value === 'FREE' || vipType.value === 'EXPIRED' || vipType.value === 'LIFETIME') {
+      stopCountdown()
+      return
+    }
 
     const remaining = expireAtMs.value - Date.now()
     if (remaining <= 0) {
       markExpired()
       return
     }
+
+    startCountdown()
 
     // setTimeout 最大可靠延时约为 2^31-1ms，较长期限分段调度
     const delay = Math.min(remaining, 2147483647)
@@ -133,6 +167,7 @@ export const useAuthStore = defineStore('auth', () => {
   function logout(): void {
     if (expiryTimer) clearTimeout(expiryTimer)
     expiryTimer = null
+    stopCountdown()
     clearToken()
     token.value = null
     active.value = false
@@ -144,6 +179,7 @@ export const useAuthStore = defineStore('auth', () => {
   function markExpired(): void {
     if (expiryTimer) clearTimeout(expiryTimer)
     expiryTimer = null
+    stopCountdown()
     active.value = false
     vipType.value = 'EXPIRED'
     pendingTheme.value = null
@@ -162,6 +198,8 @@ export const useAuthStore = defineStore('auth', () => {
     isLoggedIn,
     isVip,
     remainingDays,
+    remainingTimeText,
+    refreshCountdown,
     isPaidTheme,
     initFromStorage,
     activate,

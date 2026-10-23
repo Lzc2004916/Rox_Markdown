@@ -40,7 +40,12 @@ import {
   COLUMN_GAP,
 } from './types'
 import type { ThemeDefinition } from './types'
-import { parseImageAttrs, DEFAULT_IMAGE_HEIGHT } from './imageMarkdown'
+import {
+  parseImageAttrs,
+  parseImageMarkdownLine,
+  parseImageUrlLine,
+  DEFAULT_IMAGE_HEIGHT,
+} from './imageMarkdown'
 
 
 
@@ -273,7 +278,7 @@ export function parseInputBlocks(raw: string): Block[] {
 
 
     // ── Image (整行或跨行的 ![alt](src){#img1}{height=xxx}) ──────────────────
-    const imgMatch = line.trim().match(/^!\[([^\]]*)\]\(([^)]+)\)((?:\s*\{[^{}]*\})*)$/)
+    const imgMatch = parseImageMarkdownLine(line)
     const imgStartMatch = line.trim().match(/^!\[([^\]]*)\]$/)
     if (imgMatch || imgStartMatch) {
       flushTextBuffer(textBuffer)
@@ -283,9 +288,9 @@ export function parseInputBlocks(raw: string): Block[] {
       let height = DEFAULT_IMAGE_HEIGHT
       let key: string | undefined
       if (imgMatch) {
-        alt = imgMatch[1] || ''
-        src = imgMatch[2] || ''
-        const attrs = parseImageAttrs(imgMatch[3] ?? '')
+        alt = imgMatch.alt
+        src = imgMatch.src
+        const attrs = parseImageAttrs(imgMatch.attrs)
         if (attrs.height != null) height = attrs.height
         key = attrs.key
         i++
@@ -296,10 +301,10 @@ export function parseInputBlocks(raw: string): Block[] {
         // 跳过空行，找下一行的 (src)
         while (i < lines.length && !lines[i]!.trim()) i++
         if (i < lines.length) {
-          const urlMatch = lines[i]!.trim().match(/^\(\s*([^)]+)\s*\)((?:\s*\{[^{}]*\})*)$/)
+          const urlMatch = parseImageUrlLine(lines[i]!)
           if (urlMatch) {
-            src = urlMatch[1]
-            const attrs = parseImageAttrs(urlMatch[2] ?? '')
+            src = urlMatch.src
+            const attrs = parseImageAttrs(urlMatch.attrs)
             if (attrs.height != null) height = attrs.height
             key = attrs.key
             i++
@@ -457,14 +462,7 @@ function serializeParagraphBlock(raw: string, kind: ParagraphBlock['kind'], head
 
 function serializeInlineTokens(tokens: InlineToken[]): string {
   return tokens
-    .map((t) => {
-      // 顺序很重要：粗体 (**) 在斜体 (*) 之前，避免歧义
-      if (t.bold) return `**${t.text}**`
-      if (t.italic) return `*${t.text}*`
-      if (t.mark) return `==${t.text}==`
-      if (t.underline) return `^${t.text}^`
-      return t.text
-    })
+    .map((token) => serializeInlineToken(token, token.text))
     .join('')
     .replace(/[ \t]+\n/g, '\n')
     .replace(/\n[ \t]+/g, '\n')
@@ -477,10 +475,10 @@ function serializeInlineTokens(tokens: InlineToken[]): string {
 
 /**
  * 检测文本中是否包含内联 markdown 格式化标记。
- * 用于防止分割操作意外截断 **bold**、*italic*、==highlight== 或 ^underline^。
+ * 用于防止分割操作意外截断带格式或颜色的内联文本。
  */
 function hasInlineMarkdownMarkers(text: string): boolean {
-  return /(\*\*|(?<!\*)\*(?!\*)|==|\^)/.test(text)
+  return /(\*\*|(?<!\*)\*(?!\*)|~~|\^|<\/?(?:sup|sub)\b|\$)/.test(text)
 }
 
 /** 将长段落分割为约 chunkSize 个字符的块。 */
@@ -503,12 +501,11 @@ function splitLongParagraph(raw: string, chunkSize: number): string[] {
         if (hasFormatting && hasInlineMarkdownMarkers(current)) {
           // 检查 candidate 中是否还有未闭合的标记（即标记跨越了换行符）
           const openBold = (current.match(/\*\*/g) || []).length % 2 !== 0
-          const openMark = (current.match(/==/g) || []).length % 2 !== 0
           const openUnderline = (current.match(/\^/g) || []).length % 2 !== 0
           // 计算单 * 数量（排除 ** 中的 *）
           const singleStars = current.match(/(?<!\*)\*(?!\*)/g) || []
           const openItalic = singleStars.length % 2 !== 0
-          if (openBold || openItalic || openMark || openUnderline) {
+          if (openBold || openItalic || openUnderline) {
             // 标记未闭合 — 暂不分块，继续累积直到标记闭合
             current = candidate
             continue
@@ -806,12 +803,20 @@ function splitCodeBlockToFit(
   }
 }
 
-function serializeInlineToken(token: InlineToken, text: string): string {
-  if (token.bold) return `**${text}**`
-  if (token.mark) return `==${text}==`
-  if (token.underline) return `^${text}^`
-  if (token.italic) return `*${text}*`
-  return text
+export function serializeInlineToken(token: InlineToken, text: string): string {
+  // Preserve every active style when a table cell or paragraph is split over
+  // pages. The previous early-return version kept only one marker, so a
+  // combination such as **^text^** degraded to bold-only after pagination.
+  let result = token.formula
+    ? (token.formula.display ? `$$${token.formula.latex}$$` : `$${token.formula.latex}$`)
+    : text
+  if (token.script === 'sup') result = `<sup>${result}</sup>`
+  if (token.script === 'sub') result = `<sub>${result}</sub>`
+  if (token.strike) result = `~~${result}~~`
+  if (token.underline) result = `^${result}^`
+  if (token.italic) result = `*${result}*`
+  if (token.bold) result = `**${result}**`
+  return result
 }
 
 function splitInlineCell(text: string, count: number): { head: string; tail: string } {

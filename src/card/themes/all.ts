@@ -53,10 +53,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.78,
       quoteRadius: 14,
       quoteTreatment: 'callout',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.62,
-      highlightMarkerAlpha: 0.34,
-      highlightDashAlpha: 0.76,
     },
     editor: {
       bodySize: 29,
@@ -64,7 +60,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'yahei',
       bodyFontWeight: 400,
       subheadingStyle: 'large',
-      highlightStyle: 'underline',
       list: { bulletChar: '▸', bulletSizeRatio: 0.78, indentPerLevel: 26, itemGap: 6, orderedMarkerBox: true },
     },
     colorTag: 'neutral',
@@ -110,10 +105,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.7,
       quoteRadius: 20,
       quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.64,
-      highlightMarkerAlpha: 0.36,
-      highlightDashAlpha: 0.8,
     },
     editor: {
       bodySize: 30,
@@ -121,7 +112,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'wenkai',
       bodyFontWeight: 400,
       subheadingStyle: 'accent',
-      highlightStyle: 'underline',
       list: { bulletChar: '•', bulletSizeRatio: 0.84, indentPerLevel: 28, itemGap: 8 },
     },
     colorTag: 'pink',
@@ -169,10 +159,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.76,
       quoteRadius: 16,
       quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.64,
-      highlightMarkerAlpha: 0.32,
-      highlightDashAlpha: 0.78,
     },
     editor: {
       bodySize: 29,
@@ -180,7 +166,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'kaiti',
       bodyFontWeight: 400,
       subheadingStyle: 'accent',
-      highlightStyle: 'underline',
       list: { bulletChar: '◦', bulletSizeRatio: 0.80, indentPerLevel: 28, itemGap: 7, orderedMarkerBox: true },
     },
     colorTag: 'yellow',
@@ -226,10 +211,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.68,
       quoteRadius: 20,
       quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.68,
-      highlightMarkerAlpha: 0.28,
-      highlightDashAlpha: 0.80,
     },
     editor: {
       bodySize: 29,
@@ -237,7 +218,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'wenkai',
       bodyFontWeight: 400,
       subheadingStyle: 'accent',
-      highlightStyle: 'underline',
       list: { bulletChar: '•', bulletSizeRatio: 0.82, indentPerLevel: 28, itemGap: 7 },
     },
     colorTag: 'green',
@@ -285,10 +265,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.90,
       quoteRadius: 2,
       quoteTreatment: 'callout',
-      highlightTreatment: 'swissRule',
-      highlightUnderlineAlpha: 0.56,
-      highlightMarkerAlpha: 0.24,
-      highlightDashAlpha: 0.92,
     },
     editor: {
       bodySize: 28,
@@ -296,7 +272,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'yahei',
       bodyFontWeight: 350,
       subheadingStyle: 'large',
-      highlightStyle: 'border',
       heading: {
         h1Scale: 3.0, h2Scale: 1.55, h3Scale: 1.25,
         h1LineHeight: 1.12, h2LineHeight: 1.25, h3LineHeight: 1.35,
@@ -349,10 +324,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.78,
       quoteRadius: 24,
       quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.62,
-      highlightMarkerAlpha: 0.4,
-      highlightDashAlpha: 0.78,
     },
     editor: {
       bodySize: 30,
@@ -360,7 +331,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'simsun',
       bodyFontWeight: 400,
       subheadingStyle: 'large',
-      highlightStyle: 'underline',
       list: { bulletChar: '◆', bulletSizeRatio: 0.78, indentPerLevel: 28, itemGap: 8, orderedMarkerBox: true },
     },
     colorTag: 'green',
@@ -406,10 +376,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.8,
       quoteRadius: 24,
       quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.6,
-      highlightMarkerAlpha: 0.42,
-      highlightDashAlpha: 0.76,
     },
     editor: {
       bodySize: 30,
@@ -417,7 +383,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'simsun',
       bodyFontWeight: 400,
       subheadingStyle: 'accent',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 3.1, h2Scale: 1.6, h3Scale: 1.3,
         h1LineHeight: 1.2, h2LineHeight: 1.3, h3LineHeight: 1.4,
@@ -469,10 +434,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.66,
       quoteRadius: 2,
       quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.5,
-      highlightMarkerAlpha: 0.25,
-      highlightDashAlpha: 0.4,
     },
     editor: {
       bodySize: 30,
@@ -480,7 +441,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'kaiti',
       bodyFontWeight: 400,
       subheadingStyle: 'large',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 3.8, h2Scale: 1.75, h3Scale: 1.4,
         h1LineHeight: 1.3, h2LineHeight: 1.45, h3LineHeight: 1.55,
@@ -533,10 +493,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.78,
       quoteRadius: 4,
       quoteTreatment: 'callout',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.56,
-      highlightMarkerAlpha: 0.36,
-      highlightDashAlpha: 0.74,
     },
     editor: {
       bodySize: 28,
@@ -544,7 +500,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'yahei',
       bodyFontWeight: 400,
       subheadingStyle: 'accent',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 3.6, h2Scale: 1.7, h3Scale: 1.35,
         h1LineHeight: 1.2, h2LineHeight: 1.3, h3LineHeight: 1.4,
@@ -596,10 +551,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.96,
       quoteRadius: 0,
       quoteTreatment: 'code',
-      highlightTreatment: 'swissRule',
-      highlightUnderlineAlpha: 0.86,
-      highlightMarkerAlpha: 0.62,
-      highlightDashAlpha: 0.94,
     },
     editor: {
       bodySize: 28,
@@ -607,7 +558,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'yahei',
       bodyFontWeight: 500,
       subheadingStyle: 'large',
-      highlightStyle: 'border',
       heading: {
         h1Scale: 4.4, h2Scale: 1.85, h3Scale: 1.35,
         h1LineHeight: 1.06, h2LineHeight: 1.18, h3LineHeight: 1.28,
@@ -665,10 +615,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.84,
       quoteRadius: 16,
       quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.72,
-      highlightMarkerAlpha: 0.32,
-      highlightDashAlpha: 0.80,
     },
     editor: {
       bodySize: 30,
@@ -676,7 +622,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'notoserif',  
       bodyFontWeight: 350,
       subheadingStyle: 'accent',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 3.5, h2Scale: 1.75, h3Scale: 1.4,
         h1LineHeight: 1.2, h2LineHeight: 1.3, h3LineHeight: 1.4,
@@ -734,10 +679,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.70,
       quoteRadius: 14,
       quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.66,
-      highlightMarkerAlpha: 0.30,
-      highlightDashAlpha: 0.76,
     },
     editor: {
       bodySize: 29,
@@ -745,7 +686,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'kaiti',
       bodyFontWeight: 400,
       subheadingStyle: 'accent',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 3.2, h2Scale: 1.6, h3Scale: 1.3,
         h1LineHeight: 1.3, h2LineHeight: 1.4, h3LineHeight: 1.5,
@@ -802,10 +742,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.70,
       quoteRadius: 10,
       quoteTreatment: 'callout',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.56,
-      highlightMarkerAlpha: 0.22,
-      highlightDashAlpha: 0.70,
     },
     editor: {
       bodySize: 28,
@@ -813,7 +749,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'yahei',
       bodyFontWeight: 350,
       subheadingStyle: 'large',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 3.4, h2Scale: 1.65, h3Scale: 1.3,
         h1LineHeight: 1.18, h2LineHeight: 1.28, h3LineHeight: 1.38,
@@ -869,10 +804,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.72,
       quoteRadius: 18,
       quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.54,
-      highlightMarkerAlpha: 0.34,
-      highlightDashAlpha: 0.66,
     },
     editor: {
       bodySize: 30,
@@ -880,7 +811,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'yahei',
       bodyFontWeight: 400,
       subheadingStyle: 'accent',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 3.5, h2Scale: 1.7, h3Scale: 1.35,
         h1LineHeight: 1.18, h2LineHeight: 1.28, h3LineHeight: 1.38,
@@ -944,10 +874,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.66,
       quoteRadius: 18,          
       quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.48,
-      highlightMarkerAlpha: 0.20,
-      highlightDashAlpha: 0.54,
     },
     editor: {
       bodySize: 28,
@@ -955,7 +881,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'notosans',  
       bodyFontWeight: 400,
       subheadingStyle: 'large',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 3.2, h2Scale: 1.55, h3Scale: 1.25,
         h1LineHeight: 1.15, h2LineHeight: 1.25, h3LineHeight: 1.35,
@@ -1014,10 +939,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.66,      
       quoteRadius: 2,           
       quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.40,
-      highlightMarkerAlpha: 0.18,
-      highlightDashAlpha: 0.48,
     },
     editor: {
       bodySize: 30,
@@ -1025,7 +946,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'fangsong',  
       bodyFontWeight: 400,
       subheadingStyle: 'large',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 3.8, h2Scale: 1.75, h3Scale: 1.4,
         h1LineHeight: 1.35, h2LineHeight: 1.45, h3LineHeight: 1.55,
@@ -1087,10 +1007,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.78,
       quoteRadius: 12,
       quoteTreatment: 'callout',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.64,
-      highlightMarkerAlpha: 0.36,
-      highlightDashAlpha: 0.80,
     },
     editor: {
       bodySize: 29,
@@ -1098,7 +1014,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'yahei',
       bodyFontWeight: 400,
       subheadingStyle: 'large',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 3.2, h2Scale: 1.6, h3Scale: 1.3,
         h1LineHeight: 1.2, h2LineHeight: 1.3, h3LineHeight: 1.4,
@@ -1156,10 +1071,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.66,
       quoteRadius: 2,
       quoteTreatment: 'callout',
-      highlightTreatment: 'swissRule',
-      highlightUnderlineAlpha: 0.44,
-      highlightMarkerAlpha: 0.16,
-      highlightDashAlpha: 0.62,
     },
     editor: {
       bodySize: 30,
@@ -1167,7 +1078,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'simsun',
       bodyFontWeight: 350,
       subheadingStyle: 'accent',
-      highlightStyle: 'border',
       heading: {
         h1Scale: 3.6, h2Scale: 1.7, h3Scale: 1.35,
         h1LineHeight: 1.22, h2LineHeight: 1.32, h3LineHeight: 1.42,
@@ -1222,10 +1132,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.76,
       quoteRadius: 14,
       quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.72,
-      highlightMarkerAlpha: 0.36,
-      highlightDashAlpha: 0.84,
     },
     editor: {
       bodySize: 30,
@@ -1233,7 +1139,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'kaiti',
       bodyFontWeight: 400,
       subheadingStyle: 'accent',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 3.2, h2Scale: 1.6, h3Scale: 1.3,
         h1LineHeight: 1.25, h2LineHeight: 1.35, h3LineHeight: 1.45,
@@ -1295,10 +1200,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.84,
       quoteRadius: 4,
       quoteTreatment: 'callout',
-      highlightTreatment: 'swissRule',
-      highlightUnderlineAlpha: 0.52,
-      highlightMarkerAlpha: 0.20,
-      highlightDashAlpha: 0.84,
     },
     editor: {
       bodySize: 28,
@@ -1306,7 +1207,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'yahei',
       bodyFontWeight: 400,
       subheadingStyle: 'large',
-      highlightStyle: 'border',
       heading: {
         h1Scale: 2.8, h2Scale: 1.55, h3Scale: 1.25,
         h1LineHeight: 1.12, h2LineHeight: 1.22, h3LineHeight: 1.32,
@@ -1364,10 +1264,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.78,
       quoteRadius: 6,
       quoteTreatment: 'callout',
-      highlightTreatment: 'swissRule',
-      highlightUnderlineAlpha: 0.54,
-      highlightMarkerAlpha: 0.22,
-      highlightDashAlpha: 0.82,
     },
     editor: {
       bodySize: 28,
@@ -1375,7 +1271,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'yahei',
       bodyFontWeight: 400,
       subheadingStyle: 'large',
-      highlightStyle: 'border',
       list: { bulletChar: '▸', bulletSizeRatio: 0.78, indentPerLevel: 24, itemGap: 6, orderedMarkerBox: true },
     },
     colorTag: 'blue',
@@ -1424,10 +1319,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.72,
       quoteRadius: 12,
       quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.56,
-      highlightMarkerAlpha: 0.36,
-      highlightDashAlpha: 0.68,
     },
     editor: {
       bodySize: 30,
@@ -1435,7 +1326,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'yahei',
       bodyFontWeight: 400,
       subheadingStyle: 'large',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 3.2, h2Scale: 1.6, h3Scale: 1.3,
         h1LineHeight: 1.2, h2LineHeight: 1.3, h3LineHeight: 1.4,
@@ -1493,10 +1383,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.76,
       quoteRadius: 2,
       quoteTreatment: 'callout',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.52,
-      highlightMarkerAlpha: 0.34,
-      highlightDashAlpha: 0.70,
     },
     editor: {
       bodySize: 28,
@@ -1504,7 +1390,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'yahei',
       bodyFontWeight: 400,
       subheadingStyle: 'accent',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 3.6, h2Scale: 1.7, h3Scale: 1.35,
         h1LineHeight: 1.15, h2LineHeight: 1.25, h3LineHeight: 1.35,
@@ -1565,10 +1450,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.68,
       quoteRadius: 16,
       quoteTreatment: 'callout',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.56,
-      highlightMarkerAlpha: 0.24,
-      highlightDashAlpha: 0.64,
     },
     editor: {
       bodySize: 28,
@@ -1576,7 +1457,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'yahei',
       bodyFontWeight: 350,
       subheadingStyle: 'large',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 3.3, h2Scale: 1.55, h3Scale: 1.3,
         h1LineHeight: 1.18, h2LineHeight: 1.28, h3LineHeight: 1.38,
@@ -1627,10 +1507,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.70,
       quoteRadius: 16,
       quoteTreatment: 'callout',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.62,
-      highlightMarkerAlpha: 0.30,
-      highlightDashAlpha: 0.72,
     },
     editor: {
       bodySize: 28,
@@ -1638,7 +1514,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'yahei',
       bodyFontWeight: 350,
       subheadingStyle: 'accent',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 3.5, h2Scale: 1.65, h3Scale: 1.35,
         h1LineHeight: 1.15, h2LineHeight: 1.25, h3LineHeight: 1.35,
@@ -1696,10 +1571,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.96,
       quoteRadius: 0,
       quoteTreatment: 'code',
-      highlightTreatment: 'swissRule',
-      highlightUnderlineAlpha: 0.86,
-      highlightMarkerAlpha: 0.64,
-      highlightDashAlpha: 0.96,
     },
     editor: {
       bodySize: 28,
@@ -1707,7 +1578,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'yahei',
       bodyFontWeight: 500,
       subheadingStyle: 'accent',
-      highlightStyle: 'border',
       heading: {
         h1Scale: 4.0, h2Scale: 1.8, h3Scale: 1.4,
         h1LineHeight: 1.1, h2LineHeight: 1.25, h3LineHeight: 1.35,
@@ -1790,10 +1660,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteRadius: 14,
       quoteTreatment: 'paper',
       
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.36,
-      highlightMarkerAlpha: 0.12,
-      highlightDashAlpha: 0.42,
     },
     editor: {
       bodySize: 28,
@@ -1801,7 +1667,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'yahei',
       bodyFontWeight: 300,
       subheadingStyle: 'large',
-      highlightStyle: 'underline',
     },
     colorTag: 'neutral',
     
@@ -1856,10 +1721,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.76,
       quoteRadius: 16,
       quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.66,
-      highlightMarkerAlpha: 0.34,
-      highlightDashAlpha: 0.78,
     },
     editor: {
       bodySize: 30,
@@ -1867,7 +1728,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'kaiti',
       bodyFontWeight: 400,
       subheadingStyle: 'large',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 3.5, h2Scale: 1.65, h3Scale: 1.32,
         h1LineHeight: 1.22, h2LineHeight: 1.32, h3LineHeight: 1.42,
@@ -1921,10 +1781,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.78,
       quoteRadius: 12,
       quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.58,
-      highlightMarkerAlpha: 0.38,
-      highlightDashAlpha: 0.72,
     },
     editor: {
       bodySize: 29,
@@ -1932,7 +1788,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'yahei',
       bodyFontWeight: 400,
       subheadingStyle: 'accent',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 3.6, h2Scale: 1.7, h3Scale: 1.35,
         h1LineHeight: 1.18, h2LineHeight: 1.28, h3LineHeight: 1.38,
@@ -1988,10 +1843,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.76,
       quoteRadius: 8,
       quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.60,
-      highlightMarkerAlpha: 0.36,
-      highlightDashAlpha: 0.74,
     },
     editor: {
       bodySize: 29,
@@ -1999,7 +1850,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'yahei',
       bodyFontWeight: 400,
       subheadingStyle: 'accent',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 3.5, h2Scale: 1.7, h3Scale: 1.35,
         h1LineHeight: 1.2, h2LineHeight: 1.3, h3LineHeight: 1.4,
@@ -2057,10 +1907,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.66,
       quoteRadius: 6,
       quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.52,
-      highlightMarkerAlpha: 0.20,
-      highlightDashAlpha: 0.60,
     },
     editor: {
       bodySize: 29,
@@ -2068,7 +1914,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'fangsong',
       bodyFontWeight: 400,
       subheadingStyle: 'large',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 3.2, h2Scale: 1.55, h3Scale: 1.25,
         h1LineHeight: 1.2, h2LineHeight: 1.3, h3LineHeight: 1.4,
@@ -2123,10 +1968,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.66,
       quoteRadius: 14,
       quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.52,
-      highlightMarkerAlpha: 0.20,
-      highlightDashAlpha: 0.60,
     },
     editor: {
       bodySize: 29,
@@ -2134,7 +1975,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'wenkai',
       bodyFontWeight: 400,
       subheadingStyle: 'accent',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 3.3, h2Scale: 1.6, h3Scale: 1.3,
         h1LineHeight: 1.3, h2LineHeight: 1.4, h3LineHeight: 1.5,
@@ -2196,10 +2036,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.72,
       quoteRadius: 20,
       quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.66,
-      highlightMarkerAlpha: 0.28,
-      highlightDashAlpha: 0.78,
     },
     editor: {
       bodySize: 29,
@@ -2207,7 +2043,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'wenkai',
       bodyFontWeight: 400,
       subheadingStyle: 'accent',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 3.2, h2Scale: 1.6, h3Scale: 1.3,
         h1LineHeight: 1.3, h2LineHeight: 1.4, h3LineHeight: 1.5,
@@ -2263,10 +2098,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.80,
       quoteRadius: 6,
       quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.60,
-      highlightMarkerAlpha: 0.34,
-      highlightDashAlpha: 0.74,
     },
     editor: {
       bodySize: 29,
@@ -2274,7 +2105,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'fangsong',
       bodyFontWeight: 400,
       subheadingStyle: 'accent',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 3.2, h2Scale: 1.6, h3Scale: 1.3,
         h1LineHeight: 1.25, h2LineHeight: 1.35, h3LineHeight: 1.45,
@@ -2332,10 +2162,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.78,
       quoteRadius: 4,
       quoteTreatment: 'callout',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.56,
-      highlightMarkerAlpha: 0.36,
-      highlightDashAlpha: 0.74,
     },
     editor: {
       bodySize: 28,
@@ -2343,7 +2169,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'notosans',
       bodyFontWeight: 400,
       subheadingStyle: 'accent',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 3.6, h2Scale: 1.7, h3Scale: 1.35,
         h1LineHeight: 1.18, h2LineHeight: 1.28, h3LineHeight: 1.38,
@@ -2400,10 +2225,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.95,      
       quoteRadius: 0,           
       quoteTreatment: 'callout',
-      highlightTreatment: 'swissRule',
-      highlightUnderlineAlpha: 0.0,
-      highlightMarkerAlpha: 0.0,
-      highlightDashAlpha: 0.0,
     },
     editor: {
       bodySize: 30,
@@ -2411,7 +2232,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'simhei',
       bodyFontWeight: 400,
       subheadingStyle: 'large',
-      highlightStyle: 'border',
       heading: {
         h1Scale: 3.6, h2Scale: 1.7, h3Scale: 1.3,
         h1LineHeight: 1.10, h2LineHeight: 1.22, h3LineHeight: 1.34,
@@ -2468,10 +2288,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.74,
       quoteRadius: 16,
       quoteTreatment: 'callout',  
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.64,
-      highlightMarkerAlpha: 0.30,
-      highlightDashAlpha: 0.76,
     },
     editor: {
       bodySize: 30,
@@ -2479,7 +2295,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'notoserif',  
       bodyFontWeight: 400,
       subheadingStyle: 'accent',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 3.4, h2Scale: 1.65, h3Scale: 1.35,
         h1LineHeight: 1.25, h2LineHeight: 1.35, h3LineHeight: 1.45,
@@ -2520,12 +2335,10 @@ export const THEMES: ThemeDefinition[] = [
     components: {
       quoteFillAlpha: 0.07, quoteStrokeAlpha: 0.11, quoteBarAlpha: 0.8,
       quoteRadius: 8, quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline', highlightUnderlineAlpha: 0.7,
-      highlightMarkerAlpha: 0.22, highlightDashAlpha: 0.8,
     },
     editor: {
       bodySize: 28, lineHeight: 1.75, bodyFontMode: 'notosans', bodyFontWeight: 400,
-      subheadingStyle: 'large', highlightStyle: 'underline',
+      subheadingStyle: 'large',
       heading: {
         h1Scale: 2.6, h2Scale: 1.5, h3Scale: 1.25,
         h1LineHeight: 1.2, h2LineHeight: 1.3, h3LineHeight: 1.4,
@@ -2563,12 +2376,10 @@ export const THEMES: ThemeDefinition[] = [
     components: {
       quoteFillAlpha: 0.1, quoteStrokeAlpha: 0.15, quoteBarAlpha: 0.9,
       quoteRadius: 6, quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline', highlightUnderlineAlpha: 0.8,
-      highlightMarkerAlpha: 0.3, highlightDashAlpha: 0.9,
     },
     editor: {
       bodySize: 29, lineHeight: 1.85, bodyFontMode: 'simsun', bodyFontWeight: 400,
-      subheadingStyle: 'large', highlightStyle: 'underline',
+      subheadingStyle: 'large',
       heading: {
         h1Scale: 2.9, h2Scale: 1.55, h3Scale: 1.3,
         h1LineHeight: 1.3, h2LineHeight: 1.4, h3LineHeight: 1.5,
@@ -2606,12 +2417,10 @@ export const THEMES: ThemeDefinition[] = [
     components: {
       quoteFillAlpha: 0.07, quoteStrokeAlpha: 0.1, quoteBarAlpha: 0.75,
       quoteRadius: 12, quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline', highlightUnderlineAlpha: 0.6,
-      highlightMarkerAlpha: 0.2, highlightDashAlpha: 0.7,
     },
     editor: {
       bodySize: 30, lineHeight: 1.9, bodyFontMode: 'wenkai', bodyFontWeight: 400,
-      subheadingStyle: 'large', highlightStyle: 'underline',
+      subheadingStyle: 'large',
       heading: {
         h1Scale: 2.9, h2Scale: 1.55, h3Scale: 1.3,
         h1LineHeight: 1.3, h2LineHeight: 1.4, h3LineHeight: 1.5,
@@ -2649,12 +2458,10 @@ export const THEMES: ThemeDefinition[] = [
     components: {
       quoteFillAlpha: 0.14, quoteStrokeAlpha: 0.15, quoteBarAlpha: 0.6,
       quoteRadius: 12, quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline', highlightUnderlineAlpha: 0.6,
-      highlightMarkerAlpha: 0.25, highlightDashAlpha: 0.8,
     },
     editor: {
       bodySize: 29, lineHeight: 1.8, bodyFontMode: 'notosans', bodyFontWeight: 400,
-      subheadingStyle: 'large', highlightStyle: 'underline',
+      subheadingStyle: 'large',
       heading: {
         h1Scale: 2.4, h2Scale: 1.5, h3Scale: 1.25,
         h1LineHeight: 1.25, h2LineHeight: 1.35, h3LineHeight: 1.45,
@@ -2694,12 +2501,10 @@ export const THEMES: ThemeDefinition[] = [
     components: {
       quoteFillAlpha: 0.05, quoteStrokeAlpha: 0.1, quoteBarAlpha: 0.75,
       quoteRadius: 18, quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline', highlightUnderlineAlpha: 0.65,
-      highlightMarkerAlpha: 0.22, highlightDashAlpha: 0.75,
     },
     editor: {
       bodySize: 29, lineHeight: 1.85, bodyFontMode: 'youyuan', bodyFontWeight: 400,
-      subheadingStyle: 'large', highlightStyle: 'underline',
+      subheadingStyle: 'large',
       heading: {
         h1Scale: 2.8, h2Scale: 1.55, h3Scale: 1.3,
         h1LineHeight: 1.25, h2LineHeight: 1.35, h3LineHeight: 1.45,
@@ -2737,12 +2542,10 @@ export const THEMES: ThemeDefinition[] = [
     components: {
       quoteFillAlpha: 0.08, quoteStrokeAlpha: 0.15, quoteBarAlpha: 0.85,
       quoteRadius: 6, quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline', highlightUnderlineAlpha: 0.8,
-      highlightMarkerAlpha: 0.32, highlightDashAlpha: 0.9,
     },
     editor: {
       bodySize: 29, lineHeight: 1.8, bodyFontMode: 'simsun', bodyFontWeight: 400,
-      subheadingStyle: 'large', highlightStyle: 'underline',
+      subheadingStyle: 'large',
       heading: {
         h1Scale: 2.9, h2Scale: 1.55, h3Scale: 1.3,
         h1LineHeight: 1.25, h2LineHeight: 1.35, h3LineHeight: 1.45,
@@ -2780,12 +2583,10 @@ export const THEMES: ThemeDefinition[] = [
     components: {
       quoteFillAlpha: 0.1, quoteStrokeAlpha: 0.15, quoteBarAlpha: 0.8,
       quoteRadius: 12, quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline', highlightUnderlineAlpha: 0.7,
-      highlightMarkerAlpha: 0.25, highlightDashAlpha: 0.8,
     },
     editor: {
       bodySize: 28, lineHeight: 1.8, bodyFontMode: 'notosans', bodyFontWeight: 400,
-      subheadingStyle: 'large', highlightStyle: 'underline',
+      subheadingStyle: 'large',
       heading: {
         h1Scale: 2.8, h2Scale: 1.5, h3Scale: 1.25,
         h1LineHeight: 1.25, h2LineHeight: 1.35, h3LineHeight: 1.45,
@@ -2822,12 +2623,10 @@ export const THEMES: ThemeDefinition[] = [
     components: {
       quoteFillAlpha: 0.1, quoteStrokeAlpha: 0.2, quoteBarAlpha: 0.8,
       quoteRadius: 6, quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline', highlightUnderlineAlpha: 0.8,
-      highlightMarkerAlpha: 0.3, highlightDashAlpha: 0.9,
     },
     editor: {
       bodySize: 29, lineHeight: 1.8, bodyFontMode: 'simsun', bodyFontWeight: 400,
-      subheadingStyle: 'large', highlightStyle: 'underline',
+      subheadingStyle: 'large',
       heading: {
         h1Scale: 2.6, h2Scale: 1.5, h3Scale: 1.25,
         h1LineHeight: 1.25, h2LineHeight: 1.35, h3LineHeight: 1.45,
@@ -2864,12 +2663,10 @@ export const THEMES: ThemeDefinition[] = [
     components: {
       quoteFillAlpha: 0.12, quoteStrokeAlpha: 0.15, quoteBarAlpha: 0.6,
       quoteRadius: 6, quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline', highlightUnderlineAlpha: 0.6,
-      highlightMarkerAlpha: 0.2, highlightDashAlpha: 0.8,
     },
     editor: {
       bodySize: 29, lineHeight: 1.8, bodyFontMode: 'simsun', bodyFontWeight: 400,
-      subheadingStyle: 'large', highlightStyle: 'underline',
+      subheadingStyle: 'large',
       heading: {
         h1Scale: 2.4, h2Scale: 1.5, h3Scale: 1.25,
         h1LineHeight: 1.25, h2LineHeight: 1.35, h3LineHeight: 1.45,
@@ -2922,10 +2719,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.6,
       quoteRadius: 12,
       quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.6,
-      highlightMarkerAlpha: 0.22,
-      highlightDashAlpha: 0.8,
     },
     editor: {
       bodySize: 29,
@@ -2933,7 +2726,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'notosans',
       bodyFontWeight: 400,
       subheadingStyle: 'large',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 2.4, h2Scale: 1.5, h3Scale: 1.25,
         h1LineHeight: 1.25, h2LineHeight: 1.35, h3LineHeight: 1.45,
@@ -2987,10 +2779,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.6,
       quoteRadius: 12,
       quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.6,
-      highlightMarkerAlpha: 0.22,
-      highlightDashAlpha: 0.8,
     },
     editor: {
       bodySize: 29,
@@ -2998,7 +2786,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'notosans',
       bodyFontWeight: 400,
       subheadingStyle: 'large',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 2.4, h2Scale: 1.5, h3Scale: 1.25,
         h1LineHeight: 1.25, h2LineHeight: 1.35, h3LineHeight: 1.45,
@@ -3052,10 +2839,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.6,
       quoteRadius: 12,
       quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.6,
-      highlightMarkerAlpha: 0.22,
-      highlightDashAlpha: 0.8,
     },
     editor: {
       bodySize: 29,
@@ -3063,7 +2846,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'notosans',
       bodyFontWeight: 400,
       subheadingStyle: 'large',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 2.4, h2Scale: 1.5, h3Scale: 1.25,
         h1LineHeight: 1.25, h2LineHeight: 1.35, h3LineHeight: 1.45,
@@ -3117,10 +2899,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.7,
       quoteRadius: 10,
       quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.55,
-      highlightMarkerAlpha: 0.25,
-      highlightDashAlpha: 0.7,
     },
     editor: {
       bodySize: 28,
@@ -3128,7 +2906,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'wenkai',
       bodyFontWeight: 400,
       subheadingStyle: 'large',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 2.8, h2Scale: 1.55, h3Scale: 1.28,
         h1LineHeight: 1.25, h2LineHeight: 1.35, h3LineHeight: 1.45,
@@ -3185,10 +2962,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.65,
       quoteRadius: 14,
       quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.55,
-      highlightMarkerAlpha: 0.20,
-      highlightDashAlpha: 0.7,
     },
     editor: {
       bodySize: 28,
@@ -3196,7 +2969,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'notosans',
       bodyFontWeight: 400,
       subheadingStyle: 'large',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 2.8, h2Scale: 1.55, h3Scale: 1.28,
         h1LineHeight: 1.25, h2LineHeight: 1.35, h3LineHeight: 1.45,
@@ -3253,10 +3025,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.65,
       quoteRadius: 12,
       quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.55,
-      highlightMarkerAlpha: 0.22,
-      highlightDashAlpha: 0.7,
     },
     editor: {
       bodySize: 28,
@@ -3264,7 +3032,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'zcoolqingke',
       bodyFontWeight: 400,
       subheadingStyle: 'large',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 2.8, h2Scale: 1.55, h3Scale: 1.28,
         h1LineHeight: 1.25, h2LineHeight: 1.35, h3LineHeight: 1.45,
@@ -3321,10 +3088,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.70,
       quoteRadius: 8,
       quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.60,
-      highlightMarkerAlpha: 0.25,
-      highlightDashAlpha: 0.75,
     },
     editor: {
       bodySize: 28,
@@ -3332,7 +3095,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'wenkai',
       bodyFontWeight: 400,
       subheadingStyle: 'large',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 2.8, h2Scale: 1.55, h3Scale: 1.28,
         h1LineHeight: 1.3, h2LineHeight: 1.4, h3LineHeight: 1.5,
@@ -3390,10 +3152,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.65,
       quoteRadius: 14,
       quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.55,
-      highlightMarkerAlpha: 0.22,
-      highlightDashAlpha: 0.70,
     },
     editor: {
       bodySize: 28,
@@ -3401,7 +3159,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'youyuan',
       bodyFontWeight: 400,
       subheadingStyle: 'large',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 2.8, h2Scale: 1.55, h3Scale: 1.28,
         h1LineHeight: 1.25, h2LineHeight: 1.35, h3LineHeight: 1.45,
@@ -3459,10 +3216,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.9,
       quoteRadius: 4,
       quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.55,
-      highlightMarkerAlpha: 0.25,
-      highlightDashAlpha: 0.75,
     },
     editor: {
       bodySize: 28,
@@ -3470,7 +3223,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'wenkai',
       bodyFontWeight: 400,
       subheadingStyle: 'large',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 2.8, h2Scale: 1.55, h3Scale: 1.28,
         h1LineHeight: 1.3, h2LineHeight: 1.4, h3LineHeight: 1.5,
@@ -3527,10 +3279,6 @@ export const THEMES: ThemeDefinition[] = [
       quoteBarAlpha: 0.70,
       quoteRadius: 6,
       quoteTreatment: 'paper',
-      highlightTreatment: 'softUnderline',
-      highlightUnderlineAlpha: 0.55,
-      highlightMarkerAlpha: 0.25,
-      highlightDashAlpha: 0.75,
     },
     editor: {
       bodySize: 28,
@@ -3538,7 +3286,6 @@ export const THEMES: ThemeDefinition[] = [
       bodyFontMode: 'fangsong',
       bodyFontWeight: 400,
       subheadingStyle: 'large',
-      highlightStyle: 'underline',
       heading: {
         h1Scale: 2.8, h2Scale: 1.55, h3Scale: 1.28,
         h1LineHeight: 1.3, h2LineHeight: 1.4, h3LineHeight: 1.5,

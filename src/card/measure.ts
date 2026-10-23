@@ -33,6 +33,7 @@ import {
   DEFAULT_LIST_STYLE,
 } from './types'
 import type { HeadingStyleOverrides } from './types'
+import { getFormulaAsset } from './formula-loader'
 
 
 
@@ -121,12 +122,10 @@ export function splitTextForWrapping(text: string): string[] {
 
 function explodeInlineTokens(tokens: InlineToken[]): InlineToken[] {
   return tokens.flatMap((token) =>
+    token.formula ? [token] :
     splitTextForWrapping(token.text).map((unit) => ({
+      ...token,
       text: unit,
-      bold: token.bold,
-      italic: token.italic,
-      mark: token.mark,
-      underline: token.underline,
     })),
   )
 }
@@ -134,11 +133,17 @@ function explodeInlineTokens(tokens: InlineToken[]): InlineToken[] {
 
 export function getBodyTokenWidth(token: InlineToken, fontSize: number, fontFamily?: string, bodyFontWeight?: number): number {
   if (token.text === '\n') return 0
+  if (token.formula) {
+    const asset = getFormulaAsset(token.formula.latex, token.formula.display)
+    const height = fontSize * (token.formula.display ? 1.75 : 1.1)
+    return asset ? asset.aspectRatio * height : Math.max(fontSize, token.formula.latex.length * fontSize * 0.55)
+  }
   const baseWeight = bodyFontWeight ?? BODY_TEXT_WEIGHT
   const weight = token.bold ? BODY_BOLD_WEIGHT : baseWeight
   const family = fontFamily ?? BODY_FONT_FAMILY
   const fontStyle = token.italic ? 'italic ' : ''
-  const font = `${fontStyle}${weight} ${fontSize}px ${family}`
+  const effectiveSize = token.script ? Math.round(fontSize * 0.7) : fontSize
+  const font = `${fontStyle}${weight} ${effectiveSize}px ${family}`
   return getMeasureCtx(font).measureText(token.text).width
 }
 
@@ -158,6 +163,8 @@ function splitOversizedUnit(
   fontFamily?: string,
   bodyFontWeight?: number,
 ): InlineToken[] {
+  // Formula SVGs are atomic; splitting a LaTeX source string would corrupt it.
+  if (token.formula) return [token]
   if (token.text.length <= 1 || getBodyTokenWidth(token, fontSize, fontFamily, bodyFontWeight) <= maxWidth)
     return [token]
   return splitGraphemes(token.text).map((char) => ({ ...token, text: char }))
@@ -173,7 +180,7 @@ function wrapCacheKey(tokens: InlineToken[], fontSize: number, maxWidth: number,
   let sig = ''
   for (let i = 0; i < tokens.length; i++) {
     const t = tokens[i]!
-    sig += JSON.stringify([t.bold ? 1 : 0, t.italic ? 1 : 0, t.mark ? 1 : 0, t.underline ? 1 : 0, t.text])
+    sig += JSON.stringify([t.bold ? 1 : 0, t.italic ? 1 : 0, t.underline ? 1 : 0, t.strike ? 1 : 0, t.script ?? '', t.formula?.latex ?? '', t.formula?.display ? 1 : 0, t.text])
   }
   return `${fontSize}|${Math.round(maxWidth)}|${fontFamily ?? ''}|${bodyFontWeight ?? BODY_TEXT_WEIGHT}|${sig}`
 }
@@ -251,35 +258,54 @@ export function parseInlineMarkdown(
   const tokens: InlineToken[] = []
   
 
-  const pattern = /(\*\*[\s\S]+?\*\*|==[\s\S]+?==|\^[\s\S]+?\^|(?<!\*)\*[\s\S]+?\*(?!\*))/g
+  const pattern = /(\$\$[\s\S]+?\$\$|\$[^$\n]+?\$|\*\*[\s\S]+?\*\*|~~[\s\S]+?~~|<sup>[\s\S]+?<\/sup>|<sub>[\s\S]+?<\/sub>|\^[\s\S]+?\^|(?<!\*)\*[\s\S]+?\*(?!\*))/g
   const parts = text.split(pattern).filter(Boolean)
 
+  const applyStyle = (
+    content: string,
+    style: Partial<Pick<InlineToken, 'bold' | 'italic' | 'underline' | 'strike' | 'script'>>,
+  ): InlineToken[] => parseInlineMarkdown(content).map((token) => ({ ...token, ...style }))
+
   for (const part of parts) {
-    
     const boldMatch = part.match(/^\*\*([\s\S]+)\*\*$/)
     if (boldMatch) {
-      tokens.push({ text: boldMatch[1]!, bold: true, italic: false, mark: false, underline: false })
+      tokens.push(...applyStyle(boldMatch[1]!, { bold: true }))
       continue
     }
-    
-    const markMatch = part.match(/^==([\s\S]+)==$/)
-    if (markMatch) {
-      tokens.push({ text: markMatch[1]!, bold: false, italic: false, mark: true, underline: false })
+    const formulaMatch = part.match(/^\$\$([\s\S]+)\$\$$/) ?? part.match(/^\$([^$\n]+)\$$/)
+    if (formulaMatch) {
+      const display = part.startsWith('$$')
+      tokens.push({ text: formulaMatch[1]!, bold: false, italic: false, underline: false, formula: { latex: formulaMatch[1]!, display } })
+      continue
+    }
+    const strikeMatch = part.match(/^~~([\s\S]+)~~$/)
+    if (strikeMatch) {
+      tokens.push(...applyStyle(strikeMatch[1]!, { strike: true }))
       continue
     }
     
     const underlineMatch = part.match(/^\^([\s\S]+)\^$/)
     if (underlineMatch) {
-      tokens.push({ text: underlineMatch[1]!, bold: false, italic: false, mark: false, underline: true })
+      tokens.push(...applyStyle(underlineMatch[1]!, { underline: true }))
+      continue
+    }
+    const supMatch = part.match(/^<sup>([\s\S]+)<\/sup>$/)
+    if (supMatch) {
+      tokens.push(...applyStyle(supMatch[1]!, { script: 'sup' }))
+      continue
+    }
+    const subMatch = part.match(/^<sub>([\s\S]+)<\/sub>$/)
+    if (subMatch) {
+      tokens.push(...applyStyle(subMatch[1]!, { script: 'sub' }))
       continue
     }
     
     const italicMatch = part.match(/^\*([\s\S]+)\*$/)
     if (italicMatch) {
-      tokens.push({ text: italicMatch[1]!, bold: false, italic: true, mark: false, underline: false })
+      tokens.push(...applyStyle(italicMatch[1]!, { italic: true }))
       continue
     }
-    tokens.push({ text: part, bold: false, italic: false, mark: false, underline: false })
+    tokens.push({ text: part, bold: false, italic: false, underline: false })
   }
 
   

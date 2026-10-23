@@ -2,8 +2,6 @@
 
 
 import type {
-  HighlightStyle,
-  HighlightTreatment,
   ParagraphBlock,
   PosterMetrics,
   QuoteBoxMetrics,
@@ -18,6 +16,7 @@ import type {
   ListStyleConfig,
   HeadingStyleOverrides,
   InlineLine,
+  InlineFormatColors,
 } from './types'
 import {
   PAGE_WIDTH,
@@ -25,8 +24,6 @@ import {
   CONTENT_LEFT,
   CONTENT_RIGHT,
   CANVAS_SCALE,
-  FOOTER_LINE_LEFT,
-  FOOTER_LINE_RIGHT,
   FOOTER_LINE_Y,
   FOOTER_TEXT_Y,
   BODY_TEXT_WEIGHT,
@@ -62,6 +59,8 @@ import { drawTableBlock, measureTableBlock } from './table-renderer'
 import { hexToRgba, hexToRgb, gradientAngleToPoints } from './color-utils'
 import { drawDecor } from './decor-renderer'
 import { getLoadedImage, getImageStatus } from './image-loader'
+import { getFormulaAsset } from './formula-loader'
+import { resolveInlineDecorationColor, resolveInlineTextColor } from './inline-format-colors'
 
 
 
@@ -179,7 +178,11 @@ function isDarkTheme(theme: ThemeDefinition): boolean {
 
 
 function getPageLuminance(theme: ThemeDefinition): number {
-  const raw = theme.palette.page
+  return getColorLuminance(theme.palette.page)
+}
+
+/** Return the relative luminance of a CSS hex/rgb color for contrast decisions. */
+function getColorLuminance(raw: string): number {
   
   const cacheKey = raw
   const cached = _luminanceCache.get(cacheKey)
@@ -632,74 +635,6 @@ function applyNoiseTexture(
 
 
 
-function resolveHighlightTreatment(
-  theme: ThemeDefinition,
-  highlightStyle: HighlightStyle,
-): HighlightTreatment {
-  if (highlightStyle === theme.editor.highlightStyle)
-    return theme.components.highlightTreatment
-  if (highlightStyle === 'highlight') return 'boldAccent'
-  if (highlightStyle === 'border') return 'swissRule'
-  return 'softUnderline'
-}
-
-function drawHighlightMark(
-  ctx: CanvasRenderingContext2D,
-  theme: ThemeDefinition,
-  highlightStyle: HighlightStyle,
-  x: number,
-  baselineY: number,
-  tokenWidth: number,
-  fontSize: number,
-  highlightColor?: string | null,
-): void {
-  const treatment = resolveHighlightTreatment(theme, highlightStyle)
-  const accent = highlightColor ?? theme.palette.accent
-
-  ctx.save()
-
-  if (treatment === 'boldAccent') {
-    
-    ctx.restore()
-    return
-  } else if (treatment === 'swissRule') {
-    ctx.strokeStyle = hexToRgba(
-      accent,
-      Math.max(theme.components.highlightDashAlpha, 0.78),
-    )
-    ctx.lineWidth = theme.mode === 'swiss' ? 4 : 3.2
-    ctx.lineCap = theme.mode === 'swiss' ? 'butt' : 'round'
-    if (highlightStyle === 'border' || theme.mode !== 'swiss') {
-      ctx.setLineDash([10, 5])
-    }
-    const ruleY = baselineY + Math.max(3, fontSize * 0.08)
-    ctx.beginPath()
-    ctx.moveTo(x - 1, ruleY)
-    ctx.lineTo(x + tokenWidth + 1, ruleY)
-    ctx.stroke()
-    ctx.setLineDash([])
-  } else {
-    
-    ctx.fillStyle = hexToRgba(
-      accent,
-      Math.max(theme.components.highlightUnderlineAlpha, 0.44),
-    )
-    const underlineTop = baselineY + Math.max(2, fontSize * 0.06)
-    const underlineHeight = Math.max(5, fontSize * 0.14)
-    roundRectPath(
-      ctx,
-      x - 2,
-      underlineTop,
-      tokenWidth + 5,
-      underlineHeight,
-      Math.min(4, underlineHeight / 2),
-    )
-    ctx.fill()
-  }
-
-  ctx.restore()
-}
-
 function drawQuoteBlock(
   ctx: CanvasRenderingContext2D,
   theme: ThemeDefinition,
@@ -798,7 +733,6 @@ function getOrderedListNumber(index: number, start = 1): string {
   return `${start + index}.`
 }
 
-
 function drawListBlock(
   ctx: CanvasRenderingContext2D,
   block: ListBlock,
@@ -812,6 +746,7 @@ function drawListBlock(
   bodyFontWeight?: number,
   
   bodyTextColor?: string | null,
+  formatColors?: InlineFormatColors,
 ): number {
   const listStyle: ListStyleConfig = theme.editor.list ?? DEFAULT_LIST_STYLE
   const resolvedWeight = bodyFontWeight ?? theme.editor.bodyFontWeight ?? BODY_TEXT_WEIGHT
@@ -919,7 +854,7 @@ function drawListBlock(
       const baselineY = cursorY + fontSize * 0.84 + li * bodyLineHeight
 
       for (const token of line.tokens) {
-        const tokenWidth = getBodyTokenWidth(token, fontSize)
+        const tokenWidth = getBodyTokenWidth(token, fontSize, fontFamily, bodyFontWeight)
 
         ctx.save()
         ctx.globalCompositeOperation = isDark
@@ -928,20 +863,44 @@ function drawListBlock(
 
         const weight = token.bold ? BODY_BOLD_WEIGHT : resolvedWeight
         const fontStyle = token.italic ? 'italic ' : ''
-        ctx.font = `${fontStyle}${weight} ${fontSize}px ${fontFamily ?? BODY_FONT_FAMILY}`
-        ctx.fillStyle = bodyTextColor ?? theme.palette.text
+        const tokenFontSize = token.script ? Math.round(fontSize * 0.7) : fontSize
+        const tokenBaseline = baselineY + (token.script === 'sup' ? -fontSize * 0.32 : token.script === 'sub' ? fontSize * 0.18 : 0)
+        ctx.font = `${fontStyle}${weight} ${tokenFontSize}px ${fontFamily ?? BODY_FONT_FAMILY}`
+        ctx.fillStyle = resolveInlineTextColor(token, formatColors) ?? bodyTextColor ?? theme.palette.text
 
-        ctx.fillText(token.text, cursorX, baselineY)
+        if (token.formula) {
+          const asset = getFormulaAsset(token.formula.latex, token.formula.display)
+          const formulaHeight = fontSize * (token.formula.display ? 1.75 : 1.1)
+          const formulaY = token.formula.display
+            ? cursorY + li * bodyLineHeight + 2
+            : baselineY - formulaHeight * 0.8
+          if (asset) ctx.drawImage(asset.image, cursorX, formulaY, tokenWidth, formulaHeight)
+          else ctx.fillText(token.text, cursorX, tokenBaseline)
+        } else {
+          ctx.fillText(token.text, cursorX, tokenBaseline)
+        }
 
         
         if (token.underline) {
           const ulineY = baselineY + Math.max(2, fontSize * 0.08)
-          ctx.strokeStyle = ctx.fillStyle
+          // Body text may use a theme blend mode; decoration colors must remain exact.
+          ctx.globalCompositeOperation = 'source-over'
+          ctx.strokeStyle = resolveInlineDecorationColor(token, formatColors) ?? ctx.fillStyle
           ctx.lineWidth = Math.max(1, fontSize * 0.05)
           ctx.lineCap = 'round'
           ctx.beginPath()
           ctx.moveTo(cursorX, ulineY)
           ctx.lineTo(cursorX + tokenWidth, ulineY)
+          ctx.stroke()
+        }
+        if (token.strike) {
+          const strikeY = tokenBaseline - tokenFontSize * 0.32
+          ctx.globalCompositeOperation = 'source-over'
+          ctx.strokeStyle = resolveInlineDecorationColor(token, formatColors) ?? ctx.fillStyle
+          ctx.lineWidth = Math.max(1, tokenFontSize * 0.05)
+          ctx.beginPath()
+          ctx.moveTo(cursorX, strikeY)
+          ctx.lineTo(cursorX + tokenWidth, strikeY)
           ctx.stroke()
         }
 
@@ -968,9 +927,8 @@ function drawColumnContainer(
   metrics: PosterMetrics,
   theme: ThemeDefinition,
   settings: TypographySettings,
-  highlightStyle: HighlightStyle,
+  formatColors: InlineFormatColors | undefined,
   headingOverrides?: HeadingStyleOverrides | null,
-  highlightColor?: string | null,
   
   bodyTextColor?: string | null,
 ): number {
@@ -980,12 +938,12 @@ function drawColumnContainer(
 
   
   ctx.save()
-  drawColumnBlocks(ctx, colBlock.leftBlocks, leftX, y, halfWidth, metrics, theme, settings, highlightStyle, headingOverrides, highlightColor, bodyTextColor)
+  drawColumnBlocks(ctx, colBlock.leftBlocks, leftX, y, halfWidth, metrics, theme, settings, formatColors, headingOverrides, bodyTextColor)
   const leftHeight = _colDrawnHeight
   ctx.restore()
 
   ctx.save()
-  drawColumnBlocks(ctx, colBlock.rightBlocks, rightX, y, halfWidth, metrics, theme, settings, highlightStyle, headingOverrides, highlightColor, bodyTextColor)
+  drawColumnBlocks(ctx, colBlock.rightBlocks, rightX, y, halfWidth, metrics, theme, settings, formatColors, headingOverrides, bodyTextColor)
   const rightHeight = _colDrawnHeight
   ctx.restore()
 
@@ -1006,9 +964,8 @@ function drawColumnBlocks(
   metrics: PosterMetrics,
   theme: ThemeDefinition,
   settings: TypographySettings,
-  highlightStyle: HighlightStyle,
+  formatColors: InlineFormatColors | undefined,
   headingOverrides?: HeadingStyleOverrides | null,
-  highlightColor?: string | null,
   
   bodyTextColor?: string | null,
 ): void {
@@ -1036,11 +993,10 @@ function drawColumnBlocks(
       drawInlineParagraph(
         ctx, paraBlock, x, cursorY,
         metrics.bodySize, metrics.bodyLineHeight, maxWidth,
-        theme, highlightStyle, settings.subheadingStyle, metrics.bodyFontFamily,
+        theme, formatColors, settings.subheadingStyle, metrics.bodyFontFamily,
         false, 
         headingOverrides,
         colBodyWeight,
-        highlightColor,
         bodyTextColor,
       )
       cursorY += height
@@ -1057,6 +1013,7 @@ function drawColumnBlocks(
       drawTableBlock(
         ctx, block, x, cursorY,
         metrics.bodySize, metrics.bodyLineHeight, theme, metrics.bodyFontFamily, maxWidth,
+        bodyTextColor, formatColors,
       )
       cursorY += totalHeight
       prevBlock = { kind: 'body', raw: '' }
@@ -1069,7 +1026,7 @@ function drawColumnBlocks(
       const listBlock = block as ListBlock
       cursorY += drawListBlock(ctx, listBlock, x, cursorY,
         metrics.bodySize, metrics.bodyLineHeight, maxWidth,
-        theme, metrics.bodyFontFamily, colBodyWeight, bodyTextColor)
+        theme, metrics.bodyFontFamily, colBodyWeight, bodyTextColor, formatColors)
       prevBlock = { kind: 'body', raw: '' }
     }
   }
@@ -1127,15 +1084,13 @@ function drawInlineParagraph(
   lineHeight: number,
   maxWidth: number,
   theme: ThemeDefinition,
-  highlightStyle: HighlightStyle,
+  formatColors: InlineFormatColors | undefined,
   subheadingStyle: import('./types').SubheadingStyle,
   fontFamily?: string,
   
   isCover = false,
   headingOverrides?: HeadingStyleOverrides | null,
   bodyFontWeight?: number,
-  highlightColor?: string | null,
-
   bodyTextColor?: string | null,
 
   /** 截断模式：只绘制前 maxLines 行（跨页保险丝用，正常调用不传）。 */
@@ -1211,9 +1166,6 @@ function drawInlineParagraph(
   }
 
   
-  const treatment = resolveHighlightTreatment(theme, highlightStyle)
-
-  
   const h1Align = isSubheading && headingLevel === 1
     ? (headingOverrides?.h1Align ?? 'left')
     : 'left'
@@ -1238,58 +1190,47 @@ function drawInlineParagraph(
         cursorX = x + maxWidth - totalLineWidth
       }
     }
+    if (line.tokens.length === 1 && line.tokens[0]!.formula?.display) {
+      const formulaWidth = getBodyTokenWidth(line.tokens[0]!, activeFontSize, fontFamily, wrapWeight)
+      cursorX = x + quoteInset + (quoteWidth - formulaWidth) / 2
+    }
 
     for (const token of line.tokens) {
       const tokenWidth = getBodyTokenWidth(token, activeFontSize, fontFamily, wrapWeight)
 
-      
-      if (token.mark) {
-        drawHighlightMark(
-          ctx,
-          theme,
-          highlightStyle,
-          cursorX,
-          baselineY,
-          tokenWidth,
-          activeFontSize,
-          highlightColor,
-        )
-      }
-
       ctx.save()
-      
-      const markBoldAccent = token.mark && treatment === 'boldAccent'
       const headingFontWeight = isSubheading && headingLevel
         ? resolveHeadingFontWeight(headingLevel, theme)
         : SUBHEADING_TEXT_WEIGHT
       const bodyTextWeight = bodyFontWeight ?? theme.editor.bodyFontWeight ?? BODY_TEXT_WEIGHT
       const weight = isSubheading
         ? headingFontWeight
-        : (token.bold || markBoldAccent)
+        : token.bold
           ? BODY_BOLD_WEIGHT
           : isQuote
             ? QUOTE_TEXT_WEIGHT
             : bodyTextWeight
 
       const fontStyle = token.italic ? 'italic ' : ''
+      const tokenFontSize = token.script ? Math.round(activeFontSize * 0.7) : activeFontSize
+      const tokenBaseline = baselineY + (token.script === 'sup' ? -activeFontSize * 0.32 : token.script === 'sub' ? activeFontSize * 0.18 : 0)
 
       ctx.globalCompositeOperation = isDarkTheme(theme)
         ? ('screen' as GlobalCompositeOperation)
         : ('multiply' as GlobalCompositeOperation)
-      ctx.font = `${fontStyle}${weight} ${activeFontSize}px ${fontFamily ?? BODY_FONT_FAMILY}`
+      ctx.font = `${fontStyle}${weight} ${tokenFontSize}px ${fontFamily ?? BODY_FONT_FAMILY}`
 
       
       const headingColor = isSubheading && headingLevel
         ? resolveHeadingColor(headingLevel, theme, headingOverrides)
         : undefined
-      ctx.fillStyle =
+      ctx.fillStyle = resolveInlineTextColor(token, formatColors) ?? (
         headingColor
           ? headingColor
           : isSubheading && subheadingStyle === 'accent'
             ? theme.palette.accent
-            : markBoldAccent
-              ? (highlightColor ?? theme.palette.accent)
-              : textColorFallback
+            : textColorFallback
+      )
 
       
       if (isSubheading && headingLevel) {
@@ -1309,13 +1250,26 @@ function drawInlineParagraph(
           const sw = resolveHeadingStrokeWidth(headingLevel, theme, headingOverrides)
           ctx.strokeStyle = headingStroke
           ctx.lineWidth = sw
-          ctx.lineJoin = 'miter'
-          ctx.miterLimit = 2
-          ctx.strokeText(token.text, cursorX, baselineY)
+          // Rounded joins/caps avoid spikes and broken-looking corners on glyphs.
+          // Keep this identical for every heading level so preview and export share
+          // one predictable stroke treatment.
+          ctx.lineJoin = 'round'
+          ctx.lineCap = 'round'
+          ctx.strokeText(token.text, cursorX, tokenBaseline)
         }
       }
 
-      ctx.fillText(token.text, cursorX, baselineY)
+      if (token.formula) {
+        const asset = getFormulaAsset(token.formula.latex, token.formula.display)
+        const formulaHeight = activeFontSize * (token.formula.display ? 1.75 : 1.1)
+        const formulaY = token.formula.display
+          ? textStartY + li * activeLineHeight + 2
+          : baselineY - formulaHeight * 0.8
+        if (asset) ctx.drawImage(asset.image, cursorX, formulaY, tokenWidth, formulaHeight)
+        else ctx.fillText(token.text, cursorX, tokenBaseline)
+      } else {
+        ctx.fillText(token.text, cursorX, tokenBaseline)
+      }
 
       
       if (isSubheading && headingLevel) {
@@ -1331,12 +1285,23 @@ function drawInlineParagraph(
       
       if (token.underline) {
         const ulineY = baselineY + Math.max(2, activeFontSize * 0.08)
-        ctx.strokeStyle = ctx.fillStyle
+        ctx.globalCompositeOperation = 'source-over'
+        ctx.strokeStyle = resolveInlineDecorationColor(token, formatColors) ?? ctx.fillStyle
         ctx.lineWidth = Math.max(1, activeFontSize * 0.05)
         ctx.lineCap = 'round'
         ctx.beginPath()
         ctx.moveTo(cursorX, ulineY)
         ctx.lineTo(cursorX + tokenWidth, ulineY)
+        ctx.stroke()
+      }
+      if (token.strike) {
+        const strikeY = tokenBaseline - tokenFontSize * 0.32
+        ctx.globalCompositeOperation = 'source-over'
+        ctx.strokeStyle = resolveInlineDecorationColor(token, formatColors) ?? ctx.fillStyle
+        ctx.lineWidth = Math.max(1, tokenFontSize * 0.05)
+        ctx.beginPath()
+        ctx.moveTo(cursorX, strikeY)
+        ctx.lineTo(cursorX + tokenWidth, strikeY)
         ctx.stroke()
       }
 
@@ -1838,34 +1803,44 @@ function drawFooter(
   totalPages: number,
   footerLeft: string,
   footerRightMode: string,
+  footerBackgroundEnabled: boolean,
+  footerBackgroundColor: string | null | undefined,
+  footerTextColorOverride: string | null | undefined,
+  footerFontSize: number,
+  footerFontWeight: number,
 ): void {
   const leftText = footerLeft.trim()
   const rightText = getFooterRightText(footerRightMode, index, totalPages)
-  const textAlpha = Math.max(0.52, theme.surface.footerTextAlpha * 0.74)
 
-  
-  ctx.strokeStyle = hexToRgba(
-    theme.palette.text,
-    theme.surface.footerLineAlpha * 0.72,
-  )
-  ctx.lineWidth = 1
-  ctx.beginPath()
-  ctx.moveTo(FOOTER_LINE_LEFT, FOOTER_LINE_Y)
-  ctx.lineTo(FOOTER_LINE_RIGHT, FOOTER_LINE_Y)
-  ctx.stroke()
+  // 将页脚作为完整的主题强调色色带绘制，避免纸张纹理、图片背景或装饰图层
+  // 削弱页脚的可读性。色带从正文安全区之后开始，不占用正文排版空间。
+  const footerBandTop = FOOTER_LINE_Y - 4
+  const footerFill = footerBackgroundColor || theme.palette.accent
+  const footerTextColor = footerTextColorOverride || (getColorLuminance(footerFill) > 0.18 ? '#111111' : '#ffffff')
 
-  
-  ctx.fillStyle = hexToRgba(theme.palette.text, textAlpha)
-  ctx.font = `500 13px ${FOOTER_FONT_FAMILY}`
+  if (footerBackgroundEnabled) {
+    ctx.fillStyle = footerFill
+    ctx.fillRect(0, footerBandTop, PAGE_WIDTH, PAGE_HEIGHT - footerBandTop)
+
+    // 为色带顶部增加高对比边界，令页脚与正文在所有主题下都有明确分区。
+    ctx.strokeStyle = hexToRgba(footerTextColor, 0.34)
+    ctx.lineWidth = 1
+    ctx.beginPath()
+    ctx.moveTo(0, footerBandTop + 0.5)
+    ctx.lineTo(PAGE_WIDTH, footerBandTop + 0.5)
+    ctx.stroke()
+  }
+
+  ctx.fillStyle = footerTextColor
+  ctx.font = `${footerFontWeight} ${footerFontSize}px ${FOOTER_FONT_FAMILY}`
   ctx.textBaseline = 'alphabetic'
   if (leftText) ctx.fillText(leftText, CONTENT_LEFT, FOOTER_TEXT_Y)
 
-  
   if (rightText) {
     ctx.save()
     ctx.textAlign = 'right'
-    ctx.font = `500 13px ${FOOTER_FONT_FAMILY}`
-    ctx.fillStyle = hexToRgba(theme.palette.text, textAlpha)
+    ctx.font = `${footerFontWeight} ${footerFontSize}px ${FOOTER_FONT_FAMILY}`
+    ctx.fillStyle = footerTextColor
     ctx.fillText(rightText, CONTENT_RIGHT, FOOTER_TEXT_Y)
     ctx.restore()
   }
@@ -1881,14 +1856,18 @@ export async function renderCard(opts: RenderOptions): Promise<HTMLCanvasElement
     page,
     theme,
     settings,
-    highlightStyle,
+    formatColors,
     pageIndex,
     totalPages,
     footerLeft,
     footerRightMode,
     footerEnabled,
+    footerBackgroundEnabled,
+    footerBackgroundColor,
+    footerTextColor,
+    footerFontSize,
+    footerFontWeight,
     cardCornerMode,
-    highlightColor,
     bodyTextColor,
   } = opts
 
@@ -1898,6 +1877,14 @@ export async function renderCard(opts: RenderOptions): Promise<HTMLCanvasElement
   const ctx = canvas.getContext('2d')
   if (!ctx) throw new Error('Failed to create canvas context')
   ctx.scale(CANVAS_SCALE, CANVAS_SCALE)
+
+  // The card shape must clip the complete canvas, including its background
+  // image/gradient. Previously the path was traced before drawBackground but
+  // never clipped, so both corner modes produced the same rectangular bitmap.
+  ctx.save()
+  traceCardShape(ctx, 0, 0, PAGE_WIDTH, PAGE_HEIGHT, cardCornerMode,
+    isBrutalTheme(theme) ? 0 : 36)
+  ctx.clip()
 
   const metrics = getPosterMetrics(page, settings, footerEnabled, theme)
   const bodyFontWeight = settings.bodyFontWeight ?? theme.editor.bodyFontWeight ?? BODY_TEXT_WEIGHT
@@ -2036,11 +2023,10 @@ export async function renderCard(opts: RenderOptions): Promise<HTMLCanvasElement
       drawInlineParagraph(
         ctx, block, metrics.bodyLeftX, paragraphY,
         metrics.bodySize, metrics.bodyLineHeight, metrics.bodyWidth,
-        theme, highlightStyle, settings.subheadingStyle, metrics.bodyFontFamily,
+        theme, formatColors, settings.subheadingStyle, metrics.bodyFontFamily,
         isCover,
         opts.headingOverrides,
         bodyFontWeight,
-        highlightColor,
         bodyTextColor,
         maxLinesToDraw,
       )
@@ -2077,6 +2063,7 @@ export async function renderCard(opts: RenderOptions): Promise<HTMLCanvasElement
       const drawnH = drawTableBlock(
         ctx, paragraph, metrics.bodyLeftX, paragraphY,
         metrics.bodySize, metrics.bodyLineHeight, theme, metrics.bodyFontFamily, metrics.bodyWidth,
+        bodyTextColor, formatColors,
       )
       paragraphY += drawnH
       previousBlock = { kind: 'body', raw: '' }
@@ -2101,6 +2088,7 @@ export async function renderCard(opts: RenderOptions): Promise<HTMLCanvasElement
         theme, metrics.bodyFontFamily,
         bodyFontWeight,
         bodyTextColor,
+        formatColors,
       )
       paragraphY += drawnH
       previousBlock = { kind: 'body', raw: '' }
@@ -2117,9 +2105,8 @@ export async function renderCard(opts: RenderOptions): Promise<HTMLCanvasElement
       const drawnH = drawColumnContainer(
         ctx, colBlock,
         metrics.bodyLeftX, paragraphY,
-        metrics, theme, settings, highlightStyle,
+        metrics, theme, settings, formatColors,
         opts.headingOverrides,
-        highlightColor,
         bodyTextColor,
       )
       paragraphY += drawnH
@@ -2149,9 +2136,14 @@ export async function renderCard(opts: RenderOptions): Promise<HTMLCanvasElement
       totalPages,
       footerLeft,
       footerRightMode,
+      footerBackgroundEnabled,
+      footerBackgroundColor,
+      footerTextColor,
+      footerFontSize,
+      footerFontWeight,
     )
   }
 
-  
+  ctx.restore()
   return canvas
 }

@@ -19,12 +19,9 @@ const props = withDefaults(
   defineProps<{
     
     themeId?: string
-    
-    highlightColor?: string | null
   }>(),
   {
     themeId: 'moss-paper',
-    highlightColor: null,
   },
 )
 
@@ -152,23 +149,10 @@ function applyThemeToDOM(theme: ThemeDefinition): void {
   setThemeVar('--card-divider-color', theme.palette.border)
 
   
-  applyHighlightVars(theme, props.highlightColor ?? null)
-
-  
   setThemeVar('--card-list-marker-color', theme.palette.accent)
   setThemeVar('--card-link-color', theme.palette.accent)
 }
 
-
-function applyHighlightVars(theme: ThemeDefinition, customColor: string | null): void {
-  const color = customColor ?? theme.palette.accent
-  const [r, g, b] = [parseInt(color.slice(1,3),16), parseInt(color.slice(3,5),16), parseInt(color.slice(5,7),16)]
-
-  setThemeVar('--card-highlight-underline-color', `rgba(${r},${g},${b},${theme.components.highlightUnderlineAlpha})`)
-  setThemeVar('--card-highlight-marker-bg', `rgba(${r},${g},${b},${theme.components.highlightMarkerAlpha})`)
-  setThemeVar('--card-highlight-border-color', `rgba(${r},${g},${b},${theme.components.highlightDashAlpha})`)
-  setThemeVar('--card-highlight-bold-accent-color', color)
-}
 
 
 
@@ -223,12 +207,6 @@ watch(
 )
 
 
-watch(
-  () => props.highlightColor,
-  (newColor) => {
-    applyHighlightVars(activeTheme.value, newColor ?? null)
-  },
-)
 </script>
 
 <style scoped>

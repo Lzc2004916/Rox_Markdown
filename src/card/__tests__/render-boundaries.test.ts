@@ -159,7 +159,7 @@ describe('卡片安全区与分页边界', () => {
   })
 
   it('表格单元格跨页后保持内联文本与样式语义', () => {
-    const richCell = '**加粗👨‍👩‍👧‍👦**==高亮é==^下划线^'.repeat(150)
+    const richCell = '**加粗👨‍👩‍👧‍👦**普通é^下划线^'.repeat(150)
     const source = `| 名称 | 说明 |\n| --- | --- |\n| 单行 | ${richCell} |`
     const { pages } = layoutPages({
       source,
@@ -174,7 +174,6 @@ describe('卡片安全区与分页边界', () => {
         grapheme,
         bold: Boolean(token.bold),
         italic: Boolean(token.italic),
-        mark: Boolean(token.mark),
         underline: Boolean(token.underline),
       })),
     )

@@ -126,7 +126,6 @@ doc += '```typescript\n';
 doc += 'editor: {\n';
 doc += '  bodySize: 30,\n';
 doc += '  lineHeight: 1.84,\n';
-doc += '  highlightStyle: "underline",\n';
 doc += '  heading: {\n';
 doc += '    h1Scale: 3.5, h2Scale: 1.7, h3Scale: 1.35,\n';
 doc += '    h1LineHeight: 1.25, h2LineHeight: 1.35,\n';

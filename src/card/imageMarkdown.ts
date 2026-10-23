@@ -17,6 +17,32 @@ export interface ImageMarkdownItem {
 /** 默认图片高度（px），与 layout.ts 里解析图片时的默认值保持一致 */
 export const DEFAULT_IMAGE_HEIGHT = 200
 
+export interface ParsedImageMarkdownLine {
+  alt: string
+  src: string
+  attrs: string
+}
+
+/**
+ * Parse a standalone Markdown image line.
+ *
+ * The URL capture is deliberately greedy: a local Windows filename can
+ * legitimately include parentheses (for example `photo (5).png`). The closing
+ * parenthesis for the Markdown link is therefore the final one before attrs.
+ */
+export function parseImageMarkdownLine(line: string): ParsedImageMarkdownLine | null {
+  const match = line.trim().match(/^!\[([^\]]*)\]\((.+)\)((?:\s*\{[^{}]*\})*)$/)
+  if (!match) return null
+  return { alt: match[1] ?? '', src: match[2] ?? '', attrs: match[3] ?? '' }
+}
+
+/** Parse the second line of the legacy two-line image syntax. */
+export function parseImageUrlLine(line: string): { src: string; attrs: string } | null {
+  const match = line.trim().match(/^\(\s*(.+)\)((?:\s*\{[^{}]*\})*)$/)
+  if (!match) return null
+  return { src: match[1]!.trim(), attrs: match[2] ?? '' }
+}
+
 /** 解析 {#img1}{height=200} 这类尾部属性串，顺序无关 */
 export function parseImageAttrs(tail: string): { height?: number; key?: string } {
   const out: { height?: number; key?: string } = {}
@@ -39,14 +65,14 @@ export function parseImages(source: string): ImageMarkdownItem[] {
   const items: ImageMarkdownItem[] = []
   const lines = source.split('\n')
   for (let i = 0; i < lines.length; i++) {
-    const m = lines[i]!.trim().match(/^!\[([^\]]*)\]\(([^)]+)\)((?:\s*\{[^{}]*\})*)$/)
-    if (!m) continue
-    const attrs = parseImageAttrs(m[3] ?? '')
+    const image = parseImageMarkdownLine(lines[i]!)
+    if (!image) continue
+    const attrs = parseImageAttrs(image.attrs)
     if (!attrs.key) continue
     items.push({
       key: attrs.key,
-      alt: m[1] ?? '',
-      src: m[2] ?? '',
+      alt: image.alt,
+      src: image.src,
       height: attrs.height ?? DEFAULT_IMAGE_HEIGHT,
       raw: lines[i]!,
       lineIndex: i,
@@ -60,12 +86,12 @@ export function setImageHeight(source: string, key: string, newHeight: number): 
   const lines = source.split('\n')
   for (let i = 0; i < lines.length; i++) {
     const trimmed = lines[i]!.trim()
-    const m = trimmed.match(/^!\[([^\]]*)\]\(([^)]+)\)((?:\s*\{[^{}]*\})*)$/)
-    if (!m) continue
-    const attrs = parseImageAttrs(m[3] ?? '')
+    const image = parseImageMarkdownLine(trimmed)
+    if (!image) continue
+    const attrs = parseImageAttrs(image.attrs)
     if (attrs.key !== key) continue
     const indent = lines[i]!.match(/^\s*/)![0]
-    lines[i] = `${indent}![${m[1]}](${m[2]}){#${key}}{height=${newHeight}}`
+    lines[i] = `${indent}![${image.alt}](${image.src}){#${key}}{height=${newHeight}}`
     break
   }
   return lines.join('\n')

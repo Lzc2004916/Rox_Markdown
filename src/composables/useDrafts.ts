@@ -10,9 +10,6 @@ export interface AppSettings {
   cardTheme: string
   bodyFontMode: string
   bodyFontSize: number
-  highlightStyle: string
-  
-  highlightColor?: string | null
   footerEnabled: boolean
   split: number
   rightSplit: number
@@ -35,7 +32,6 @@ export const DEFAULT_SETTINGS: AppSettings = {
   cardTheme: 'moss-paper',
   bodyFontMode: 'wenkai',
   bodyFontSize: 30,
-  highlightStyle: 'underline',
   footerEnabled: false,
   split: 50,
   rightSplit: 22,
@@ -133,7 +129,7 @@ export function useDrafts(): {
   )
 
   watch(
-    () => store.documents.map((document) => [document.id, document.cardTheme] as const),
+    () => store.documents.map((document) => [document.id, document.cardTheme, JSON.stringify(document.formatColors ?? {}), document.footerEnabled, document.footerLeft, document.footerBackgroundEnabled, document.footerBackgroundColor, document.footerTextColor, document.footerFontSize, document.footerFontWeight] as const),
     () => schedulePersist(),
     { deep: false },
   )
@@ -177,6 +173,7 @@ export function useDrafts(): {
     const legacyTheme = typeof payload.settings?.cardTheme === 'string' && payload.settings.cardTheme
       ? payload.settings.cardTheme
       : DEFAULT_DOCUMENT_THEME
+    const legacyFooterEnabled = payload.settings?.footerEnabled ?? false
     const valid = (payload.documents ?? []).filter((d) => {
       if (!isValidDocument(d)) return false
       if (seen.has(d.id)) return false
@@ -187,6 +184,15 @@ export function useDrafts(): {
       // Version-1 drafts stored one global theme in settings. Copy it to each
       // document so restoring an old draft preserves the previous appearance.
       cardTheme: document.cardTheme || legacyTheme,
+      footerEnabled: document.footerEnabled ?? legacyFooterEnabled,
+      footerLeft: document.footerLeft ?? '',
+      footerBackgroundEnabled: document.footerBackgroundEnabled ?? true,
+      footerBackgroundColor: document.footerBackgroundColor ?? null,
+      footerTextColor: document.footerTextColor ?? null,
+      footerFontSize: Math.min(32, Math.max(10, document.footerFontSize ?? 14)),
+      footerFontWeight: [400, 500, 600, 700, 800].includes(document.footerFontWeight ?? 600)
+        ? (document.footerFontWeight ?? 600)
+        : 600,
     }))
 
     if (valid.length === 0) {

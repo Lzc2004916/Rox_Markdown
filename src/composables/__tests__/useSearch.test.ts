@@ -13,7 +13,7 @@ const MARKDOWN_SAMPLE = `# 静夜思
 
 **作者：**李白
 
-床前==明月光==，
+床前明月光，
 疑是^地上霜^。
 
 > 举头望明月，
@@ -101,10 +101,9 @@ describe('buildContentView', () => {
     expect(view).toContain('第一项')
   })
 
-  it('应移除高亮 == 标记', () => {
+  it('将 == 作为普通文本保留', () => {
     const { view } = buildContentView('==高亮== 文本')
-    expect(view).toContain('高亮')
-    expect(view).toContain('文本')
+    expect(view).toBe('==高亮== 文本')
   })
 
   it('应保留下划线 ^ 标记的内部文本', () => {

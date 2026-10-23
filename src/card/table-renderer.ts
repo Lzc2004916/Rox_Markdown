@@ -1,9 +1,11 @@
 ﻿
 
 
-import type { ThemeDefinition, TableDisplayBlock } from './types'
+import type { InlineFormatColors, ThemeDefinition, TableDisplayBlock } from './types'
 import { CONTENT_WIDTH, BODY_FONT_FAMILY, BODY_TEXT_WEIGHT, BODY_BOLD_WEIGHT } from './types'
 import { parseInlineMarkdown, wrapInlineTokensByWidth, getBodyTokenWidth } from './measure'
+import { getFormulaAsset } from './formula-loader'
+import { resolveInlineDecorationColor, resolveInlineTextColor } from './inline-format-colors'
 
 
 
@@ -114,6 +116,8 @@ export function drawTableBlock(
   theme: ThemeDefinition,
   fontFamily?: string,
   availableWidth = CONTENT_WIDTH,
+  bodyTextColor?: string | null,
+  formatColors?: InlineFormatColors,
 ): number {
   const numCols = block.headers.length
   if (numCols === 0) return 0
@@ -148,7 +152,7 @@ export function drawTableBlock(
 
     ctx.save()
     ctx.font = `${fontWeight} ${fontSize}px ${fontFamily ?? BODY_FONT_FAMILY}`
-    ctx.fillStyle = theme.palette.text
+    ctx.fillStyle = bodyTextColor ?? theme.palette.text
     ctx.textBaseline = 'alphabetic'
 
     // 垂直居中：计算文字总高度，整体往下偏移
@@ -177,7 +181,42 @@ export function drawTableBlock(
       let cursorX = startX
       for (const token of line.tokens) {
         const tw = getBodyTokenWidth(token, fontSize, activeFontFamily, fontWeight)
-        ctx.fillText(token.text, cursorX, cy + startYOffset + fontSize * 0.84 + li * lineHeight)
+        const tokenWeight = token.bold ? BODY_BOLD_WEIGHT : fontWeight
+        const tokenFontSize = token.script ? Math.round(fontSize * 0.7) : fontSize
+        const baseline = cy + startYOffset + fontSize * 0.84 + li * lineHeight
+          + (token.script === 'sup' ? -fontSize * 0.32 : token.script === 'sub' ? fontSize * 0.18 : 0)
+        ctx.font = `${token.italic ? 'italic ' : ''}${tokenWeight} ${tokenFontSize}px ${activeFontFamily}`
+        ctx.fillStyle = resolveInlineTextColor(token, formatColors) ?? bodyTextColor ?? theme.palette.text
+
+        if (token.formula) {
+          const asset = getFormulaAsset(token.formula.latex, token.formula.display)
+          const formulaHeight = fontSize * (token.formula.display ? 1.75 : 1.1)
+          if (asset) ctx.drawImage(asset.image, cursorX, baseline - formulaHeight * 0.8, tw, formulaHeight)
+          else ctx.fillText(token.text, cursorX, baseline)
+        } else {
+          ctx.fillText(token.text, cursorX, baseline)
+        }
+
+        if (token.underline) {
+          const underlineY = baseline + Math.max(2, fontSize * 0.08)
+          ctx.globalCompositeOperation = 'source-over'
+          ctx.strokeStyle = resolveInlineDecorationColor(token, formatColors) ?? ctx.fillStyle
+          ctx.lineWidth = Math.max(1, fontSize * 0.05)
+          ctx.beginPath()
+          ctx.moveTo(cursorX, underlineY)
+          ctx.lineTo(cursorX + tw, underlineY)
+          ctx.stroke()
+        }
+        if (token.strike) {
+          const strikeY = baseline - tokenFontSize * 0.32
+          ctx.globalCompositeOperation = 'source-over'
+          ctx.strokeStyle = resolveInlineDecorationColor(token, formatColors) ?? ctx.fillStyle
+          ctx.lineWidth = Math.max(1, fontSize * 0.05)
+          ctx.beginPath()
+          ctx.moveTo(cursorX, strikeY)
+          ctx.lineTo(cursorX + tw, strikeY)
+          ctx.stroke()
+        }
         cursorX += tw
       }
     }

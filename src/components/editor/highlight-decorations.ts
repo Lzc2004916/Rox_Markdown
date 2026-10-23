@@ -12,18 +12,24 @@ import {
 
 
 
-const HIGHLIGHT_MARK = Decoration.mark({ class: 'cm-mark' })
+const BOLD_MARK = Decoration.mark({ class: 'cm-format-bold' })
+const ITALIC_MARK = Decoration.mark({ class: 'cm-format-italic' })
+const UNDERLINE_MARK = Decoration.mark({ class: 'cm-underline cm-format-underline' })
+const STRIKE_MARK = Decoration.mark({ class: 'cm-format-strike' })
+const SUPERSCRIPT_MARK = Decoration.mark({ class: 'cm-format-superscript' })
+const SUBSCRIPT_MARK = Decoration.mark({ class: 'cm-format-subscript' })
+const FORMULA_MARK = Decoration.mark({ class: 'cm-format-formula' })
 
 
-const UNDERLINE_MARK = Decoration.mark({ class: 'cm-underline' })
-
-
-
-
-const HIGHLIGHT_RE = /==[\s\S]+?==/g
 
 
 const UNDERLINE_RE = /\^[^^\n]+\^/g
+const BOLD_RE = /\*\*[\s\S]+?\*\*/g
+const ITALIC_RE = /(?<!\*)\*[^*\n]+?\*(?!\*)/g
+const STRIKE_RE = /~~[\s\S]+?~~/g
+const SUPERSCRIPT_RE = /<sup>[\s\S]+?<\/sup>/g
+const SUBSCRIPT_RE = /<sub>[\s\S]+?<\/sub>/g
+const FORMULA_RE = /\$\$[\s\S]+?\$\$|\$[^$\n]+?\$/g
 
 
 
@@ -33,23 +39,25 @@ function buildDecorations(view: EditorView): DecorationSet {
   const doc = view.state.doc
   const text = doc.toString()
 
-  
-  for (const match of text.matchAll(HIGHLIGHT_RE)) {
-    decorations.push({
-      from: match.index!,
-      to: match.index! + match[0].length,
-      decoration: HIGHLIGHT_MARK,
-    })
+  const addMatches = (pattern: RegExp, decoration: Decoration): void => {
+    for (const match of text.matchAll(pattern)) {
+      decorations.push({
+        from: match.index!,
+        to: match.index! + match[0].length,
+        decoration,
+      })
+    }
   }
 
+  addMatches(BOLD_RE, BOLD_MARK)
+  addMatches(ITALIC_RE, ITALIC_MARK)
+  addMatches(STRIKE_RE, STRIKE_MARK)
+  addMatches(SUPERSCRIPT_RE, SUPERSCRIPT_MARK)
+  addMatches(SUBSCRIPT_RE, SUBSCRIPT_MARK)
+  addMatches(FORMULA_RE, FORMULA_MARK)
+
   
-  for (const match of text.matchAll(UNDERLINE_RE)) {
-    decorations.push({
-      from: match.index!,
-      to: match.index! + match[0].length,
-      decoration: UNDERLINE_MARK,
-    })
-  }
+  addMatches(UNDERLINE_RE, UNDERLINE_MARK)
 
   
   decorations.sort((a, b) => a.from - b.from)

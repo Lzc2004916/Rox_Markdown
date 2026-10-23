@@ -16,6 +16,7 @@ export type {
   GradientConfig,
   InlineToken,
   InlineLine,
+  InlineFormatColors,
   ParagraphBlock,
   TextBlock,
   CodeBlock,
@@ -34,8 +35,6 @@ export type {
   LayoutOptions,
   BodyFontMode,
   SubheadingStyle,
-  HighlightStyle,
-  HighlightTreatment,
   QuoteTreatment,
   CardCornerMode,
   FooterRightMode,
@@ -112,6 +111,7 @@ export { renderCard } from './renderer'
 
 
 export { preloadImages, collectImageSrcs, getLoadedImage, getImageStatus } from './image-loader'
+export { preloadFormulas, getFormulaAsset, extractFormulaRequests } from './formula-loader'
 
 
 export { drawCodeBlock, measureCodeBlock, tokenizeCode } from './code-renderer'

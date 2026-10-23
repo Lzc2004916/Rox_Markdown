@@ -4,18 +4,19 @@
 import type {
   CardPage,
   GradientConfig,
-  HighlightStyle,
   FooterRightMode,
   CardCornerMode,
   ThemeDefinition,
   TypographySettings,
   HeadingStyleOverrides,
+  InlineFormatColors,
 } from './types'
 import { layoutPages } from './layout'
 import { renderCard } from './renderer'
 import { getTheme } from './themes'
 import { clearMeasureCaches } from './measure'
 import { preloadImages, collectImageSrcs } from './image-loader'
+import { preloadFormulas } from './formula-loader'
 import { getBodyFontFamily, BODY_TEXT_WEIGHT, BODY_BOLD_WEIGHT } from './types'
 
 
@@ -27,22 +28,24 @@ export interface EngineOptions {
   themeId: string
   
   typography: TypographySettings
-  
-  highlightStyle: HighlightStyle
+  formatColors?: InlineFormatColors
   
   footerLeft?: string
   
   footerRightMode?: FooterRightMode
   
   footerEnabled?: boolean
+  footerBackgroundEnabled?: boolean
+  footerBackgroundColor?: string | null
+  footerTextColor?: string | null
+  footerFontSize?: number
+  footerFontWeight?: number
   
   cardCornerMode?: CardCornerMode
   
   gradientConfig?: GradientConfig
   
   headingOverrides?: HeadingStyleOverrides | null
-  
-  highlightColor?: string | null
   
   bodyTextColor?: string | null
 }
@@ -110,6 +113,8 @@ export async function renderAllPagesAsync(
   // 瀛椾綋鍔犺浇瀹屽啀鎺掔増锛岄伩鍏嶇敤 fallback 瀛楀鎶樿瀵艰嚧璺ㄩ〉涓㈠瓧
   await ensureFontsReady(getBodyFontFamily(settings.bodyFontMode), settings.bodySize)
   if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
+  await preloadFormulas(opts.source, opts.formatColors?.formula ?? opts.bodyTextColor ?? theme.palette.text)
+  if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
 
   const { pages, truncated } = layoutPages({
     source: opts.source,
@@ -134,16 +139,20 @@ export async function renderAllPagesAsync(
         page: pages[i]!,
         theme,
         settings,
-        highlightStyle: opts.highlightStyle ?? theme.editor.highlightStyle,
+        formatColors: opts.formatColors,
         pageIndex: i,
         totalPages: pages.length,
         footerLeft: opts.footerLeft ?? '',
         footerRightMode: opts.footerRightMode ?? 'page',
         footerEnabled: opts.footerEnabled ?? true,
+        footerBackgroundEnabled: opts.footerBackgroundEnabled ?? true,
+        footerBackgroundColor: opts.footerBackgroundColor ?? null,
+        footerTextColor: opts.footerTextColor ?? null,
+        footerFontSize: opts.footerFontSize ?? 14,
+        footerFontWeight: opts.footerFontWeight ?? 600,
         cardCornerMode: opts.cardCornerMode ?? 'square',
         gradientConfig: opts.gradientConfig,
         headingOverrides: opts.headingOverrides,
-        highlightColor: opts.highlightColor ?? null,
         bodyTextColor: opts.bodyTextColor ?? null,
       }),
     )

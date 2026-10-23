@@ -41,6 +41,32 @@ beforeEach(() => {
 })
 
 describe('VIP 离线场景验证', () => {
+  it('有限期VIP倒计时按秒更新，并在过期时停止', async () => {
+    vi.useFakeTimers()
+    const now = new Date('2026-10-20T08:00:00.000Z')
+    vi.setSystemTime(now)
+    localStorage.setItem('rox_token', 'cached-jwt')
+    localStorage.setItem('rox_vip_type', xorEncrypt('WEEK'))
+    localStorage.setItem('rox_vip_expire', xorEncrypt(String(now.getTime() + 2 * 1000)))
+    vi.mocked(apiAuth.getPaidThemeList).mockResolvedValue({ allPaidThemes: [], allowedPaidThemes: [] })
+    vi.mocked(apiAuth.getVipStatus).mockResolvedValue({
+      type: 'WEEK',
+      expireAtMs: now.getTime() + 2 * 1000,
+    })
+
+    const store = useAuthStore()
+    await store.initFromStorage()
+    expect(store.remainingTimeText).toBe('00:00:02')
+
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(store.remainingTimeText).toBe('00:00:01')
+
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(store.vipType).toBe('EXPIRED')
+    expect(store.isVip).toBe(false)
+    vi.useRealTimers()
+  })
+
   it('7天VIP·临近到期(剩2天)·离线 → 仍可使用专属主题', async () => {
     localStorage.setItem('rox_token', 'cached-jwt')
     localStorage.setItem('rox_vip_type', xorEncrypt('WEEK'))
@@ -108,7 +134,6 @@ describe('VIP 离线场景验证', () => {
       allowedPaidThemes: [PAID_THEME],
     })
     vi.mocked(apiAuth.getVipStatus).mockResolvedValue({
-      token: 'cached-jwt',
       type: 'WEEK',
       expireAtMs: Date.now() + 2 * DAY,
     })

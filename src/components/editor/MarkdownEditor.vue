@@ -1,9 +1,10 @@
 ﻿<template>
-  <div ref="editorRef" class="markdown-editor"></div>
+  <div ref="editorRef" class="markdown-editor" :style="formatColorVariables"></div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import type { InlineFormatColors } from '@/card'
 import { EditorState, EditorSelection, Compartment, Prec, type Extension } from '@codemirror/state'
 import {
   EditorView,
@@ -30,9 +31,19 @@ interface Props {
   modelValue: string
   
   theme?: string
+  formatColors?: InlineFormatColors
 }
 
 const props = defineProps<Props>()
+
+const formatColorVariables = computed(() => {
+  const colors = props.formatColors ?? {}
+  return Object.fromEntries(
+    Object.entries(colors)
+      .filter(([, value]) => Boolean(value))
+      .map(([key, value]) => [`--format-${key}-color`, value]),
+  )
+})
 
 
 
@@ -311,9 +322,6 @@ function stripInlineMarkdown(text: string): string {
     const before = result
 
     
-    result = result.replace(/==([\s\S]+?)==/g, '$1')
-
-    
     result = result.replace(/\^([^^\n]+?)\^/g, '$1')
 
     if (result !== before) changed = true
@@ -512,19 +520,23 @@ html[data-theme='dark'] .markdown-editor :deep(.cm-activeLineGutter) {
 
 
 
-.markdown-editor :deep(.cm-mark) {
-  background: var(--card-highlight-marker-bg, rgba(255, 210, 0, 0.38));
-  border-radius: 3px;
-  padding: 1px 2px;
-  margin: 0 -1px;
-}
-
 .markdown-editor :deep(.cm-underline) {
   text-decoration: underline;
-  text-decoration-color: var(--card-highlight-underline-color, oklch(0.62 0.19 250));
+  text-decoration-color: var(--format-underline-color, var(--card-accent, currentColor));
   text-underline-offset: 3px;
   text-decoration-thickness: 1px;
 }
+
+.markdown-editor :deep(.cm-format-bold) { color: var(--format-bold-color, inherit); }
+.markdown-editor :deep(.cm-format-italic) { color: var(--format-italic-color, inherit); }
+.markdown-editor :deep(.cm-format-strike) {
+  text-decoration: line-through;
+  text-decoration-color: var(--format-strike-color, currentColor);
+  text-decoration-thickness: 1px;
+}
+.markdown-editor :deep(.cm-format-superscript) { color: var(--format-superscript-color, inherit); }
+.markdown-editor :deep(.cm-format-subscript) { color: var(--format-subscript-color, inherit); }
+.markdown-editor :deep(.cm-format-formula) { color: var(--format-formula-color, inherit); }
 
 
 
